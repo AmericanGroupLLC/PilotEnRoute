@@ -243,6 +243,96 @@ The repository includes automated workflows:
 
 ---
 
+## 💰 Monetization Setup
+
+### Google AdMob (Replace Test IDs Before Release)
+```dart
+// lib/services/ad_service.dart
+static const String _androidBannerAdUnitId = 'ca-app-pub-XXXXXXXX/XXXXXXXX';
+static const String _iosBannerAdUnitId = 'ca-app-pub-XXXXXXXX/XXXXXXXX';
+```
+```groovy
+// android/app/build.gradle
+manifestPlaceholders += [admobAppId: "ca-app-pub-XXXXXXXX~XXXXXXXXXX"]
+```
+```xml
+<!-- ios/Runner/Info.plist -->
+<key>GADApplicationIdentifier</key>
+<string>ca-app-pub-XXXXXXXX~XXXXXXXXXX</string>
+```
+
+### In-App Purchases (Set Real Product IDs)
+```dart
+// lib/services/premium_service.dart
+static const String monthlyProductId = 'com.americangroupllc.pilotenroute.premium_monthly';
+static const String annualProductId  = 'com.americangroupllc.pilotenroute.premium_annual';
+static const String lifetimeProductId = 'com.americangroupllc.pilotenroute.premium_lifetime';
+```
+
+---
+
+## 🤖 Android Release Build
+
+```bash
+# 1. Generate keystore
+keytool -genkey -v -keystore android/pilotenroute.jks \
+  -keyalg RSA -keysize 2048 -validity 10000 -alias pilotenroute
+
+# 2. Copy template and fill in credentials
+cp android/key.properties.template android/key.properties
+# Edit android/key.properties with your keystore password
+
+# 3. Build release AAB (for Google Play)
+flutter build appbundle --release
+# Output: build/app/outputs/bundle/release/app-release.aab
+```
+
+## 🍎 iOS Release Build (macOS + Xcode Required)
+
+```bash
+# 1. Open workspace
+open ios/Runner.xcworkspace
+
+# 2. In Xcode: Runner target → Signing & Capabilities
+#    Set Team to your Apple Developer account
+#    Bundle ID: com.americangroupllc.pilotenroute
+
+# 3. Build for release
+flutter build ios --release
+# Then in Xcode: Product → Archive → Distribute App
+```
+
+## 🌐 Marketing Website Deployment
+
+```bash
+# GitHub Pages (automatic via .github/workflows/deploy-website.yml)
+# Enable in: Settings → Pages → Source: GitHub Actions
+# Live URL: https://americangroupllc.github.io/PilotEnRoute/
+
+# Manual: Upload web_marketing/ to any static host (Netlify, Vercel, S3)
+```
+
+---
+
+## ✅ Production Submission Checklist
+
+See `store_submission/app_store_metadata.md` for complete App Store & Play Store metadata.
+
+### Before Submitting to App Store / Play Store
+- [ ] Replace AdMob test IDs with real production IDs
+- [ ] Create IAP products in App Store Connect / Play Console
+- [ ] Generate and configure Android release keystore
+- [ ] Configure iOS signing certificate and provisioning profile
+- [ ] Upload app icon (1024×1024 PNG, no alpha) to App Store Connect
+- [ ] Upload screenshots for all required device sizes
+- [ ] Upload Feature Graphic (1024×500) to Play Console
+- [ ] Set Privacy Policy URL in both stores
+- [ ] Complete age rating questionnaire (4+ / Everyone)
+- [ ] Enable GitHub Pages for marketing website
+- [ ] Update App Store / Play Store links in `web_marketing/index.html`
+
+---
+
 ## 🤝 Contributing
 
 1. Fork the repository
@@ -261,7 +351,7 @@ PilotEnRoute is an **educational and training tool only**. It is **not** certifi
 
 ## 📄 License
 
-MIT License — © 2026 AmericanGroupLLC
+Proprietary — © 2026 American Group LLC. All rights reserved.
 
 ---
 

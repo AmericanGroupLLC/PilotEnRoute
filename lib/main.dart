@@ -1,0 +1,226 @@
+import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:provider/provider.dart';
+import 'package:google_fonts/google_fonts.dart';
+import 'package:hive_flutter/hive_flutter.dart';
+import 'package:timezone/data/latest.dart' as tz;
+
+import 'services/aviation_api_service.dart';
+import 'services/weather_service.dart';
+import 'services/news_service.dart';
+import 'services/notification_service.dart';
+import 'services/logbook_service.dart';
+import 'services/flight_plan_service.dart';
+import 'services/flight_tracker_service.dart';
+import 'services/flashcard_service.dart';
+
+import 'screens/home_screen.dart';
+import 'screens/weather_screen.dart';
+import 'screens/news_screen.dart';
+import 'screens/quiz_screen.dart';
+import 'screens/airport_screen.dart';
+import 'screens/glossary_screen.dart';
+import 'screens/simulation_screen.dart';
+import 'screens/drone_screen.dart';
+import 'screens/garmin_screen.dart';
+import 'screens/education_screen.dart';
+import 'screens/flashcard_screen.dart';
+import 'screens/exam_screen.dart';
+import 'screens/logbook_screen.dart';
+import 'screens/flight_plan_screen.dart';
+import 'screens/flight_tracker_screen.dart';
+import 'screens/endorsements_screen.dart';
+import 'screens/career_screen.dart';
+import 'screens/notifications_screen.dart';
+import 'screens/icara_screen.dart';
+import 'screens/checklist_screen.dart';
+import 'screens/emergency_screen.dart';
+import 'screens/profile_screen.dart';
+
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+
+  // Initialize Hive for local storage
+  await Hive.initFlutter();
+
+  // Initialize timezone data for notifications
+  tz.initializeTimeZones();
+
+  // Initialize notifications
+  await NotificationService.initialize();
+
+  // Lock orientation to portrait + landscape
+  await SystemChrome.setPreferredOrientations([
+    DeviceOrientation.portraitUp,
+    DeviceOrientation.portraitDown,
+    DeviceOrientation.landscapeLeft,
+    DeviceOrientation.landscapeRight,
+  ]);
+
+  // Status bar style
+  SystemChrome.setSystemUIOverlayStyle(
+    const SystemUiOverlayStyle(
+      statusBarColor: Colors.transparent,
+      statusBarIconBrightness: Brightness.light,
+      systemNavigationBarColor: Color(0xFF0A1628),
+      systemNavigationBarIconBrightness: Brightness.light,
+    ),
+  );
+
+  runApp(const PilotEnRouteApp());
+}
+
+class PilotEnRouteApp extends StatelessWidget {
+  const PilotEnRouteApp({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return MultiProvider(
+      providers: [
+        ChangeNotifierProvider(create: (_) => AviationApiService()),
+        ChangeNotifierProvider(create: (_) => WeatherService()),
+        ChangeNotifierProvider(create: (_) => NewsService()),
+        ChangeNotifierProvider(create: (_) => NotificationService()),
+        ChangeNotifierProvider(create: (_) => LogbookService()),
+        ChangeNotifierProvider(create: (_) => FlightPlanService()),
+        ChangeNotifierProvider(create: (_) => FlightTrackerService()),
+        ChangeNotifierProvider(create: (_) => FlashcardService()),
+      ],
+      child: MaterialApp(
+        title: 'PilotEnRoute',
+        debugShowCheckedModeBanner: false,
+        theme: _buildTheme(),
+        initialRoute: '/',
+        routes: {
+          '/': (ctx) => const HomeScreen(),
+          '/weather': (ctx) => const WeatherScreen(),
+          '/news': (ctx) => const NewsScreen(),
+          '/quiz': (ctx) => const QuizScreen(),
+          '/airport': (ctx) => const AirportScreen(),
+          '/glossary': (ctx) => const GlossaryScreen(),
+          '/simulation': (ctx) => const SimulationScreen(),
+          '/drone': (ctx) => const DroneScreen(),
+          '/garmin': (ctx) => const GarminScreen(),
+          '/education': (ctx) => const EducationScreen(),
+          '/flashcards': (ctx) => const FlashcardScreen(),
+          '/exam': (ctx) => const ExamScreen(),
+          '/logbook': (ctx) => const LogbookScreen(),
+          '/flight-plan': (ctx) => const FlightPlanScreen(),
+          '/flight-tracker': (ctx) => const FlightTrackerScreen(),
+          '/endorsements': (ctx) => const EndorsementsScreen(),
+          '/career': (ctx) => const CareerScreen(),
+          '/notifications': (ctx) => const NotificationsScreen(),
+          '/icara': (ctx) => const IcaraScreen(),
+          '/checklist': (ctx) => const ChecklistScreen(),
+          '/emergency': (ctx) => const EmergencyScreen(),
+          '/profile': (ctx) => const ProfileScreen(),
+        },
+      ),
+    );
+  }
+
+  ThemeData _buildTheme() {
+    return ThemeData(
+      useMaterial3: true,
+      brightness: Brightness.dark,
+      scaffoldBackgroundColor: const Color(0xFF0A1628),
+      colorScheme: const ColorScheme.dark(
+        primary: Color(0xFF00BCD4),
+        secondary: Color(0xFFFFB300),
+        surface: Color(0xFF112240),
+        background: Color(0xFF0A1628),
+        error: Color(0xFFF44336),
+        onPrimary: Colors.black,
+        onSecondary: Colors.black,
+        onSurface: Colors.white,
+        onBackground: Colors.white,
+        onError: Colors.white,
+      ),
+      appBarTheme: AppBarTheme(
+        backgroundColor: const Color(0xFF0D1B2A),
+        elevation: 0,
+        centerTitle: false,
+        iconTheme: const IconThemeData(color: Colors.white),
+        titleTextStyle: GoogleFonts.orbitron(
+          fontSize: 14,
+          fontWeight: FontWeight.bold,
+          color: Colors.white,
+          letterSpacing: 2,
+        ),
+      ),
+      bottomNavigationBarTheme: const BottomNavigationBarThemeData(
+        backgroundColor: Color(0xFF0D1B2A),
+        selectedItemColor: Color(0xFF00BCD4),
+        unselectedItemColor: Colors.white38,
+        type: BottomNavigationBarType.fixed,
+        elevation: 8,
+      ),
+      tabBarTheme: TabBarThemeData(
+        labelColor: const Color(0xFF00BCD4),
+        unselectedLabelColor: Colors.white54,
+        indicatorColor: const Color(0xFF00BCD4),
+        labelStyle: GoogleFonts.orbitron(fontSize: 10, letterSpacing: 1),
+        unselectedLabelStyle: GoogleFonts.orbitron(fontSize: 10),
+      ),
+      inputDecorationTheme: InputDecorationTheme(
+        filled: true,
+        fillColor: const Color(0xFF112240),
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: const BorderSide(color: Colors.white24),
+        ),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: const BorderSide(color: Colors.white24),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: const BorderSide(color: Color(0xFF00BCD4), width: 2),
+        ),
+        labelStyle: const TextStyle(color: Colors.white54),
+        hintStyle: const TextStyle(color: Colors.white38),
+      ),
+      elevatedButtonTheme: ElevatedButtonThemeData(
+        style: ElevatedButton.styleFrom(
+          backgroundColor: const Color(0xFF00BCD4),
+          foregroundColor: Colors.black,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
+          textStyle: GoogleFonts.inter(
+            fontWeight: FontWeight.w600,
+            fontSize: 14,
+          ),
+        ),
+      ),
+      cardTheme: CardThemeData(
+        color: const Color(0xFF112240),
+        elevation: 4,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16),
+        ),
+      ),
+      dividerTheme: const DividerThemeData(
+        color: Colors.white12,
+        thickness: 1,
+      ),
+      textTheme: TextTheme(
+        displayLarge: GoogleFonts.orbitron(color: Colors.white),
+        displayMedium: GoogleFonts.orbitron(color: Colors.white),
+        displaySmall: GoogleFonts.orbitron(color: Colors.white),
+        headlineLarge: GoogleFonts.orbitron(color: Colors.white),
+        headlineMedium: GoogleFonts.orbitron(color: Colors.white),
+        headlineSmall: GoogleFonts.orbitron(color: Colors.white),
+        titleLarge: GoogleFonts.inter(color: Colors.white, fontWeight: FontWeight.bold),
+        titleMedium: GoogleFonts.inter(color: Colors.white, fontWeight: FontWeight.w600),
+        titleSmall: GoogleFonts.inter(color: Colors.white70, fontWeight: FontWeight.w500),
+        bodyLarge: GoogleFonts.inter(color: Colors.white),
+        bodyMedium: GoogleFonts.inter(color: Colors.white70),
+        bodySmall: GoogleFonts.inter(color: Colors.white54),
+        labelLarge: GoogleFonts.inter(color: Colors.white, fontWeight: FontWeight.w600),
+        labelMedium: GoogleFonts.inter(color: Colors.white70),
+        labelSmall: GoogleFonts.inter(color: Colors.white54),
+      ),
+    );
+  }
+}

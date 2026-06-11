@@ -91,7 +91,7 @@ class _FlightTrackerScreenState extends State<FlightTrackerScreen>
           Container(
             width: double.infinity,
             padding: const EdgeInsets.all(10),
-            color: const Color(0xFFFFB300).withOpacity(0.15),
+            color: const Color(0xFFFFB300).withValues(alpha: 0.15),
             child: Row(
               children: [
                 const Icon(Icons.info_outline, color: Color(0xFFFFB300), size: 16),
@@ -151,7 +151,7 @@ class _FlightTrackerScreenState extends State<FlightTrackerScreen>
             width: 44,
             height: 44,
             decoration: BoxDecoration(
-              color: const Color(0xFF00BCD4).withOpacity(0.1),
+              color: const Color(0xFF00BCD4).withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(10),
             ),
             child: Transform.rotate(
@@ -249,7 +249,7 @@ class _FlightTrackerScreenState extends State<FlightTrackerScreen>
       decoration: BoxDecoration(
         color: const Color(0xFF112240),
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: const Color(0xFF00BCD4).withOpacity(0.4)),
+        border: Border.all(color: const Color(0xFF00BCD4).withValues(alpha: 0.4)),
       ),
       child: Column(
         children: [
@@ -364,7 +364,7 @@ class _FlightTrackerScreenState extends State<FlightTrackerScreen>
       decoration: BoxDecoration(
         color: const Color(0xFF112240),
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: const Color(0xFFFFB300).withOpacity(0.4)),
+        border: Border.all(color: const Color(0xFFFFB300).withValues(alpha: 0.4)),
       ),
       child: Column(
         children: [

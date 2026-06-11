@@ -19,12 +19,16 @@ class _QuizScreenState extends State<QuizScreen> {
   int _score = 0;
   int _total = 0;
   bool _loading = false;
+  // ignore: unused_field
   bool _showExplanation = false;
 
   @override
   void initState() {
     super.initState();
-    _loadQuestions();
+    // Defer to avoid setState during build
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) _loadQuestions();
+    });
   }
 
   Future<void> _loadQuestions() async {
@@ -232,7 +236,7 @@ class _QuizScreenState extends State<QuizScreen> {
           end: Alignment.bottomRight,
         ),
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: const Color(0xFF1565C0).withOpacity(0.5)),
+        border: Border.all(color: const Color(0xFF1565C0).withValues(alpha: 0.5)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -242,7 +246,7 @@ class _QuizScreenState extends State<QuizScreen> {
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                 decoration: BoxDecoration(
-                  color: const Color(0xFF00BCD4).withOpacity(0.2),
+                  color: const Color(0xFF00BCD4).withValues(alpha: 0.2),
                   borderRadius: BorderRadius.circular(8),
                   border: Border.all(color: const Color(0xFF00BCD4)),
                 ),
@@ -259,7 +263,7 @@ class _QuizScreenState extends State<QuizScreen> {
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                 decoration: BoxDecoration(
-                  color: const Color(0xFFFFB300).withOpacity(0.2),
+                  color: const Color(0xFFFFB300).withValues(alpha: 0.2),
                   borderRadius: BorderRadius.circular(8),
                 ),
                 child: Text(
@@ -299,16 +303,16 @@ class _QuizScreenState extends State<QuizScreen> {
 
         if (_answered) {
           if (index == question.correctAnswer) {
-            bgColor = const Color(0xFF4CAF50).withOpacity(0.2);
+            bgColor = const Color(0xFF4CAF50).withValues(alpha: 0.2);
             borderColor = const Color(0xFF4CAF50);
             textColor = const Color(0xFF4CAF50);
           } else if (index == _selectedAnswer) {
-            bgColor = const Color(0xFFF44336).withOpacity(0.2);
+            bgColor = const Color(0xFFF44336).withValues(alpha: 0.2);
             borderColor = const Color(0xFFF44336);
             textColor = const Color(0xFFF44336);
           }
         } else if (index == _selectedAnswer) {
-          bgColor = const Color(0xFF1565C0).withOpacity(0.3);
+          bgColor = const Color(0xFF1565C0).withValues(alpha: 0.3);
           borderColor = const Color(0xFF1565C0);
         }
 
@@ -328,7 +332,7 @@ class _QuizScreenState extends State<QuizScreen> {
                   width: 28,
                   height: 28,
                   decoration: BoxDecoration(
-                    color: borderColor.withOpacity(0.2),
+                    color: borderColor.withValues(alpha: 0.2),
                     shape: BoxShape.circle,
                     border: Border.all(color: borderColor),
                   ),
@@ -382,7 +386,7 @@ class _QuizScreenState extends State<QuizScreen> {
       decoration: BoxDecoration(
         color: const Color(0xFF112240),
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: const Color(0xFFFFB300).withOpacity(0.3)),
+        border: Border.all(color: const Color(0xFFFFB300).withValues(alpha: 0.3)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -466,7 +470,7 @@ class _QuizScreenState extends State<QuizScreen> {
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
                 color: (passed ? const Color(0xFF4CAF50) : const Color(0xFFF44336))
-                    .withOpacity(0.2),
+                    .withValues(alpha: 0.2),
                 border: Border.all(
                   color: passed ? const Color(0xFF4CAF50) : const Color(0xFFF44336),
                   width: 3,

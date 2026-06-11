@@ -103,7 +103,7 @@ class EducationScreen extends StatelessWidget {
                     width: 36,
                     height: 36,
                     decoration: BoxDecoration(
-                      color: (cert['color'] as Color).withOpacity(0.2),
+                      color: (cert['color'] as Color).withValues(alpha: 0.2),
                       shape: BoxShape.circle,
                       border: Border.all(color: cert['color'] as Color, width: 2),
                     ),
@@ -125,7 +125,7 @@ class EducationScreen extends StatelessWidget {
                   decoration: BoxDecoration(
                     color: const Color(0xFF112240),
                     borderRadius: BorderRadius.circular(10),
-                    border: Border.all(color: (cert['color'] as Color).withOpacity(0.3)),
+                    border: Border.all(color: (cert['color'] as Color).withValues(alpha: 0.3)),
                   ),
                   child: Row(
                     children: [
@@ -142,7 +142,7 @@ class EducationScreen extends StatelessWidget {
                       Container(
                         padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                         decoration: BoxDecoration(
-                          color: (cert['color'] as Color).withOpacity(0.2),
+                          color: (cert['color'] as Color).withValues(alpha: 0.2),
                           borderRadius: BorderRadius.circular(8),
                         ),
                         child: Text(
@@ -223,7 +223,7 @@ class EducationScreen extends StatelessWidget {
                 decoration: BoxDecoration(
                   color: const Color(0xFF112240),
                   borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: (b['color'] as Color).withOpacity(0.3)),
+                  border: Border.all(color: (b['color'] as Color).withValues(alpha: 0.3)),
                 ),
                 child: Row(
                   children: [
@@ -231,7 +231,7 @@ class EducationScreen extends StatelessWidget {
                       width: 44,
                       height: 44,
                       decoration: BoxDecoration(
-                        color: (b['color'] as Color).withOpacity(0.2),
+                        color: (b['color'] as Color).withValues(alpha: 0.2),
                         borderRadius: BorderRadius.circular(10),
                       ),
                       child: Center(
@@ -294,7 +294,7 @@ class EducationScreen extends StatelessWidget {
               decoration: BoxDecoration(
                 color: const Color(0xFF112240),
                 borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: (c['color'] as Color).withOpacity(0.4)),
+                border: Border.all(color: (c['color'] as Color).withValues(alpha: 0.4)),
               ),
               child: Row(
                 children: [

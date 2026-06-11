@@ -163,10 +163,10 @@ class _NewsScreenState extends State<NewsScreen> {
         decoration: BoxDecoration(
           color: const Color(0xFF112240),
           borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: color.withOpacity(0.3)),
+          border: Border.all(color: color.withValues(alpha: 0.3)),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.2),
+              color: Colors.black.withValues(alpha: 0.2),
               blurRadius: 8,
               offset: const Offset(0, 4),
             ),
@@ -241,7 +241,7 @@ class _NewsScreenState extends State<NewsScreen> {
               padding: const EdgeInsets.fromLTRB(12, 8, 12, 12),
               decoration: BoxDecoration(
                 border: Border(
-                  top: BorderSide(color: color.withOpacity(0.2)),
+                  top: BorderSide(color: color.withValues(alpha: 0.2)),
                 ),
               ),
               child: Row(

@@ -250,16 +250,16 @@ class _FlashcardScreenState extends State<FlashcardScreen>
         gradient: LinearGradient(
           colors: [
             const Color(0xFF112240),
-            color.withOpacity(0.15),
+            color.withValues(alpha: 0.15),
           ],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
         borderRadius: BorderRadius.circular(24),
-        border: Border.all(color: color.withOpacity(0.5), width: 1.5),
+        border: Border.all(color: color.withValues(alpha: 0.5), width: 1.5),
         boxShadow: [
           BoxShadow(
-            color: color.withOpacity(0.2),
+            color: color.withValues(alpha: 0.2),
             blurRadius: 20,
             spreadRadius: 2,
           ),
@@ -273,7 +273,7 @@ class _FlashcardScreenState extends State<FlashcardScreen>
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
               decoration: BoxDecoration(
-                color: color.withOpacity(0.2),
+                color: color.withValues(alpha: 0.2),
                 borderRadius: BorderRadius.circular(20),
                 border: Border.all(color: color),
               ),
@@ -341,12 +341,12 @@ class _FlashcardScreenState extends State<FlashcardScreen>
         ),
         borderRadius: BorderRadius.circular(24),
         border: Border.all(
-          color: const Color(0xFF4CAF50).withOpacity(0.5),
+          color: const Color(0xFF4CAF50).withValues(alpha: 0.5),
           width: 1.5,
         ),
         boxShadow: [
           BoxShadow(
-            color: const Color(0xFF4CAF50).withOpacity(0.2),
+            color: const Color(0xFF4CAF50).withValues(alpha: 0.2),
             blurRadius: 20,
             spreadRadius: 2,
           ),
@@ -360,7 +360,7 @@ class _FlashcardScreenState extends State<FlashcardScreen>
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
               decoration: BoxDecoration(
-                color: const Color(0xFF4CAF50).withOpacity(0.2),
+                color: const Color(0xFF4CAF50).withValues(alpha: 0.2),
                 borderRadius: BorderRadius.circular(20),
                 border: Border.all(color: const Color(0xFF4CAF50)),
               ),
@@ -390,7 +390,7 @@ class _FlashcardScreenState extends State<FlashcardScreen>
               Container(
                 padding: const EdgeInsets.all(14),
                 decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(0.05),
+                  color: Colors.white.withValues(alpha: 0.05),
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: Text(
@@ -453,7 +453,7 @@ class _FlashcardScreenState extends State<FlashcardScreen>
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
         decoration: BoxDecoration(
-          color: color.withOpacity(0.15),
+          color: color.withValues(alpha: 0.15),
           borderRadius: BorderRadius.circular(12),
           border: Border.all(color: color),
         ),
@@ -497,7 +497,7 @@ class _FlashcardScreenState extends State<FlashcardScreen>
                 borderRadius: BorderRadius.circular(30),
                 boxShadow: [
                   BoxShadow(
-                    color: const Color(0xFF00BCD4).withOpacity(0.3),
+                    color: const Color(0xFF00BCD4).withValues(alpha: 0.3),
                     blurRadius: 12,
                     spreadRadius: 2,
                   ),

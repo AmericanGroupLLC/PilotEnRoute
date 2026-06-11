@@ -195,7 +195,7 @@ class _ExamScreenState extends State<ExamScreen> {
                   padding: const EdgeInsets.all(16),
                   decoration: BoxDecoration(
                     color: selected
-                        ? const Color(0xFF00BCD4).withOpacity(0.15)
+                        ? const Color(0xFF00BCD4).withValues(alpha: 0.15)
                         : const Color(0xFF112240),
                     borderRadius: BorderRadius.circular(14),
                     border: Border.all(
@@ -211,7 +211,7 @@ class _ExamScreenState extends State<ExamScreen> {
                         width: 44,
                         height: 44,
                         decoration: BoxDecoration(
-                          color: (info['color'] as Color).withOpacity(0.2),
+                          color: (info['color'] as Color).withValues(alpha: 0.2),
                           borderRadius: BorderRadius.circular(10),
                         ),
                         child: Icon(
@@ -333,7 +333,7 @@ class _ExamScreenState extends State<ExamScreen> {
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
             decoration: BoxDecoration(
               color: _timeLeft < 300
-                  ? const Color(0xFFF44336).withOpacity(0.2)
+                  ? const Color(0xFFF44336).withValues(alpha: 0.2)
                   : const Color(0xFF112240),
               borderRadius: BorderRadius.circular(20),
               border: Border.all(
@@ -385,7 +385,7 @@ class _ExamScreenState extends State<ExamScreen> {
                   Container(
                     padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
                     decoration: BoxDecoration(
-                      color: const Color(0xFF1A237E).withOpacity(0.3),
+                      color: const Color(0xFF1A237E).withValues(alpha: 0.3),
                       borderRadius: BorderRadius.circular(20),
                       border: Border.all(color: const Color(0xFF3F51B5)),
                     ),
@@ -423,12 +423,12 @@ class _ExamScreenState extends State<ExamScreen> {
                     if (answered != null) {
                       if (i == q.correctIndex) {
                         borderColor = const Color(0xFF4CAF50);
-                        bgColor = const Color(0xFF4CAF50).withOpacity(0.1);
+                        bgColor = const Color(0xFF4CAF50).withValues(alpha: 0.1);
                         trailingIcon = Icons.check_circle;
                         iconColor = const Color(0xFF4CAF50);
                       } else if (i == answered && answered != q.correctIndex) {
                         borderColor = const Color(0xFFF44336);
-                        bgColor = const Color(0xFFF44336).withOpacity(0.1);
+                        bgColor = const Color(0xFFF44336).withValues(alpha: 0.1);
                         trailingIcon = Icons.cancel;
                         iconColor = const Color(0xFFF44336);
                         textColor = Colors.white54;
@@ -437,7 +437,7 @@ class _ExamScreenState extends State<ExamScreen> {
                       }
                     } else if (answered == i) {
                       borderColor = const Color(0xFF00BCD4);
-                      bgColor = const Color(0xFF00BCD4).withOpacity(0.1);
+                      bgColor = const Color(0xFF00BCD4).withValues(alpha: 0.1);
                     }
 
                     return GestureDetector(
@@ -495,9 +495,9 @@ class _ExamScreenState extends State<ExamScreen> {
                     Container(
                       padding: const EdgeInsets.all(16),
                       decoration: BoxDecoration(
-                        color: const Color(0xFF1A237E).withOpacity(0.2),
+                        color: const Color(0xFF1A237E).withValues(alpha: 0.2),
                         borderRadius: BorderRadius.circular(12),
-                        border: Border.all(color: const Color(0xFF3F51B5).withOpacity(0.5)),
+                        border: Border.all(color: const Color(0xFF3F51B5).withValues(alpha: 0.5)),
                       ),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
@@ -610,8 +610,8 @@ class _ExamScreenState extends State<ExamScreen> {
                     shape: BoxShape.circle,
                     gradient: RadialGradient(
                       colors: passed
-                          ? [const Color(0xFF4CAF50).withOpacity(0.3), const Color(0xFF4CAF50).withOpacity(0.05)]
-                          : [const Color(0xFFF44336).withOpacity(0.3), const Color(0xFFF44336).withOpacity(0.05)],
+                          ? [const Color(0xFF4CAF50).withValues(alpha: 0.3), const Color(0xFF4CAF50).withValues(alpha: 0.05)]
+                          : [const Color(0xFFF44336).withValues(alpha: 0.3), const Color(0xFFF44336).withValues(alpha: 0.05)],
                     ),
                     border: Border.all(
                       color: passed ? const Color(0xFF4CAF50) : const Color(0xFFF44336),
@@ -773,9 +773,9 @@ class _ExamScreenState extends State<ExamScreen> {
         margin: const EdgeInsets.symmetric(horizontal: 4),
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
-          color: color.withOpacity(0.1),
+          color: color.withValues(alpha: 0.1),
           borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: color.withOpacity(0.4)),
+          border: Border.all(color: color.withValues(alpha: 0.4)),
         ),
         child: Column(
           children: [

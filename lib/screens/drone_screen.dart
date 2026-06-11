@@ -239,7 +239,7 @@ class _DroneScreenState extends State<DroneScreen>
           decoration: BoxDecoration(
             color: const Color(0xFF112240),
             borderRadius: BorderRadius.circular(12),
-            border: Border.all(color: const Color(0xFF00838F).withOpacity(0.3)),
+            border: Border.all(color: const Color(0xFF00838F).withValues(alpha: 0.3)),
           ),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
@@ -315,7 +315,7 @@ class _DroneScreenState extends State<DroneScreen>
                 color: const Color(0xFF112240),
                 borderRadius: BorderRadius.circular(12),
                 border: Border.all(
-                  color: (t['color'] as Color).withOpacity(0.4),
+                  color: (t['color'] as Color).withValues(alpha: 0.4),
                 ),
               ),
               child: Row(
@@ -438,9 +438,9 @@ class _DroneScreenState extends State<DroneScreen>
             margin: const EdgeInsets.only(bottom: 16),
             padding: const EdgeInsets.all(14),
             decoration: BoxDecoration(
-              color: const Color(0xFFFFB300).withOpacity(0.1),
+              color: const Color(0xFFFFB300).withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: const Color(0xFFFFB300).withOpacity(0.5)),
+              border: Border.all(color: const Color(0xFFFFB300).withValues(alpha: 0.5)),
             ),
             child: Row(
               children: [
@@ -469,7 +469,7 @@ class _DroneScreenState extends State<DroneScreen>
             color: const Color(0xFF112240),
             borderRadius: BorderRadius.circular(12),
             border: Border.all(
-              color: (rule['color'] as Color).withOpacity(0.3),
+              color: (rule['color'] as Color).withValues(alpha: 0.3),
             ),
           ),
           child: Row(
@@ -478,7 +478,7 @@ class _DroneScreenState extends State<DroneScreen>
                 width: 40,
                 height: 40,
                 decoration: BoxDecoration(
-                  color: (rule['color'] as Color).withOpacity(0.2),
+                  color: (rule['color'] as Color).withValues(alpha: 0.2),
                   borderRadius: BorderRadius.circular(10),
                 ),
                 child: Icon(
@@ -577,7 +577,7 @@ class _DroneScreenState extends State<DroneScreen>
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                   decoration: BoxDecoration(
-                    color: Colors.white.withOpacity(0.2),
+                    color: Colors.white.withValues(alpha: 0.2),
                     borderRadius: BorderRadius.circular(8),
                   ),
                   child: Text(
@@ -613,16 +613,16 @@ class _DroneScreenState extends State<DroneScreen>
 
             if (_answered) {
               if (i == correct) {
-                bg = const Color(0xFF4CAF50).withOpacity(0.2);
+                bg = const Color(0xFF4CAF50).withValues(alpha: 0.2);
                 border = const Color(0xFF4CAF50);
                 text = const Color(0xFF4CAF50);
               } else if (i == _selectedAnswer) {
-                bg = const Color(0xFFF44336).withOpacity(0.2);
+                bg = const Color(0xFFF44336).withValues(alpha: 0.2);
                 border = const Color(0xFFF44336);
                 text = const Color(0xFFF44336);
               }
             } else if (i == _selectedAnswer) {
-              bg = const Color(0xFF00838F).withOpacity(0.3);
+              bg = const Color(0xFF00838F).withValues(alpha: 0.3);
               border = const Color(0xFF00838F);
             }
 
@@ -675,7 +675,7 @@ class _DroneScreenState extends State<DroneScreen>
                 color: const Color(0xFF112240),
                 borderRadius: BorderRadius.circular(12),
                 border: Border.all(
-                  color: const Color(0xFFFFB300).withOpacity(0.3),
+                  color: const Color(0xFFFFB300).withValues(alpha: 0.3),
                 ),
               ),
               child: Column(
@@ -755,7 +755,7 @@ class _DroneScreenState extends State<DroneScreen>
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
                 color: (passed ? const Color(0xFF4CAF50) : const Color(0xFFF44336))
-                    .withOpacity(0.2),
+                    .withValues(alpha: 0.2),
                 border: Border.all(
                   color: passed ? const Color(0xFF4CAF50) : const Color(0xFFF44336),
                   width: 3,
@@ -894,7 +894,7 @@ class _DroneScreenState extends State<DroneScreen>
               color: const Color(0xFF112240),
               borderRadius: BorderRadius.circular(12),
               border: Border.all(
-                color: (r['color'] as Color).withOpacity(0.3),
+                color: (r['color'] as Color).withValues(alpha: 0.3),
               ),
             ),
             child: Row(
@@ -903,7 +903,7 @@ class _DroneScreenState extends State<DroneScreen>
                   width: 40,
                   height: 40,
                   decoration: BoxDecoration(
-                    color: (r['color'] as Color).withOpacity(0.2),
+                    color: (r['color'] as Color).withValues(alpha: 0.2),
                     borderRadius: BorderRadius.circular(10),
                   ),
                   child: Icon(

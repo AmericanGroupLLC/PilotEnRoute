@@ -161,7 +161,7 @@ class _EmergencyScreenState extends State<EmergencyScreen> {
         decoration: BoxDecoration(
           color: const Color(0xFF112240),
           borderRadius: BorderRadius.circular(14),
-          border: Border.all(color: scenario.color.withOpacity(0.4)),
+          border: Border.all(color: scenario.color.withValues(alpha: 0.4)),
         ),
         child: Row(
           children: [
@@ -169,7 +169,7 @@ class _EmergencyScreenState extends State<EmergencyScreen> {
               width: 48,
               height: 48,
               decoration: BoxDecoration(
-                color: scenario.color.withOpacity(0.15),
+                color: scenario.color.withValues(alpha: 0.15),
                 borderRadius: BorderRadius.circular(12),
               ),
               child: Icon(scenario.icon, color: scenario.color, size: 24),
@@ -201,10 +201,10 @@ class _EmergencyScreenState extends State<EmergencyScreen> {
                   padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                   decoration: BoxDecoration(
                     color: scenario.difficulty == 'Hard'
-                        ? const Color(0xFFF44336).withOpacity(0.15)
+                        ? const Color(0xFFF44336).withValues(alpha: 0.15)
                         : scenario.difficulty == 'Medium'
-                            ? const Color(0xFFFFB300).withOpacity(0.15)
-                            : const Color(0xFF4CAF50).withOpacity(0.15),
+                            ? const Color(0xFFFFB300).withValues(alpha: 0.15)
+                            : const Color(0xFF4CAF50).withValues(alpha: 0.15),
                     borderRadius: BorderRadius.circular(8),
                   ),
                   child: Text(
@@ -248,7 +248,7 @@ class _EmergencyScreenState extends State<EmergencyScreen> {
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
             decoration: BoxDecoration(
               color: _timeLeft < 30
-                  ? const Color(0xFFF44336).withOpacity(0.3)
+                  ? const Color(0xFFF44336).withValues(alpha: 0.3)
                   : Colors.white12,
               borderRadius: BorderRadius.circular(20),
             ),
@@ -287,9 +287,9 @@ class _EmergencyScreenState extends State<EmergencyScreen> {
                     width: double.infinity,
                     padding: const EdgeInsets.all(16),
                     decoration: BoxDecoration(
-                      color: const Color(0xFF7F0000).withOpacity(0.2),
+                      color: const Color(0xFF7F0000).withValues(alpha: 0.2),
                       borderRadius: BorderRadius.circular(12),
-                      border: Border.all(color: const Color(0xFFF44336).withOpacity(0.4)),
+                      border: Border.all(color: const Color(0xFFF44336).withValues(alpha: 0.4)),
                     ),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -342,7 +342,7 @@ class _EmergencyScreenState extends State<EmergencyScreen> {
                     if (answered) {
                       if (i == step.correctActionIndex) {
                         borderColor = const Color(0xFF4CAF50);
-                        bgColor = const Color(0xFF4CAF50).withOpacity(0.1);
+                        bgColor = const Color(0xFF4CAF50).withValues(alpha: 0.1);
                         icon = Icons.check_circle;
                         iconColor = const Color(0xFF4CAF50);
                       } else if (i == (_currentStep < _stepResults.length ? step.correctActionIndex : -1)) {
@@ -403,9 +403,9 @@ class _EmergencyScreenState extends State<EmergencyScreen> {
                     Container(
                       padding: const EdgeInsets.all(14),
                       decoration: BoxDecoration(
-                        color: const Color(0xFF1A237E).withOpacity(0.2),
+                        color: const Color(0xFF1A237E).withValues(alpha: 0.2),
                         borderRadius: BorderRadius.circular(12),
-                        border: Border.all(color: const Color(0xFF3F51B5).withOpacity(0.4)),
+                        border: Border.all(color: const Color(0xFF3F51B5).withValues(alpha: 0.4)),
                       ),
                       child: Text(
                         step.explanation,
@@ -446,8 +446,8 @@ class _EmergencyScreenState extends State<EmergencyScreen> {
                 shape: BoxShape.circle,
                 gradient: RadialGradient(
                   colors: passed
-                      ? [const Color(0xFF4CAF50).withOpacity(0.3), const Color(0xFF4CAF50).withOpacity(0.05)]
-                      : [const Color(0xFFF44336).withOpacity(0.3), const Color(0xFFF44336).withOpacity(0.05)],
+                      ? [const Color(0xFF4CAF50).withValues(alpha: 0.3), const Color(0xFF4CAF50).withValues(alpha: 0.05)]
+                      : [const Color(0xFFF44336).withValues(alpha: 0.3), const Color(0xFFF44336).withValues(alpha: 0.05)],
                 ),
                 border: Border.all(
                   color: passed ? const Color(0xFF4CAF50) : const Color(0xFFF44336),

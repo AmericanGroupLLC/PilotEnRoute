@@ -198,8 +198,8 @@ class _SimulationScreenState extends State<SimulationScreen> {
               decoration: BoxDecoration(
                 color: isSelected
                     ? (isEmergency
-                        ? const Color(0xFFB71C1C).withOpacity(0.3)
-                        : const Color(0xFF1565C0).withOpacity(0.3))
+                        ? const Color(0xFFB71C1C).withValues(alpha: 0.3)
+                        : const Color(0xFF1565C0).withValues(alpha: 0.3))
                     : const Color(0xFF112240),
                 borderRadius: BorderRadius.circular(12),
                 border: Border.all(
@@ -251,7 +251,7 @@ class _SimulationScreenState extends State<SimulationScreen> {
       decoration: BoxDecoration(
         color: const Color(0xFF112240),
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: const Color(0xFFFFB300).withOpacity(0.3)),
+        border: Border.all(color: const Color(0xFFFFB300).withValues(alpha: 0.3)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -384,9 +384,9 @@ class _SimulationScreenState extends State<SimulationScreen> {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
       decoration: BoxDecoration(
-        color: Colors.black.withOpacity(0.7),
+        color: Colors.black.withValues(alpha: 0.7),
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: const Color(0xFF00BCD4).withOpacity(0.4)),
+        border: Border.all(color: const Color(0xFF00BCD4).withValues(alpha: 0.4)),
       ),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -426,7 +426,7 @@ class _SimulationScreenState extends State<SimulationScreen> {
     return Container(
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: Colors.black.withOpacity(0.7),
+        color: Colors.black.withValues(alpha: 0.7),
         borderRadius: BorderRadius.circular(12),
       ),
       child: Row(
@@ -449,9 +449,9 @@ class _SimulationScreenState extends State<SimulationScreen> {
       child: Container(
         padding: const EdgeInsets.all(10),
         decoration: BoxDecoration(
-          color: const Color(0xFF1565C0).withOpacity(0.5),
+          color: const Color(0xFF1565C0).withValues(alpha: 0.5),
           borderRadius: BorderRadius.circular(10),
-          border: Border.all(color: const Color(0xFF00BCD4).withOpacity(0.5)),
+          border: Border.all(color: const Color(0xFF00BCD4).withValues(alpha: 0.5)),
         ),
         child: Column(
           children: [
@@ -491,6 +491,7 @@ class FlightSimGame extends FlameGame with TapCallbacks {
   late TextComponent _spdText;
   late TextComponent _hdgText;
   late TextComponent _vsText;
+  // ignore: unused_field
   late SpriteComponent? _planeSprite;
 
   // Simple aircraft icon drawn with Canvas
@@ -498,6 +499,7 @@ class FlightSimGame extends FlameGame with TapCallbacks {
   late RectangleComponent _sky;
   late RectangleComponent _ground;
 
+  // ignore: unused_field
   final _random = Random();
   double _cloudOffset = 0;
 

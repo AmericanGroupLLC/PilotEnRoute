@@ -34,7 +34,7 @@ class NewsTicker extends StatelessWidget {
         color: const Color(0xFF112240),
         borderRadius: BorderRadius.circular(12),
         border: Border.all(
-          color: const Color(0xFF1565C0).withOpacity(0.3),
+          color: const Color(0xFF1565C0).withValues(alpha: 0.3),
         ),
       ),
       child: Row(
@@ -43,7 +43,7 @@ class NewsTicker extends StatelessWidget {
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
             decoration: BoxDecoration(
-              color: const Color(0xFF1565C0).withOpacity(0.3),
+              color: const Color(0xFF1565C0).withValues(alpha: 0.3),
               borderRadius: BorderRadius.circular(6),
             ),
             child: Text(

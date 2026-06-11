@@ -2,7 +2,6 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:timezone/timezone.dart' as tz;
-import 'package:intl/intl.dart';
 
 /// PilotEnRoute Notification Service
 /// Handles all pilot-level notifications:
@@ -185,7 +184,8 @@ class NotificationService extends ChangeNotifier {
       orElse: () => PilotLevel.private,
     );
 
-    // Load saved notifications
+    // Load saved notifications (reserved for future persistence)
+    // ignore: unused_local_variable
     final saved = prefs.getStringList('notifications') ?? [];
     // For demo, generate fresh notifications based on pilot level
     _notifications = _generateNotifications(_pilotLevel);

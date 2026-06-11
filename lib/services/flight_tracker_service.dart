@@ -205,7 +205,8 @@ class FlightTrackerService extends ChangeNotifier {
       final url = Uri.parse(
         'https://registry.faa.gov/aircraftinquiry/Search/NNumberInquiry?NNumberTxt=$normalized',
       );
-      final response = await http.get(url,
+      // Make the request to verify the tail number is reachable
+      await http.get(url,
           headers: {'Accept': 'application/json'}).timeout(const Duration(seconds: 10));
 
       // FAA registry returns HTML, so we parse what we can

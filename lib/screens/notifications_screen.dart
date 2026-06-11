@@ -142,9 +142,9 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                   padding: const EdgeInsets.all(14),
                   margin: const EdgeInsets.only(bottom: 16),
                   decoration: BoxDecoration(
-                    color: const Color(0xFF1A237E).withOpacity(0.3),
+                    color: const Color(0xFF1A237E).withValues(alpha: 0.3),
                     borderRadius: BorderRadius.circular(12),
-                    border: Border.all(color: const Color(0xFF3F51B5).withOpacity(0.5)),
+                    border: Border.all(color: const Color(0xFF3F51B5).withValues(alpha: 0.5)),
                   ),
                   child: Row(
                     children: [
@@ -179,7 +179,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
       decoration: BoxDecoration(
         color: const Color(0xFF112240),
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: color.withOpacity(0.2)),
+        border: Border.all(color: color.withValues(alpha: 0.2)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -200,8 +200,6 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
             final i = entry.key;
             final item = entry.value as Map<String, dynamic>;
             final key = item['key'] as String;
-            final isLast = i == items.length - 1;
-
             return Column(
               children: [
                 if (i > 0) const Divider(height: 1, color: Colors.white12),
@@ -213,7 +211,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                     width: 36,
                     height: 36,
                     decoration: BoxDecoration(
-                      color: color.withOpacity(0.1),
+                      color: color.withValues(alpha: 0.1),
                       borderRadius: BorderRadius.circular(8),
                     ),
                     child: Icon(item['icon'] as IconData, color: color, size: 18),

@@ -1,7 +1,6 @@
 import 'package:flutter/foundation.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:path/path.dart';
-import 'package:intl/intl.dart';
 
 class LogbookEntry {
   final int? id;

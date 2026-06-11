@@ -17,7 +17,7 @@ class DailyQuoteCard extends StatelessWidget {
             color: const Color(0xFF112240),
             borderRadius: BorderRadius.circular(16),
             border: Border.all(
-              color: const Color(0xFFFFB300).withOpacity(0.3),
+              color: const Color(0xFFFFB300).withValues(alpha: 0.3),
               width: 1,
             ),
           ),

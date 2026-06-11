@@ -274,10 +274,10 @@ class _ProfileScreenState extends State<ProfileScreen>
                       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                       decoration: BoxDecoration(
                         color: medDaysLeft > 60
-                            ? const Color(0xFF4CAF50).withOpacity(0.15)
+                            ? const Color(0xFF4CAF50).withValues(alpha: 0.15)
                             : medDaysLeft > 0
-                                ? const Color(0xFFFFB300).withOpacity(0.15)
-                                : const Color(0xFFF44336).withOpacity(0.15),
+                                ? const Color(0xFFFFB300).withValues(alpha: 0.15)
+                                : const Color(0xFFF44336).withValues(alpha: 0.15),
                         borderRadius: BorderRadius.circular(8),
                       ),
                       child: Text(
@@ -341,10 +341,10 @@ class _ProfileScreenState extends State<ProfileScreen>
                       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                       decoration: BoxDecoration(
                         color: bfrDaysLeft > 90
-                            ? const Color(0xFF4CAF50).withOpacity(0.15)
+                            ? const Color(0xFF4CAF50).withValues(alpha: 0.15)
                             : bfrDaysLeft > 0
-                                ? const Color(0xFFFFB300).withOpacity(0.15)
-                                : const Color(0xFFF44336).withOpacity(0.15),
+                                ? const Color(0xFFFFB300).withValues(alpha: 0.15)
+                                : const Color(0xFFF44336).withValues(alpha: 0.15),
                         borderRadius: BorderRadius.circular(8),
                       ),
                       child: Text(
@@ -396,7 +396,7 @@ class _ProfileScreenState extends State<ProfileScreen>
             decoration: BoxDecoration(
               color: const Color(0xFF112240),
               borderRadius: BorderRadius.circular(16),
-              border: Border.all(color: const Color(0xFF4CAF50).withOpacity(0.3)),
+              border: Border.all(color: const Color(0xFF4CAF50).withValues(alpha: 0.3)),
             ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -521,9 +521,9 @@ class _ProfileScreenState extends State<ProfileScreen>
             child: Container(
               padding: const EdgeInsets.all(14),
               decoration: BoxDecoration(
-                color: const Color(0xFF1A237E).withOpacity(0.2),
+                color: const Color(0xFF1A237E).withValues(alpha: 0.2),
                 borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: const Color(0xFF3F51B5).withOpacity(0.4)),
+                border: Border.all(color: const Color(0xFF3F51B5).withValues(alpha: 0.4)),
               ),
               child: Row(
                 children: [
@@ -553,7 +553,7 @@ class _ProfileScreenState extends State<ProfileScreen>
       decoration: BoxDecoration(
         color: const Color(0xFF112240),
         borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: color.withOpacity(0.3)),
+        border: Border.all(color: color.withValues(alpha: 0.3)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -563,7 +563,7 @@ class _ProfileScreenState extends State<ProfileScreen>
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                 decoration: BoxDecoration(
-                  color: color.withOpacity(0.15),
+                  color: color.withValues(alpha: 0.15),
                   borderRadius: BorderRadius.circular(8),
                 ),
                 child: Text(
@@ -615,7 +615,7 @@ class _ProfileScreenState extends State<ProfileScreen>
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
             decoration: BoxDecoration(
-              color: const Color(0xFFFFB300).withOpacity(0.1),
+              color: const Color(0xFFFFB300).withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(8),
             ),
             child: Text(
@@ -698,7 +698,7 @@ class _ProfileScreenState extends State<ProfileScreen>
       decoration: BoxDecoration(
         color: const Color(0xFF112240),
         borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: const Color(0xFF00BCD4).withOpacity(0.3)),
+        border: Border.all(color: const Color(0xFF00BCD4).withValues(alpha: 0.3)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,

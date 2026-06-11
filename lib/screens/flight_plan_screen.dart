@@ -130,7 +130,7 @@ class _FlightPlanScreenState extends State<FlightPlanScreen> {
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                   decoration: BoxDecoration(
-                    color: flightRuleColor.withOpacity(0.15),
+                    color: flightRuleColor.withValues(alpha: 0.15),
                     borderRadius: BorderRadius.circular(8),
                     border: Border.all(color: flightRuleColor),
                   ),
@@ -218,13 +218,13 @@ class _FlightPlanScreenState extends State<FlightPlanScreen> {
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
       decoration: BoxDecoration(
         color: isAlternate
-            ? const Color(0xFFFFB300).withOpacity(0.1)
-            : const Color(0xFF00BCD4).withOpacity(0.1),
+            ? const Color(0xFFFFB300).withValues(alpha: 0.1)
+            : const Color(0xFF00BCD4).withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(8),
         border: Border.all(
           color: isAlternate
-              ? const Color(0xFFFFB300).withOpacity(0.5)
-              : const Color(0xFF00BCD4).withOpacity(0.5),
+              ? const Color(0xFFFFB300).withValues(alpha: 0.5)
+              : const Color(0xFF00BCD4).withValues(alpha: 0.5),
         ),
       ),
       child: Text(
@@ -405,7 +405,7 @@ class _FlightPlanScreenState extends State<FlightPlanScreen> {
                       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
                       decoration: BoxDecoration(
                         color: selected
-                            ? const Color(0xFF00BCD4).withOpacity(0.2)
+                            ? const Color(0xFF00BCD4).withValues(alpha: 0.2)
                             : const Color(0xFF112240),
                         borderRadius: BorderRadius.circular(10),
                         border: Border.all(

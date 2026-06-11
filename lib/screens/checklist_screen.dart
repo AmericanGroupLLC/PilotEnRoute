@@ -94,7 +94,7 @@ class _ChecklistScreenState extends State<ChecklistScreen> {
                     margin: const EdgeInsets.only(right: 8),
                     padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 4),
                     decoration: BoxDecoration(
-                      color: selected ? color.withOpacity(0.2) : const Color(0xFF112240),
+                      color: selected ? color.withValues(alpha: 0.2) : const Color(0xFF112240),
                       borderRadius: BorderRadius.circular(20),
                       border: Border.all(
                         color: selected ? color : Colors.white12,
@@ -175,12 +175,12 @@ class _ChecklistScreenState extends State<ChecklistScreen> {
                     padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
                     decoration: BoxDecoration(
                       color: isChecked
-                          ? const Color(0xFF4CAF50).withOpacity(0.1)
+                          ? const Color(0xFF4CAF50).withValues(alpha: 0.1)
                           : const Color(0xFF112240),
                       borderRadius: BorderRadius.circular(12),
                       border: Border.all(
                         color: isChecked
-                            ? const Color(0xFF4CAF50).withOpacity(0.5)
+                            ? const Color(0xFF4CAF50).withValues(alpha: 0.5)
                             : Colors.white12,
                       ),
                     ),
@@ -238,7 +238,7 @@ class _ChecklistScreenState extends State<ChecklistScreen> {
                           Container(
                             padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                             decoration: BoxDecoration(
-                              color: const Color(0xFFF44336).withOpacity(0.15),
+                              color: const Color(0xFFF44336).withValues(alpha: 0.15),
                               borderRadius: BorderRadius.circular(4),
                             ),
                             child: Text(

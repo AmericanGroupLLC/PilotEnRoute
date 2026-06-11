@@ -158,12 +158,12 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
         ),
         borderRadius: BorderRadius.circular(20),
         border: Border.all(
-          color: const Color(0xFF00BCD4).withOpacity(0.3),
+          color: const Color(0xFF00BCD4).withValues(alpha: 0.3),
           width: 1,
         ),
         boxShadow: [
           BoxShadow(
-            color: const Color(0xFF1565C0).withOpacity(0.3),
+            color: const Color(0xFF1565C0).withValues(alpha: 0.3),
             blurRadius: 20,
             offset: const Offset(0, 8),
           ),
@@ -177,7 +177,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                 decoration: BoxDecoration(
-                  color: const Color(0xFF00BCD4).withOpacity(0.2),
+                  color: const Color(0xFF00BCD4).withValues(alpha: 0.2),
                   borderRadius: BorderRadius.circular(20),
                   border: Border.all(color: const Color(0xFF00BCD4), width: 1),
                 ),
@@ -230,7 +230,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.1),
+        color: Colors.white.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(10),
       ),
       child: Column(
@@ -448,12 +448,12 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
           gradient: LinearGradient(
-            colors: [color, color.withOpacity(0.6)],
+            colors: [color, color.withValues(alpha: 0.6)],
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
           ),
           borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: color.withOpacity(0.5)),
+          border: Border.all(color: color.withValues(alpha: 0.5)),
         ),
         child: Row(
           children: [

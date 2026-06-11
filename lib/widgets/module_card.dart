@@ -17,18 +17,18 @@ class ModuleCard extends StatelessWidget {
             end: Alignment.bottomRight,
             colors: [
               data.color,
-              data.color.withOpacity(0.6),
+              data.color.withValues(alpha: 0.6),
               const Color(0xFF112240),
             ],
           ),
           borderRadius: BorderRadius.circular(16),
           border: Border.all(
-            color: data.color.withOpacity(0.4),
+            color: data.color.withValues(alpha: 0.4),
             width: 1,
           ),
           boxShadow: [
             BoxShadow(
-              color: data.color.withOpacity(0.2),
+              color: data.color.withValues(alpha: 0.2),
               blurRadius: 8,
               offset: const Offset(0, 4),
             ),

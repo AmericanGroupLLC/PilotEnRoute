@@ -178,7 +178,7 @@ class _WeatherScreenState extends State<WeatherScreen>
       width: double.infinity,
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: color.withOpacity(0.15),
+        color: color.withValues(alpha: 0.15),
         borderRadius: BorderRadius.circular(16),
         border: Border.all(color: color, width: 2),
       ),
@@ -316,7 +316,7 @@ class _WeatherScreenState extends State<WeatherScreen>
       decoration: BoxDecoration(
         color: const Color(0xFF112240),
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: const Color(0xFF1565C0).withOpacity(0.5)),
+        border: Border.all(color: const Color(0xFF1565C0).withValues(alpha: 0.5)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -433,7 +433,7 @@ class _WeatherScreenState extends State<WeatherScreen>
             decoration: BoxDecoration(
               color: f.onGround
                   ? const Color(0xFF37474F)
-                  : const Color(0xFF1565C0).withOpacity(0.3),
+                  : const Color(0xFF1565C0).withValues(alpha: 0.3),
               borderRadius: BorderRadius.circular(10),
             ),
             child: Icon(
@@ -561,7 +561,7 @@ class _WeatherScreenState extends State<WeatherScreen>
           decoration: BoxDecoration(
             color: const Color(0xFF112240),
             borderRadius: BorderRadius.circular(12),
-            border: Border.all(color: const Color(0xFFF44336).withOpacity(0.3)),
+            border: Border.all(color: const Color(0xFFF44336).withValues(alpha: 0.3)),
           ),
           child: Text(
             s.toString(),

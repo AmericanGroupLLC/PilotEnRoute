@@ -201,7 +201,7 @@ class _GlossaryScreenState extends State<GlossaryScreen> {
           end: Alignment.bottomRight,
         ),
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: const Color(0xFF00BCD4).withOpacity(0.3)),
+        border: Border.all(color: const Color(0xFF00BCD4).withValues(alpha: 0.3)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -239,7 +239,7 @@ class _GlossaryScreenState extends State<GlossaryScreen> {
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
                 decoration: BoxDecoration(
-                  color: const Color(0xFF00BCD4).withOpacity(0.2),
+                  color: const Color(0xFF00BCD4).withValues(alpha: 0.2),
                   borderRadius: BorderRadius.circular(8),
                   border: Border.all(color: const Color(0xFF00BCD4)),
                 ),
@@ -303,10 +303,10 @@ class _GlossaryScreenState extends State<GlossaryScreen> {
                 child: Container(
                   padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                   decoration: BoxDecoration(
-                    color: const Color(0xFF1565C0).withOpacity(0.2),
+                    color: const Color(0xFF1565C0).withValues(alpha: 0.2),
                     borderRadius: BorderRadius.circular(20),
                     border: Border.all(
-                      color: const Color(0xFF1565C0).withOpacity(0.5),
+                      color: const Color(0xFF1565C0).withValues(alpha: 0.5),
                     ),
                   ),
                   child: Text(

@@ -200,7 +200,7 @@ class _GarminScreenState extends State<GarminScreen>
                 decoration: BoxDecoration(
                   color: const Color(0xFF112240),
                   borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: const Color(0xFF1A237E).withOpacity(0.4)),
+                  border: Border.all(color: const Color(0xFF1A237E).withValues(alpha: 0.4)),
                 ),
                 child: Row(
                   children: [
@@ -208,7 +208,7 @@ class _GarminScreenState extends State<GarminScreen>
                       width: 44,
                       height: 44,
                       decoration: BoxDecoration(
-                        color: const Color(0xFF1A237E).withOpacity(0.3),
+                        color: const Color(0xFF1A237E).withValues(alpha: 0.3),
                         borderRadius: BorderRadius.circular(10),
                       ),
                       child: Icon(
@@ -276,7 +276,7 @@ class _GarminScreenState extends State<GarminScreen>
       decoration: BoxDecoration(
         color: const Color(0xFF112240),
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: const Color(0xFF00BCD4).withOpacity(0.3)),
+        border: Border.all(color: const Color(0xFF00BCD4).withValues(alpha: 0.3)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -359,7 +359,7 @@ class _GarminScreenState extends State<GarminScreen>
       decoration: BoxDecoration(
         color: const Color(0xFF112240),
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: const Color(0xFFFFB300).withOpacity(0.3)),
+        border: Border.all(color: const Color(0xFFFFB300).withValues(alpha: 0.3)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -513,7 +513,7 @@ class _GarminScreenState extends State<GarminScreen>
               color: const Color(0xFF112240),
               borderRadius: BorderRadius.circular(12),
               border: Border.all(
-                color: (s['color'] as Color).withOpacity(0.3),
+                color: (s['color'] as Color).withValues(alpha: 0.3),
               ),
             ),
             child: Row(
@@ -522,7 +522,7 @@ class _GarminScreenState extends State<GarminScreen>
                   width: 44,
                   height: 44,
                   decoration: BoxDecoration(
-                    color: (s['color'] as Color).withOpacity(0.2),
+                    color: (s['color'] as Color).withValues(alpha: 0.2),
                     borderRadius: BorderRadius.circular(10),
                   ),
                   child: Icon(
@@ -551,7 +551,7 @@ class _GarminScreenState extends State<GarminScreen>
                             padding: const EdgeInsets.symmetric(
                                 horizontal: 6, vertical: 2),
                             decoration: BoxDecoration(
-                              color: badgeColor.withOpacity(0.2),
+                              color: badgeColor.withValues(alpha: 0.2),
                               borderRadius: BorderRadius.circular(4),
                               border: Border.all(color: badgeColor),
                             ),
@@ -653,7 +653,7 @@ class _GarminScreenState extends State<GarminScreen>
               color: const Color(0xFF112240),
               borderRadius: BorderRadius.circular(12),
               border: Border.all(
-                color: (app['color'] as Color).withOpacity(0.3),
+                color: (app['color'] as Color).withValues(alpha: 0.3),
               ),
             ),
             child: Row(
@@ -662,7 +662,7 @@ class _GarminScreenState extends State<GarminScreen>
                   width: 44,
                   height: 44,
                   decoration: BoxDecoration(
-                    color: (app['color'] as Color).withOpacity(0.2),
+                    color: (app['color'] as Color).withValues(alpha: 0.2),
                     borderRadius: BorderRadius.circular(10),
                   ),
                   child: Icon(

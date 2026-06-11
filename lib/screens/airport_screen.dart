@@ -276,7 +276,7 @@ class _AirportScreenState extends State<AirportScreen> {
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
               decoration: BoxDecoration(
-                color: const Color(0xFF4CAF50).withOpacity(0.2),
+                color: const Color(0xFF4CAF50).withValues(alpha: 0.2),
                 borderRadius: BorderRadius.circular(8),
                 border: Border.all(color: const Color(0xFF4CAF50)),
               ),
@@ -316,9 +316,9 @@ class _AirportScreenState extends State<AirportScreen> {
       width: double.infinity,
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: color.withOpacity(0.1),
+        color: color.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: color.withOpacity(0.5)),
+        border: Border.all(color: color.withValues(alpha: 0.5)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,

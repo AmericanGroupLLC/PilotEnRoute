@@ -77,7 +77,7 @@ class _EndorsementsScreenState extends State<EndorsementsScreen>
           width: 40,
           height: 40,
           decoration: BoxDecoration(
-            color: (e['color'] as Color).withOpacity(0.15),
+            color: (e['color'] as Color).withValues(alpha: 0.15),
             borderRadius: BorderRadius.circular(10),
           ),
           child: Icon(e['icon'] as IconData, color: e['color'] as Color, size: 20),
@@ -153,7 +153,7 @@ class _EndorsementsScreenState extends State<EndorsementsScreen>
                     color: const Color(0xFF0A1628),
                     borderRadius: BorderRadius.circular(10),
                     border: Border.all(
-                        color: const Color(0xFFFFB300).withOpacity(0.3)),
+                        color: const Color(0xFFFFB300).withValues(alpha: 0.3)),
                   ),
                   child: Text(
                     e['sampleText'] as String,
@@ -255,14 +255,14 @@ class _EndorsementsScreenState extends State<EndorsementsScreen>
       decoration: BoxDecoration(
         color: const Color(0xFF112240),
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: color.withOpacity(0.3)),
+        border: Border.all(color: color.withValues(alpha: 0.3)),
       ),
       child: Column(
         children: [
           Container(
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
-              color: color.withOpacity(0.1),
+              color: color.withValues(alpha: 0.1),
               borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
             ),
             child: Row(
@@ -297,7 +297,7 @@ class _EndorsementsScreenState extends State<EndorsementsScreen>
                           width: 32,
                           height: 32,
                           decoration: BoxDecoration(
-                            color: step.color.withOpacity(0.2),
+                            color: step.color.withValues(alpha: 0.2),
                             shape: BoxShape.circle,
                             border: Border.all(color: step.color, width: 2),
                           ),
@@ -343,7 +343,7 @@ class _EndorsementsScreenState extends State<EndorsementsScreen>
                                   padding: const EdgeInsets.symmetric(
                                       horizontal: 8, vertical: 2),
                                   decoration: BoxDecoration(
-                                    color: step.color.withOpacity(0.15),
+                                    color: step.color.withValues(alpha: 0.15),
                                     borderRadius: BorderRadius.circular(8),
                                   ),
                                   child: Text(

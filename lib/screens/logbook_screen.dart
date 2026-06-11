@@ -134,9 +134,9 @@ class _LogbookScreenState extends State<LogbookScreen>
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                   decoration: BoxDecoration(
-                    color: const Color(0xFF00BCD4).withOpacity(0.15),
+                    color: const Color(0xFF00BCD4).withValues(alpha: 0.15),
                     borderRadius: BorderRadius.circular(8),
-                    border: Border.all(color: const Color(0xFF00BCD4).withOpacity(0.5)),
+                    border: Border.all(color: const Color(0xFF00BCD4).withValues(alpha: 0.5)),
                   ),
                   child: Text(
                     entry.aircraftType,
@@ -209,7 +209,7 @@ class _LogbookScreenState extends State<LogbookScreen>
                 width: double.infinity,
                 padding: const EdgeInsets.all(8),
                 decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(0.04),
+                  color: Colors.white.withValues(alpha: 0.04),
                   borderRadius: BorderRadius.circular(8),
                 ),
                 child: Text(
@@ -331,9 +331,9 @@ class _LogbookScreenState extends State<LogbookScreen>
         final color = item['color'] as Color;
         return Container(
           decoration: BoxDecoration(
-            color: color.withOpacity(0.08),
+            color: color.withValues(alpha: 0.08),
             borderRadius: BorderRadius.circular(12),
-            border: Border.all(color: color.withOpacity(0.3)),
+            border: Border.all(color: color.withValues(alpha: 0.3)),
           ),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
@@ -349,7 +349,7 @@ class _LogbookScreenState extends State<LogbookScreen>
               if ((item['unit'] as String).isNotEmpty)
                 Text(
                   item['unit'] as String,
-                  style: GoogleFonts.orbitron(fontSize: 9, color: color.withOpacity(0.7)),
+                  style: GoogleFonts.orbitron(fontSize: 9, color: color.withValues(alpha: 0.7)),
                 ),
               const SizedBox(height: 4),
               Text(
@@ -502,8 +502,8 @@ class _LogbookScreenState extends State<LogbookScreen>
         borderRadius: BorderRadius.circular(14),
         border: Border.all(
           color: isCurrent
-              ? const Color(0xFF4CAF50).withOpacity(0.4)
-              : const Color(0xFFF44336).withOpacity(0.4),
+              ? const Color(0xFF4CAF50).withValues(alpha: 0.4)
+              : const Color(0xFFF44336).withValues(alpha: 0.4),
         ),
       ),
       child: Row(
@@ -513,7 +513,7 @@ class _LogbookScreenState extends State<LogbookScreen>
             height: 44,
             decoration: BoxDecoration(
               color: (isCurrent ? const Color(0xFF4CAF50) : const Color(0xFFF44336))
-                  .withOpacity(0.15),
+                  .withValues(alpha: 0.15),
               shape: BoxShape.circle,
             ),
             child: Icon(
@@ -557,7 +557,7 @@ class _LogbookScreenState extends State<LogbookScreen>
             padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
             decoration: BoxDecoration(
               color: (isCurrent ? const Color(0xFF4CAF50) : const Color(0xFFF44336))
-                  .withOpacity(0.15),
+                  .withValues(alpha: 0.15),
               borderRadius: BorderRadius.circular(8),
             ),
             child: Text(

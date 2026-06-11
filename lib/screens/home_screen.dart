@@ -3,6 +3,8 @@ import 'package:provider/provider.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../services/aviation_api_service.dart';
 import '../services/news_service.dart';
+import '../services/premium_service.dart';
+import '../widgets/ad_banner_widget.dart';
 import '../widgets/app_drawer.dart';
 import '../widgets/news_ticker.dart';
 import '../widgets/module_card.dart';
@@ -58,9 +60,12 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
             _buildSliverAppBar(),
             SliverToBoxAdapter(child: _buildHeroSection()),
             SliverToBoxAdapter(child: _buildQuoteSection()),
+            const SliverToBoxAdapter(child: AdBannerWidget()),
             SliverToBoxAdapter(child: _buildModulesGrid()),
             SliverToBoxAdapter(child: _buildLiveDataSection()),
             SliverToBoxAdapter(child: _buildNewsSection()),
+            SliverToBoxAdapter(child: _buildStorePromo()),
+            const SliverToBoxAdapter(child: AdBannerWidget()),
             const SliverToBoxAdapter(child: SizedBox(height: 80)),
           ],
         ),
@@ -99,13 +104,43 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
         ],
       ),
       actions: [
+        Consumer<PremiumService>(
+          builder: (context, premium, _) => premium.isPremium
+              ? const SizedBox.shrink()
+              : GestureDetector(
+                  onTap: () => Navigator.pushNamed(context, '/premium'),
+                  child: Container(
+                    margin: const EdgeInsets.only(right: 4),
+                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                    decoration: BoxDecoration(
+                      gradient: const LinearGradient(
+                        colors: [Color(0xFFFFD700), Color(0xFFFFA500)],
+                      ),
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const Icon(Icons.workspace_premium, color: Colors.black, size: 12),
+                        const SizedBox(width: 3),
+                        Text('PRO', style: GoogleFonts.orbitron(color: Colors.black, fontSize: 9, fontWeight: FontWeight.bold)),
+                      ],
+                    ),
+                  ),
+                ),
+        ),
+        IconButton(
+          icon: const Icon(Icons.storefront, color: Color(0xFFFFD700)),
+          tooltip: 'Pilot Store',
+          onPressed: () => Navigator.pushNamed(context, '/store'),
+        ),
         IconButton(
           icon: const Icon(Icons.notifications_outlined, color: Colors.white70),
-          onPressed: () {},
+          onPressed: () => Navigator.pushNamed(context, '/notifications'),
         ),
         IconButton(
           icon: const Icon(Icons.person_outline, color: Colors.white70),
-          onPressed: () {},
+          onPressed: () => Navigator.pushNamed(context, '/profile'),
         ),
       ],
     );
@@ -490,6 +525,41 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     );
   }
 
+  Widget _buildStorePromo() {
+    return GestureDetector(
+      onTap: () => Navigator.pushNamed(context, '/store'),
+      child: Container(
+        margin: const EdgeInsets.fromLTRB(16, 24, 16, 0),
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          gradient: const LinearGradient(
+            colors: [Color(0xFF7B5E00), Color(0xFF4A3800)],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          ),
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: const Color(0xFFFFD700).withAlpha(80)),
+        ),
+        child: Row(
+          children: [
+            const Icon(Icons.storefront, color: Color(0xFFFFD700), size: 36),
+            const SizedBox(width: 14),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text('Pilot Gear Store', style: GoogleFonts.orbitron(color: const Color(0xFFFFD700), fontSize: 14, fontWeight: FontWeight.bold)),
+                  Text('Headsets, GPS, Charts & More — Curated by Pilots', style: GoogleFonts.inter(color: Colors.white60, fontSize: 12)),
+                ],
+              ),
+            ),
+            const Icon(Icons.arrow_forward_ios, color: Color(0xFFFFD700), size: 16),
+          ],
+        ),
+      ),
+    );
+  }
+
   Widget _buildBottomNav() {
     return BottomNavigationBar(
       currentIndex: _selectedIndex,
@@ -505,7 +575,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
             Navigator.pushNamed(context, '/weather');
             break;
           case 3:
-            Navigator.pushNamed(context, '/news');
+            Navigator.pushNamed(context, '/store');
             break;
         }
       },
@@ -513,7 +583,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
         BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'),
         BottomNavigationBarItem(icon: Icon(Icons.quiz), label: 'Quiz'),
         BottomNavigationBarItem(icon: Icon(Icons.cloud), label: 'Weather'),
-        BottomNavigationBarItem(icon: Icon(Icons.newspaper), label: 'News'),
+        BottomNavigationBarItem(icon: Icon(Icons.storefront), label: 'Store'),
       ],
     );
   }

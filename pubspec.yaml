@@ -74,6 +74,14 @@ dependencies:
   # ── Audio ────────────────────────────────────────────────────────────────────
   audioplayers: ^6.1.0
 
+  # ── Monetization (AdMob + IAP) ───────────────────────────────────────────────
+  google_mobile_ads: ^5.1.0
+  in_app_purchase: ^3.2.0
+
+  # ── Affiliate Store ──────────────────────────────────────────────────────────
+  webview_flutter: ^4.8.0
+  flutter_rating_bar: ^4.0.1
+
 dev_dependencies:
   flutter_test:
     sdk: flutter

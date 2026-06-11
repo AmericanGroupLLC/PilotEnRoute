@@ -13,6 +13,8 @@ import 'services/logbook_service.dart';
 import 'services/flight_plan_service.dart';
 import 'services/flight_tracker_service.dart';
 import 'services/flashcard_service.dart';
+import 'services/premium_service.dart';
+import 'services/ad_service.dart';
 
 import 'screens/home_screen.dart';
 import 'screens/weather_screen.dart';
@@ -36,6 +38,8 @@ import 'screens/icara_screen.dart';
 import 'screens/checklist_screen.dart';
 import 'screens/emergency_screen.dart';
 import 'screens/profile_screen.dart';
+import 'screens/premium_screen.dart';
+import 'screens/store_screen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -48,6 +52,9 @@ void main() async {
 
   // Initialize notifications
   await NotificationService.initialize();
+
+  // Initialize AdMob SDK
+  await AdService().initialize();
 
   // Lock orientation to portrait + landscape
   await SystemChrome.setPreferredOrientations([
@@ -77,6 +84,7 @@ class PilotEnRouteApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MultiProvider(
       providers: [
+        // ── Core Services ─────────────────────────────────────────────────
         ChangeNotifierProvider(create: (_) => AviationApiService()),
         ChangeNotifierProvider(create: (_) => WeatherService()),
         ChangeNotifierProvider(create: (_) => NewsService()),
@@ -85,6 +93,9 @@ class PilotEnRouteApp extends StatelessWidget {
         ChangeNotifierProvider(create: (_) => FlightPlanService()),
         ChangeNotifierProvider(create: (_) => FlightTrackerService()),
         ChangeNotifierProvider(create: (_) => FlashcardService()),
+        // ── Monetization Services ─────────────────────────────────────────
+        ChangeNotifierProvider(create: (_) => PremiumService()),
+        ChangeNotifierProvider(create: (_) => AdService()),
       ],
       child: MaterialApp(
         title: 'PilotEnRoute',
@@ -92,6 +103,7 @@ class PilotEnRouteApp extends StatelessWidget {
         theme: _buildTheme(),
         initialRoute: '/',
         routes: {
+          // ── Core Screens ───────────────────────────────────────────────
           '/': (ctx) => const HomeScreen(),
           '/weather': (ctx) => const WeatherScreen(),
           '/news': (ctx) => const NewsScreen(),
@@ -114,6 +126,9 @@ class PilotEnRouteApp extends StatelessWidget {
           '/checklist': (ctx) => const ChecklistScreen(),
           '/emergency': (ctx) => const EmergencyScreen(),
           '/profile': (ctx) => const ProfileScreen(),
+          // ── Monetization Screens ───────────────────────────────────────
+          '/premium': (ctx) => const PremiumScreen(),
+          '/store': (ctx) => const StoreScreen(),
         },
       ),
     );
@@ -128,12 +143,10 @@ class PilotEnRouteApp extends StatelessWidget {
         primary: Color(0xFF00BCD4),
         secondary: Color(0xFFFFB300),
         surface: Color(0xFF112240),
-        background: Color(0xFF0A1628),
         error: Color(0xFFF44336),
         onPrimary: Colors.black,
         onSecondary: Colors.black,
         onSurface: Colors.white,
-        onBackground: Colors.white,
         onError: Colors.white,
       ),
       appBarTheme: AppBarTheme(
@@ -211,13 +224,17 @@ class PilotEnRouteApp extends StatelessWidget {
         headlineLarge: GoogleFonts.orbitron(color: Colors.white),
         headlineMedium: GoogleFonts.orbitron(color: Colors.white),
         headlineSmall: GoogleFonts.orbitron(color: Colors.white),
-        titleLarge: GoogleFonts.inter(color: Colors.white, fontWeight: FontWeight.bold),
-        titleMedium: GoogleFonts.inter(color: Colors.white, fontWeight: FontWeight.w600),
-        titleSmall: GoogleFonts.inter(color: Colors.white70, fontWeight: FontWeight.w500),
+        titleLarge: GoogleFonts.inter(
+            color: Colors.white, fontWeight: FontWeight.bold),
+        titleMedium: GoogleFonts.inter(
+            color: Colors.white, fontWeight: FontWeight.w600),
+        titleSmall: GoogleFonts.inter(
+            color: Colors.white70, fontWeight: FontWeight.w500),
         bodyLarge: GoogleFonts.inter(color: Colors.white),
         bodyMedium: GoogleFonts.inter(color: Colors.white70),
         bodySmall: GoogleFonts.inter(color: Colors.white54),
-        labelLarge: GoogleFonts.inter(color: Colors.white, fontWeight: FontWeight.w600),
+        labelLarge: GoogleFonts.inter(
+            color: Colors.white, fontWeight: FontWeight.w600),
         labelMedium: GoogleFonts.inter(color: Colors.white70),
         labelSmall: GoogleFonts.inter(color: Colors.white54),
       ),

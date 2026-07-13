@@ -15,11 +15,18 @@ class _FlightTrackerScreenState extends State<FlightTrackerScreen>
   late TabController _tabController;
   final _searchCtrl = TextEditingController();
   final _tailCtrl = TextEditingController();
+  final _airportCtrl = TextEditingController();
+
+  List<Map<String, dynamic>> _arrivals = [];
+  List<Map<String, dynamic>> _departures = [];
+  bool _airportLoading = false;
+  bool _airportSearched = false;
+  String? _airportError;
 
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 3, vsync: this);
+    _tabController = TabController(length: 4, vsync: this);
     WidgetsBinding.instance.addPostFrameCallback((_) {
       context.read<FlightTrackerService>().fetchNearbyFlights();
     });
@@ -30,6 +37,7 @@ class _FlightTrackerScreenState extends State<FlightTrackerScreen>
     _tabController.dispose();
     _searchCtrl.dispose();
     _tailCtrl.dispose();
+    _airportCtrl.dispose();
     super.dispose();
   }
 
@@ -55,6 +63,7 @@ class _FlightTrackerScreenState extends State<FlightTrackerScreen>
                 Tab(text: 'LIVE'),
                 Tab(text: 'SEARCH'),
                 Tab(text: 'N-NUMBER'),
+                Tab(text: 'AIRPORTS'),
               ],
             ),
           ),
@@ -64,6 +73,7 @@ class _FlightTrackerScreenState extends State<FlightTrackerScreen>
               _buildLiveTab(service),
               _buildSearchTab(service),
               _buildTailNumberTab(service),
+              _buildAirportsTab(service),
             ],
           ),
         );
@@ -386,6 +396,252 @@ class _FlightTrackerScreenState extends State<FlightTrackerScreen>
           if (info.engineType != null) _detailRow('Engine', info.engineType!),
           if (info.seats != null) _detailRow('Seats', info.seats!),
           if (info.weight != null) _detailRow('Weight Class', info.weight!),
+        ],
+      ),
+    );
+  }
+
+  Future<void> _searchAirport(FlightTrackerService service) async {
+    final icao = _airportCtrl.text.trim().toUpperCase();
+    if (icao.isEmpty) return;
+
+    FocusScope.of(context).unfocus();
+    setState(() {
+      _airportLoading = true;
+      _airportSearched = true;
+      _airportError = null;
+    });
+
+    try {
+      final results = await Future.wait([
+        service.fetchArrivals(icao),
+        service.fetchDepartures(icao),
+      ]);
+      if (!mounted) return;
+      setState(() {
+        _arrivals = results[0];
+        _departures = results[1];
+        _airportLoading = false;
+      });
+    } catch (e) {
+      if (!mounted) return;
+      setState(() {
+        _arrivals = [];
+        _departures = [];
+        _airportLoading = false;
+        _airportError = 'Unable to load airport data. Try again.';
+      });
+    }
+  }
+
+  String _formatFlightTime(dynamic unix) {
+    final seconds = unix is int ? unix : int.tryParse('$unix');
+    if (seconds == null) return '--:--';
+    final dt = DateTime.fromMillisecondsSinceEpoch(seconds * 1000).toLocal();
+    final h = dt.hour.toString().padLeft(2, '0');
+    final m = dt.minute.toString().padLeft(2, '0');
+    return '$h:$m';
+  }
+
+  Widget _buildAirportsTab(FlightTrackerService service) {
+    return Column(
+      children: [
+        Padding(
+          padding: const EdgeInsets.all(16),
+          child: Row(
+            children: [
+              Expanded(
+                child: TextField(
+                  controller: _airportCtrl,
+                  style: GoogleFonts.orbitron(
+                      color: Colors.white, fontSize: 14, letterSpacing: 2),
+                  textCapitalization: TextCapitalization.characters,
+                  decoration: InputDecoration(
+                    hintText: 'ICAO code (e.g. KSFO)',
+                    hintStyle:
+                        GoogleFonts.inter(color: Colors.white38, fontSize: 13),
+                    prefixIcon:
+                        const Icon(Icons.connecting_airports, color: Colors.white38),
+                  ),
+                  onSubmitted: (_) => _searchAirport(service),
+                ),
+              ),
+              const SizedBox(width: 10),
+              ElevatedButton(
+                onPressed: () => _searchAirport(service),
+                child: const Icon(Icons.search),
+              ),
+            ],
+          ),
+        ),
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16),
+          child: Text(
+            'Historical arrivals/departures via OpenSky (free).',
+            style: GoogleFonts.inter(fontSize: 11, color: Colors.white38),
+          ),
+        ),
+        const SizedBox(height: 8),
+        Expanded(child: _buildAirportResults()),
+      ],
+    );
+  }
+
+  Widget _buildAirportResults() {
+    if (_airportLoading) {
+      return const Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            CircularProgressIndicator(color: Color(0xFF00BCD4)),
+            SizedBox(height: 16),
+            Text('Loading airport traffic...',
+                style: TextStyle(color: Colors.white54)),
+          ],
+        ),
+      );
+    }
+
+    if (_airportError != null) {
+      return Center(
+        child: Padding(
+          padding: const EdgeInsets.all(24),
+          child: Text(
+            _airportError!,
+            textAlign: TextAlign.center,
+            style: GoogleFonts.inter(color: Colors.white54, fontSize: 13),
+          ),
+        ),
+      );
+    }
+
+    if (!_airportSearched) {
+      return Center(
+        child: Padding(
+          padding: const EdgeInsets.all(24),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              const Icon(Icons.connecting_airports,
+                  color: Colors.white24, size: 48),
+              const SizedBox(height: 12),
+              Text(
+                'Enter an ICAO code to see recent arrivals and departures.',
+                textAlign: TextAlign.center,
+                style: GoogleFonts.inter(
+                    color: Colors.white54, fontSize: 13, height: 1.5),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+
+    return ListView(
+      padding: const EdgeInsets.fromLTRB(12, 8, 12, 16),
+      children: [
+        _buildAirportSection(
+          'ARRIVALS',
+          Icons.flight_land,
+          const Color(0xFF00BCD4),
+          _arrivals,
+        ),
+        const SizedBox(height: 16),
+        _buildAirportSection(
+          'DEPARTURES',
+          Icons.flight_takeoff,
+          const Color(0xFFFFB300),
+          _departures,
+        ),
+      ],
+    );
+  }
+
+  Widget _buildAirportSection(
+    String title,
+    IconData icon,
+    Color accent,
+    List<Map<String, dynamic>> flights,
+  ) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 6),
+          child: Row(
+            children: [
+              Icon(icon, color: accent, size: 16),
+              const SizedBox(width: 8),
+              Text(
+                '$title (${flights.length})',
+                style: GoogleFonts.orbitron(
+                  fontSize: 11,
+                  color: accent,
+                  letterSpacing: 1,
+                ),
+              ),
+            ],
+          ),
+        ),
+        if (flights.isEmpty)
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 8),
+            child: Text(
+              'No recent $title.'.toLowerCase(),
+              style: GoogleFonts.inter(fontSize: 12, color: Colors.white38),
+            ),
+          )
+        else
+          ...flights.map((f) => _buildAirportCard(f, icon, accent)),
+      ],
+    );
+  }
+
+  Widget _buildAirportCard(Map<String, dynamic> f, IconData icon, Color accent) {
+    return Container(
+      margin: const EdgeInsets.only(bottom: 8),
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: const Color(0xFF112240),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: Colors.white12),
+      ),
+      child: Row(
+        children: [
+          Container(
+            width: 44,
+            height: 44,
+            decoration: BoxDecoration(
+              color: accent.withValues(alpha: 0.1),
+              borderRadius: BorderRadius.circular(10),
+            ),
+            child: Icon(icon, color: accent, size: 22),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  '${f['callsign']}',
+                  style: GoogleFonts.orbitron(
+                    fontSize: 14,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.white,
+                  ),
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  '${f['from']} → ${f['to']}',
+                  style: GoogleFonts.inter(fontSize: 11, color: Colors.white54),
+                ),
+              ],
+            ),
+          ),
+          Text(
+            _formatFlightTime(f['time']),
+            style: GoogleFonts.orbitron(fontSize: 12, color: accent),
+          ),
         ],
       ),
     );

@@ -250,7 +250,7 @@ class _UpgradeSheet extends StatelessWidget {
           const SizedBox(height: 24),
           // Feature bullets
           _featureBullet('Remove all ads'),
-          _featureBullet('Unlock all 3,000+ exam questions'),
+          _featureBullet('Full exam mode & live FAA-style question bank'),
           _featureBullet('All aircraft & simulation scenarios'),
           _featureBullet('PDF logbook export'),
           _featureBullet('AI Aviation Instructor'),

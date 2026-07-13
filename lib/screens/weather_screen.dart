@@ -16,11 +16,14 @@ class _WeatherScreenState extends State<WeatherScreen>
   late TabController _tabController;
   List<Map<String, dynamic>> _pireps = [];
   List<Map<String, dynamic>> _sigmets = [];
+  List<Map<String, dynamic>> _airmets = [];
+  List<Map<String, dynamic>> _windsAloft = [];
+  bool _advisoriesLoading = false;
 
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 4, vsync: this);
+    _tabController = TabController(length: 6, vsync: this);
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _fetchWeather();
     });
@@ -35,13 +38,19 @@ class _WeatherScreenState extends State<WeatherScreen>
 
   Future<void> _fetchWeather() async {
     final service = context.read<WeatherService>();
+    if (mounted) setState(() => _advisoriesLoading = true);
     await service.fetchMetar(_icaoController.text.trim());
     final pireps = await service.fetchPireps();
     final sigmets = await service.fetchSigmets();
+    final airmets = await service.fetchAirmets();
+    final windsAloft = await service.fetchWindsAloft();
     if (mounted) {
       setState(() {
         _pireps = pireps;
         _sigmets = sigmets;
+        _airmets = airmets;
+        _windsAloft = windsAloft;
+        _advisoriesLoading = false;
       });
     }
   }
@@ -62,6 +71,8 @@ class _WeatherScreenState extends State<WeatherScreen>
             Tab(text: 'TRAFFIC'),
             Tab(text: 'PIREPs'),
             Tab(text: 'SIGMETs'),
+            Tab(text: 'AIRMET'),
+            Tab(text: 'WINDS ALOFT'),
           ],
         ),
       ),
@@ -76,6 +87,8 @@ class _WeatherScreenState extends State<WeatherScreen>
                 _buildTrafficTab(),
                 _buildPirepTab(),
                 _buildSigmetTab(),
+                _buildAirmetTab(),
+                _buildWindsAloftTab(),
               ],
             ),
           ),
@@ -264,6 +277,7 @@ class _WeatherScreenState extends State<WeatherScreen>
         _buildWeatherTile('DEWPOINT', metar.dewpointC != null ? '${metar.dewpointC!.toStringAsFixed(1)}°C' : '--', Icons.water_drop),
         _buildWeatherTile('ALTIMETER', metar.altimeterInHg != null ? '${metar.altimeterInHg!.toStringAsFixed(2)} inHg' : '--', Icons.speed),
         _buildWeatherTile('CEILING', metar.ceilingFt != null ? '${metar.ceilingFt} ft' : 'Unlimited', Icons.cloud),
+        _buildWeatherTile('VISIBILITY', metar.visibilitySm != null ? '${metar.visibilitySm!.toStringAsFixed(metar.visibilitySm! % 1 == 0 ? 0 : 1)} sm' : '--', Icons.visibility),
       ],
     );
   }
@@ -566,6 +580,229 @@ class _WeatherScreenState extends State<WeatherScreen>
           child: Text(
             s.toString(),
             style: GoogleFonts.robotoMono(fontSize: 11, color: Colors.white70),
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildSourceCaption() {
+    return Padding(
+      padding: const EdgeInsets.only(top: 4),
+      child: Text(
+        'Source: aviationweather.gov (free)',
+        style: GoogleFonts.inter(color: Colors.white30, fontSize: 11),
+      ),
+    );
+  }
+
+  Widget _buildAirmetTab() {
+    if (_advisoriesLoading) {
+      return const Center(
+        child: CircularProgressIndicator(color: Color(0xFF00BCD4)),
+      );
+    }
+    if (_airmets.isEmpty) {
+      return Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            const Icon(Icons.warning_amber, color: Colors.white38, size: 48),
+            const SizedBox(height: 12),
+            Text(
+              'No active AIRMETs',
+              style: GoogleFonts.inter(color: Colors.white54),
+            ),
+            const SizedBox(height: 4),
+            Text(
+              'Graphical AIRMETs (G-AIRMET) from Aviation Weather Center',
+              style: GoogleFonts.inter(color: Colors.white30, fontSize: 11),
+            ),
+          ],
+        ),
+      );
+    }
+    return ListView.builder(
+      padding: const EdgeInsets.all(12),
+      itemCount: _airmets.length + 1,
+      itemBuilder: (context, i) {
+        if (i == _airmets.length) {
+          return Center(child: _buildSourceCaption());
+        }
+        final a = _airmets[i];
+        final hazard = (a['hazard'] ?? a['product'] ?? a['type'] ?? 'AIRMET')
+            .toString();
+        final area = (a['area'] ?? a['region'] ?? a['fir'] ?? '').toString();
+        final validFrom = a['validTimeFrom'] ?? a['validTime'];
+        final validTo = a['validTimeTo'];
+        final valid = [validFrom, validTo]
+            .where((e) => e != null && e.toString().isNotEmpty)
+            .map((e) => e.toString())
+            .join(' → ');
+        return Container(
+          margin: const EdgeInsets.only(bottom: 8),
+          padding: const EdgeInsets.all(12),
+          decoration: BoxDecoration(
+            color: const Color(0xFF112240),
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: const Color(0xFFFFB300).withValues(alpha: 0.35)),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  const Icon(Icons.warning_amber,
+                      color: Color(0xFFFFB300), size: 16),
+                  const SizedBox(width: 6),
+                  Expanded(
+                    child: Text(
+                      hazard.toUpperCase(),
+                      style: GoogleFonts.orbitron(
+                        fontSize: 12,
+                        fontWeight: FontWeight.bold,
+                        color: const Color(0xFFFFB300),
+                        letterSpacing: 1,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+              if (area.isNotEmpty) ...[
+                const SizedBox(height: 6),
+                Text(
+                  'AREA: $area',
+                  style: GoogleFonts.inter(fontSize: 12, color: Colors.white70),
+                ),
+              ],
+              if (valid.isNotEmpty) ...[
+                const SizedBox(height: 4),
+                Text(
+                  'VALID: $valid',
+                  style: GoogleFonts.inter(fontSize: 11, color: Colors.white54),
+                ),
+              ],
+              const SizedBox(height: 8),
+              Text(
+                a.toString(),
+                style: GoogleFonts.robotoMono(fontSize: 10, color: Colors.white38),
+                maxLines: 6,
+                overflow: TextOverflow.ellipsis,
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildWindsAloftTab() {
+    if (_advisoriesLoading) {
+      return const Center(
+        child: CircularProgressIndicator(color: Color(0xFF00BCD4)),
+      );
+    }
+    if (_windsAloft.isEmpty) {
+      return Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            const Icon(Icons.air, color: Colors.white38, size: 48),
+            const SizedBox(height: 12),
+            Text(
+              'No winds/temps aloft available',
+              style: GoogleFonts.inter(color: Colors.white54),
+            ),
+            const SizedBox(height: 4),
+            Text(
+              'Winds & temperatures aloft from Aviation Weather Center',
+              style: GoogleFonts.inter(color: Colors.white30, fontSize: 11),
+            ),
+          ],
+        ),
+      );
+    }
+    // Raw FB text fallback: single monospace block.
+    if (_windsAloft.length == 1 && _windsAloft.first.containsKey('raw')) {
+      return SingleChildScrollView(
+        padding: const EdgeInsets.all(12),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: const Color(0xFF112240),
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: Colors.white12),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'FB WINDS/TEMPS ALOFT',
+                    style: GoogleFonts.orbitron(
+                      fontSize: 10,
+                      color: const Color(0xFF00BCD4),
+                      letterSpacing: 2,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    _windsAloft.first['raw']?.toString() ?? '',
+                    style: GoogleFonts.robotoMono(
+                      fontSize: 11,
+                      color: Colors.white70,
+                      height: 1.5,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            _buildSourceCaption(),
+          ],
+        ),
+      );
+    }
+    return ListView.builder(
+      padding: const EdgeInsets.all(12),
+      itemCount: _windsAloft.length + 1,
+      itemBuilder: (context, i) {
+        if (i == _windsAloft.length) {
+          return Center(child: _buildSourceCaption());
+        }
+        final w = _windsAloft[i];
+        final station =
+            (w['stationId'] ?? w['icaoId'] ?? w['id'] ?? w['station'] ?? '')
+                .toString();
+        return Container(
+          margin: const EdgeInsets.only(bottom: 8),
+          padding: const EdgeInsets.all(12),
+          decoration: BoxDecoration(
+            color: const Color(0xFF112240),
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: Colors.white12),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              if (station.isNotEmpty)
+                Text(
+                  station.toUpperCase(),
+                  style: GoogleFonts.orbitron(
+                    fontSize: 12,
+                    fontWeight: FontWeight.bold,
+                    color: const Color(0xFF00BCD4),
+                    letterSpacing: 1,
+                  ),
+                ),
+              const SizedBox(height: 6),
+              Text(
+                w.toString(),
+                style: GoogleFonts.robotoMono(fontSize: 11, color: Colors.white70),
+              ),
+            ],
           ),
         );
       },

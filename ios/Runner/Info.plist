@@ -2,6 +2,8 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
+	<key>CADisableMinimumFrameDurationOnPhone</key>
+	<true/>
 	<key>CFBundleDevelopmentRegion</key>
 	<string>$(DEVELOPMENT_LANGUAGE)</string>
 	<key>CFBundleDisplayName</key>
@@ -20,84 +22,25 @@
 	<string>$(FLUTTER_BUILD_NAME)</string>
 	<key>CFBundleSignature</key>
 	<string>????</string>
-	<key>CFBundleVersion</key>
-	<string>$(FLUTTER_BUILD_NUMBER)</string>
-	<key>LSRequiresIPhoneOS</key>
-	<true/>
-	<key>UILaunchStoryboardName</key>
-	<string>LaunchScreen</string>
-	<key>UIMainStoryboardFile</key>
-	<string>Main</string>
-	<key>UISupportedInterfaceOrientations</key>
-	<array>
-		<string>UIInterfaceOrientationPortrait</string>
-		<string>UIInterfaceOrientationLandscapeLeft</string>
-		<string>UIInterfaceOrientationLandscapeRight</string>
-	</array>
-	<key>UISupportedInterfaceOrientations~ipad</key>
-	<array>
-		<string>UIInterfaceOrientationPortrait</string>
-		<string>UIInterfaceOrientationPortraitUpsideDown</string>
-		<string>UIInterfaceOrientationLandscapeLeft</string>
-		<string>UIInterfaceOrientationLandscapeRight</string>
-	</array>
-	<key>CADisableMinimumFrameDurationOnPhone</key>
-	<true/>
-	<key>UIApplicationSupportsIndirectInputEvents</key>
-	<true/>
-	<!-- App Store Compliance -->
-	<key>ITSAppUsesNonExemptEncryption</key>
-	<false/>
-	<key>UIStatusBarStyle</key>
-	<string>UIStatusBarStyleLightContent</string>
-	<key>UIViewControllerBasedStatusBarAppearance</key>
-	<false/>
-	<!-- Required Device Capabilities -->
-	<key>UIRequiredDeviceCapabilities</key>
-	<array>
-		<string>arm64</string>
-	</array>
-	<!-- Deep Link URL Scheme -->
 	<key>CFBundleURLTypes</key>
 	<array>
 		<dict>
+			<key>CFBundleURLName</key>
+			<string>com.americangroupllc.pilotenroute</string>
 			<key>CFBundleURLSchemes</key>
 			<array>
 				<string>pilotenroute</string>
 			</array>
-			<key>CFBundleURLName</key>
-			<string>com.americangroupllc.pilotenroute</string>
 		</dict>
 	</array>
-	<!-- Location permissions -->
-	<key>NSLocationWhenInUseUsageDescription</key>
-	<string>PilotEnRoute uses your location to show nearby airports and local weather conditions.</string>
-	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
-	<string>PilotEnRoute uses your location to provide real-time weather and airspace alerts.</string>
-	<!-- Camera & Photo -->
-	<key>NSCameraUsageDescription</key>
-	<string>PilotEnRoute uses the camera to scan aircraft tail numbers and QR codes for quick aircraft lookup.</string>
-	<key>NSPhotoLibraryUsageDescription</key>
-	<string>PilotEnRoute accesses your photo library to attach photos to logbook entries.</string>
-	<key>NSPhotoLibraryAddUsageDescription</key>
-	<string>PilotEnRoute saves logbook reports and charts to your photo library.</string>
-	<!-- Microphone & Speech -->
-	<key>NSMicrophoneUsageDescription</key>
-	<string>PilotEnRoute uses the microphone for voice-guided checklists and audio training features.</string>
-	<key>NSSpeechRecognitionUsageDescription</key>
-	<string>PilotEnRoute uses speech recognition for hands-free checklist navigation.</string>
-	<!-- Bluetooth (Garmin / ADS-B) -->
-	<key>NSBluetoothAlwaysUsageDescription</key>
-	<string>PilotEnRoute uses Bluetooth to connect with Garmin aviation devices and ADS-B receivers.</string>
-	<key>NSBluetoothPeripheralUsageDescription</key>
-	<string>PilotEnRoute uses Bluetooth to connect with Garmin aviation devices and ADS-B receivers.</string>
-	<!-- Notifications -->
-	<key>UIBackgroundModes</key>
-	<array>
-		<string>fetch</string>
-		<string>remote-notification</string>
-	</array>
-	<!-- Network security -->
+	<key>CFBundleVersion</key>
+	<string>$(FLUTTER_BUILD_NUMBER)</string>
+	<key>GADApplicationIdentifier</key>
+	<string>ca-app-pub-3940256099942544~1458002511</string>
+	<key>ITSAppUsesNonExemptEncryption</key>
+	<false/>
+	<key>LSRequiresIPhoneOS</key>
+	<true/>
 	<key>NSAppTransportSecurity</key>
 	<dict>
 		<key>NSAllowsArbitraryLoads</key>
@@ -111,5 +54,76 @@
 			</dict>
 		</dict>
 	</dict>
+	<key>NSBluetoothAlwaysUsageDescription</key>
+	<string>PilotEnRoute uses Bluetooth to connect with Garmin aviation devices and ADS-B receivers.</string>
+	<key>NSBluetoothPeripheralUsageDescription</key>
+	<string>PilotEnRoute uses Bluetooth to connect with Garmin aviation devices and ADS-B receivers.</string>
+	<key>NSCameraUsageDescription</key>
+	<string>PilotEnRoute uses the camera to scan aircraft tail numbers and QR codes for quick aircraft lookup.</string>
+	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
+	<string>PilotEnRoute uses your location to provide real-time weather and airspace alerts.</string>
+	<key>NSLocationWhenInUseUsageDescription</key>
+	<string>PilotEnRoute uses your location to show nearby airports and local weather conditions.</string>
+	<key>NSMicrophoneUsageDescription</key>
+	<string>PilotEnRoute uses the microphone for voice-guided checklists and audio training features.</string>
+	<key>NSPhotoLibraryAddUsageDescription</key>
+	<string>PilotEnRoute saves logbook reports and charts to your photo library.</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>PilotEnRoute accesses your photo library to attach photos to logbook entries.</string>
+	<key>NSSpeechRecognitionUsageDescription</key>
+	<string>PilotEnRoute uses speech recognition for hands-free checklist navigation.</string>
+	<key>UIApplicationSceneManifest</key>
+	<dict>
+		<key>UIApplicationSupportsMultipleScenes</key>
+		<false/>
+		<key>UISceneConfigurations</key>
+		<dict>
+			<key>UIWindowSceneSessionRoleApplication</key>
+			<array>
+				<dict>
+					<key>UISceneClassName</key>
+					<string>UIWindowScene</string>
+					<key>UISceneConfigurationName</key>
+					<string>flutter</string>
+					<key>UISceneDelegateClassName</key>
+					<string>FlutterSceneDelegate</string>
+					<key>UISceneStoryboardFile</key>
+					<string>Main</string>
+				</dict>
+			</array>
+		</dict>
+	</dict>
+	<key>UIApplicationSupportsIndirectInputEvents</key>
+	<true/>
+	<key>UIBackgroundModes</key>
+	<array>
+		<string>fetch</string>
+		<string>remote-notification</string>
+	</array>
+	<key>UILaunchStoryboardName</key>
+	<string>LaunchScreen</string>
+	<key>UIMainStoryboardFile</key>
+	<string>Main</string>
+	<key>UIRequiredDeviceCapabilities</key>
+	<array>
+		<string>arm64</string>
+	</array>
+	<key>UIStatusBarStyle</key>
+	<string>UIStatusBarStyleLightContent</string>
+	<key>UISupportedInterfaceOrientations</key>
+	<array>
+		<string>UIInterfaceOrientationPortrait</string>
+		<string>UIInterfaceOrientationLandscapeLeft</string>
+		<string>UIInterfaceOrientationLandscapeRight</string>
+	</array>
+	<key>UISupportedInterfaceOrientations~ipad</key>
+	<array>
+		<string>UIInterfaceOrientationPortrait</string>
+		<string>UIInterfaceOrientationPortraitUpsideDown</string>
+		<string>UIInterfaceOrientationLandscapeLeft</string>
+		<string>UIInterfaceOrientationLandscapeRight</string>
+	</array>
+	<key>UIViewControllerBasedStatusBarAppearance</key>
+	<false/>
 </dict>
 </plist>

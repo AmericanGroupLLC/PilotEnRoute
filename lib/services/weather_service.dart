@@ -24,6 +24,7 @@ class MetarData {
   final double? temperatureC;
   final double? dewpointC;
   final double? altimeterInHg;
+  final double? visibilitySm;
   final String? tafRaw;
 
   MetarData({
@@ -37,11 +38,21 @@ class MetarData {
     this.temperatureC,
     this.dewpointC,
     this.altimeterInHg,
+    this.visibilitySm,
     this.tafRaw,
   });
 
   factory MetarData.fromJson(Map<String, dynamic> json) {
     final taf = json['taf'] as Map<String, dynamic>?;
+    // Visibility may arrive under several keys / types depending on source.
+    // Guard nulls and non-numeric strings (e.g. "10+") with tryParse.
+    final visRaw = json['visibilitySm'] ?? json['visibility'] ?? json['visib'];
+    double? vis;
+    if (visRaw is num) {
+      vis = visRaw.toDouble();
+    } else if (visRaw != null) {
+      vis = double.tryParse(visRaw.toString().replaceAll(RegExp(r'[^0-9.]'), ''));
+    }
     return MetarData(
       icao: json['icao']?.toString() ?? '',
       raw: json['raw']?.toString() ?? '',
@@ -53,6 +64,7 @@ class MetarData {
       temperatureC: (json['temperatureC'] as num?)?.toDouble(),
       dewpointC: (json['dewpointC'] as num?)?.toDouble(),
       altimeterInHg: (json['altimeterInHg'] as num?)?.toDouble(),
+      visibilitySm: vis,
       tafRaw: taf?['raw']?.toString(),
     );
   }
@@ -227,6 +239,70 @@ class WeatherService extends ChangeNotifier {
       }
     } catch (e) {
       debugPrint('SIGMET fetch error: $e');
+    }
+    return [];
+  }
+
+  /// Fetch G-AIRMETs (graphical AIRMETs) from Aviation Weather Center
+  Future<List<Map<String, dynamic>>> fetchAirmets() async {
+    try {
+      const url = '$_awcBase/airmet?format=json';
+      final response = await http
+          .get(Uri.parse(url))
+          .timeout(const Duration(seconds: 15));
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        if (data is List) {
+          return data
+              .whereType<Map>()
+              .map((e) => e.cast<String, dynamic>())
+              .take(15)
+              .toList();
+        }
+      }
+    } catch (e) {
+      debugPrint('AIRMET fetch error: $e');
+    }
+    return [];
+  }
+
+  /// Fetch winds/temperatures aloft from Aviation Weather Center.
+  // TODO(weather): confirm winds-aloft endpoint/shape; fallback to raw FB text.
+  Future<List<Map<String, dynamic>>> fetchWindsAloft({String? region}) async {
+    final reg = region ?? 'all';
+    // Primary attempt: structured JSON winds/temps aloft.
+    try {
+      final url = '$_awcBase/windtemp?format=json&region=$reg&level=low';
+      final response = await http
+          .get(Uri.parse(url))
+          .timeout(const Duration(seconds: 15));
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        if (data is List && data.isNotEmpty) {
+          return data
+              .whereType<Map>()
+              .map((e) => e.cast<String, dynamic>())
+              .take(15)
+              .toList();
+        }
+      }
+    } catch (e) {
+      debugPrint('Winds aloft (json) fetch error: $e');
+    }
+
+    // Fallback: fetch the FB text product and return as a single raw entry.
+    try {
+      final url = '$_awcBase/windtemp?region=$reg&level=low';
+      final response = await http
+          .get(Uri.parse(url))
+          .timeout(const Duration(seconds: 15));
+      if (response.statusCode == 200 && response.body.trim().isNotEmpty) {
+        return [
+          {'raw': response.body.trim()}
+        ];
+      }
+    } catch (e) {
+      debugPrint('Winds aloft (raw FB) fetch error: $e');
     }
     return [];
   }

@@ -1,5 +1,6 @@
-import 'package:flutter/foundation.dart';
 import 'dart:convert';
+import 'dart:math' as math;
+import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class Waypoint {
@@ -116,6 +117,36 @@ class FlightPlan {
       );
 }
 
+/// A single leg of a computed navigation log.
+class NavLogLeg {
+  final String from;
+  final String to;
+  final double distanceNm;
+  final double trueCourse; // degrees true
+  final double timeHr;
+  final double fuelGal;
+  final double cumulativeDistanceNm;
+  final double cumulativeTimeHr;
+
+  NavLogLeg({
+    required this.from,
+    required this.to,
+    required this.distanceNm,
+    required this.trueCourse,
+    required this.timeHr,
+    required this.fuelGal,
+    required this.cumulativeDistanceNm,
+    required this.cumulativeTimeHr,
+  });
+
+  String get timeHms {
+    final totalMin = (timeHr * 60).round();
+    final h = totalMin ~/ 60;
+    final m = totalMin % 60;
+    return h > 0 ? '${h}h ${m}m' : '${m}m';
+  }
+}
+
 class FlightPlanService extends ChangeNotifier {
   List<FlightPlan> _plans = [];
   bool _isLoading = false;
@@ -165,23 +196,72 @@ class FlightPlanService extends ChangeNotifier {
     );
   }
 
-  // Calculate distance between two airports using Haversine formula
+  // Great-circle distance between two points using the Haversine formula.
   double calculateDistance(double lat1, double lon1, double lat2, double lon2) {
-    const R = 3440.065; // nautical miles
+    const R = 3440.065; // Earth radius in nautical miles
     final dLat = _toRad(lat2 - lat1);
     final dLon = _toRad(lon2 - lon1);
-    final a = (dLat / 2) * (dLat / 2) +
-        _toRad(lat1) * _toRad(lat2) * (dLon / 2) * (dLon / 2);
-    final c = 2 * (a < 1 ? a : 1 - a); // simplified
+    final lat1r = _toRad(lat1);
+    final lat2r = _toRad(lat2);
+    final a = math.sin(dLat / 2) * math.sin(dLat / 2) +
+        math.cos(lat1r) * math.cos(lat2r) * math.sin(dLon / 2) * math.sin(dLon / 2);
+    final c = 2 * math.atan2(math.sqrt(a), math.sqrt(1 - a));
     return R * c;
   }
 
-  double _toRad(double deg) => deg * 3.14159265358979 / 180;
+  // Initial great-circle course (true bearing, degrees) from point 1 to point 2.
+  double calculateBearing(double lat1, double lon1, double lat2, double lon2) {
+    final lat1r = _toRad(lat1);
+    final lat2r = _toRad(lat2);
+    final dLon = _toRad(lon2 - lon1);
+    final y = math.sin(dLon) * math.cos(lat2r);
+    final x = math.cos(lat1r) * math.sin(lat2r) -
+        math.sin(lat1r) * math.cos(lat2r) * math.cos(dLon);
+    final brng = _toDeg(math.atan2(y, x));
+    return (brng + 360) % 360;
+  }
+
+  double _toRad(double deg) => deg * math.pi / 180;
+  double _toDeg(double rad) => rad * 180 / math.pi;
 
   // Estimate flight time based on distance and speed
   double estimateFlightTime(double distanceNm, int speedKts) {
     if (speedKts <= 0) return 0;
     return distanceNm / speedKts;
+  }
+
+  /// Compute a per-leg navigation log from an ordered list of resolved
+  /// waypoints (each must have valid lat/lon). Uses great-circle distance and
+  /// initial true course for each leg, cumulative distance/time, and a fuel
+  /// estimate from the given burn rate. Returns an empty list for < 2 points.
+  List<NavLogLeg> computeNavLog(
+    List<Waypoint> points, {
+    int groundSpeedKts = 120,
+    double fuelBurnGph = 8.0,
+  }) {
+    final legs = <NavLogLeg>[];
+    double cumDist = 0;
+    double cumTimeHr = 0;
+    for (var i = 0; i < points.length - 1; i++) {
+      final a = points[i];
+      final b = points[i + 1];
+      final dist = calculateDistance(a.lat, a.lon, b.lat, b.lon);
+      final course = calculateBearing(a.lat, a.lon, b.lat, b.lon);
+      final timeHr = estimateFlightTime(dist, groundSpeedKts);
+      cumDist += dist;
+      cumTimeHr += timeHr;
+      legs.add(NavLogLeg(
+        from: a.identifier,
+        to: b.identifier,
+        distanceNm: dist,
+        trueCourse: course,
+        timeHr: timeHr,
+        fuelGal: timeHr * fuelBurnGph,
+        cumulativeDistanceNm: cumDist,
+        cumulativeTimeHr: cumTimeHr,
+      ));
+    }
+    return legs;
   }
 
   // Generate FAA flight plan string

@@ -238,6 +238,84 @@ class FlightTrackerService extends ChangeNotifier {
     notifyListeners();
   }
 
+  // Airport arrivals — flights that landed at <icao> in the last ~12 hours.
+  // TODO(tracking): airline schedules/delay data need a commercial API
+  // (AviationStack/FlightAware); OpenSky gives historical arrivals/departures
+  // for the free demo.
+  Future<List<Map<String, dynamic>>> fetchArrivals(String icao) async {
+    final airport = icao.trim().toUpperCase();
+    if (airport.isEmpty) return [];
+
+    // OpenSky requires begin/end within ~7 days and a not-too-large range.
+    final now = DateTime.now().millisecondsSinceEpoch ~/ 1000;
+    final begin = now - 43200; // last ~12 hours
+
+    try {
+      final url = Uri.parse(
+        '$_openSkyBase/flights/arrival'
+        '?airport=$airport&begin=$begin&end=$now',
+      );
+      final response = await http.get(url).timeout(const Duration(seconds: 15));
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        if (data is! List) return [];
+        return data.map<Map<String, dynamic>>((f) {
+          final callsign = (f['callsign'] as String?)?.trim();
+          final icao24 = (f['icao24'] as String?)?.trim();
+          return {
+            'callsign': (callsign != null && callsign.isNotEmpty)
+                ? callsign
+                : (icao24 ?? 'Unknown').toUpperCase(),
+            'from': f['estDepartureAirport'] ?? 'Unknown',
+            'to': airport,
+            'time': f['lastSeen'],
+          };
+        }).toList();
+      }
+      return [];
+    } catch (e) {
+      return [];
+    }
+  }
+
+  // Airport departures — flights that took off from <icao> in the last ~12 hours.
+  Future<List<Map<String, dynamic>>> fetchDepartures(String icao) async {
+    final airport = icao.trim().toUpperCase();
+    if (airport.isEmpty) return [];
+
+    final now = DateTime.now().millisecondsSinceEpoch ~/ 1000;
+    final begin = now - 43200; // last ~12 hours
+
+    try {
+      final url = Uri.parse(
+        '$_openSkyBase/flights/departure'
+        '?airport=$airport&begin=$begin&end=$now',
+      );
+      final response = await http.get(url).timeout(const Duration(seconds: 15));
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        if (data is! List) return [];
+        return data.map<Map<String, dynamic>>((f) {
+          final callsign = (f['callsign'] as String?)?.trim();
+          final icao24 = (f['icao24'] as String?)?.trim();
+          return {
+            'callsign': (callsign != null && callsign.isNotEmpty)
+                ? callsign
+                : (icao24 ?? 'Unknown').toUpperCase(),
+            'from': airport,
+            'to': f['estArrivalAirport'] ?? 'Unknown',
+            'time': f['firstSeen'],
+          };
+        }).toList();
+      }
+      return [];
+    } catch (e) {
+      return [];
+    }
+  }
+
   String _getManufacturerFromTail(String tail) {
     // Simplified heuristic
     if (tail.startsWith('N1') || tail.startsWith('N2')) return 'Cessna';

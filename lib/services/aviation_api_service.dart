@@ -277,6 +277,140 @@ class AviationApiService extends ChangeNotifier {
     return [];
   }
 
+  /// Maps an FAA exam type / certificate to the RotatePilot API subject(s)
+  /// most relevant to that test. Matches the exam types defined in
+  /// [ExamScreen] (PAR/Private, IRA/Instrument, CAX/Commercial, ATM/ATP,
+  /// FOI/CFI, RPA/Remote-Part 107, SPR/Sport). Falls back to a broad,
+  /// private-pilot-style spread for anything unrecognized.
+  static List<String> subjectsForExamType(String examType) {
+    final t = examType.toLowerCase();
+
+    if (t.contains('instrument') || t.contains('ira')) {
+      return const [
+        'instruments',
+        'radio-navigation',
+        'meteorology',
+        'air-law',
+        'flight-planning',
+        'general-navigation',
+        'communications',
+      ];
+    }
+    if (t.contains('commercial') || t.contains('cax')) {
+      return const [
+        'air-law',
+        'operational-procedures',
+        'performance',
+        'mass-balance',
+        'principles-of-flight',
+        'airframes-systems',
+        'flight-planning',
+        'meteorology',
+      ];
+    }
+    if (t.contains('atp') || t.contains('atm')) {
+      // ATP is the most comprehensive test — pull from every subject.
+      return subjects;
+    }
+    if (t.contains('instructor') || t.contains('foi') || t.contains('cfi')) {
+      return const [
+        'human-performance',
+        'principles-of-flight',
+        'operational-procedures',
+        'air-law',
+        'meteorology',
+        'performance',
+      ];
+    }
+    if (t.contains('remote') ||
+        t.contains('rpa') ||
+        t.contains('drone') ||
+        t.contains('107')) {
+      return const [
+        'air-law',
+        'operational-procedures',
+        'meteorology',
+        'human-performance',
+        'communications',
+      ];
+    }
+    if (t.contains('sport') || t.contains('spr')) {
+      return const [
+        'air-law',
+        'principles-of-flight',
+        'meteorology',
+        'operational-procedures',
+        'communications',
+      ];
+    }
+
+    // Private Pilot (PAR) and default.
+    return const [
+      'air-law',
+      'meteorology',
+      'principles-of-flight',
+      'general-navigation',
+      'airframes-systems',
+      'human-performance',
+      'operational-procedures',
+      'communications',
+    ];
+  }
+
+  /// Fetches a full exam's worth of live questions for [examType].
+  ///
+  /// Aggregates several per-subject calls against the live RotatePilot API to
+  /// reach [count], de-duplicating by question id. Fails gracefully: any
+  /// subject request that errors is skipped and whatever was gathered so far
+  /// is returned (possibly an empty list, which the caller should treat as
+  /// "use the offline fallback bank"). Does not mutate the shared loading/
+  /// error/questions state used by [fetchQuestions].
+  Future<List<AviationQuestion>> fetchExamQuestions({
+    required String examType,
+    int count = 60,
+  }) async {
+    final subjectList = subjectsForExamType(examType);
+    if (subjectList.isEmpty || count <= 0) return const [];
+
+    // Request a buffer per subject so the exam can still be filled even if
+    // some subject calls fail or return duplicates.
+    final perSubject =
+        ((count / subjectList.length) * 1.5).ceil().clamp(5, count);
+
+    final collected = <AviationQuestion>[];
+    final seenIds = <String>{};
+
+    for (final subject in subjectList) {
+      if (collected.length >= count) break;
+      try {
+        final url = '$_baseUrl/question?count=$perSubject&subject=$subject';
+        final response = await http.get(Uri.parse(url));
+        if (response.statusCode != 200) continue;
+
+        final data = jsonDecode(response.body);
+        final raw = data['questions'] as List? ?? [];
+        for (final q in raw) {
+          if (q is! Map<String, dynamic>) continue;
+          final parsed = AviationQuestion.fromJson(q);
+          // De-dup by id; fall back to a composite key when id is missing.
+          final key = parsed.id.isNotEmpty
+              ? parsed.id
+              : '${parsed.subject}::${parsed.question}';
+          if (parsed.question.isEmpty || parsed.options.length < 2) continue;
+          if (seenIds.add(key)) {
+            collected.add(parsed);
+            if (collected.length >= count) break;
+          }
+        }
+      } catch (e) {
+        debugPrint('Exam questions fetch error ($subject): $e');
+        // Keep going with remaining subjects; return what we have.
+      }
+    }
+
+    return collected.take(count).toList();
+  }
+
   Future<AirportInfo?> fetchAirport(String code) async {
     _isLoading = true;
     _error = null;

@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:confetti/confetti.dart';
+import 'package:provider/provider.dart';
 import 'dart:async';
 import 'dart:math';
+import '../services/aviation_api_service.dart';
 
 class ExamQuestion {
   final String id;
@@ -34,6 +36,8 @@ class ExamScreen extends StatefulWidget {
 class _ExamScreenState extends State<ExamScreen> {
   bool _examStarted = false;
   bool _examFinished = false;
+  bool _isLoading = false;
+  bool _usingOfflineBank = false;
   int _currentQuestion = 0;
   int _score = 0;
   int _timeLeft = 0;
@@ -67,17 +71,96 @@ class _ExamScreenState extends State<ExamScreen> {
   }
 
   void _startExam() {
-    _questions = _getQuestionsForExam(_selectedExamType);
-    _questions.shuffle(Random());
-    _questions = _questions.take(60).toList(); // FAA standard: 60 questions
-    _selectedAnswers = List.filled(_questions.length, null);
-    _currentQuestion = 0;
-    _score = 0;
-    _timeLeft = 150 * 60; // 150 minutes (FAA standard)
-    _examStarted = true;
-    _examFinished = false;
-    _startTimer();
-    setState(() {});
+    // FAA standard full exam: 60 questions, 150-minute timer.
+    _prepareExam(limit: 60, timed: true);
+  }
+
+  void _startQuickQuiz() {
+    // Quick quiz mode: 10 questions, no timer.
+    _prepareExam(limit: 10, timed: false);
+  }
+
+  /// Loads questions for the selected exam from the live API, falling back to
+  /// the offline bank when the API returns nothing. Shows a loading state
+  /// while fetching and never crashes on empty/failed fetches.
+  Future<void> _prepareExam({required int limit, required bool timed}) async {
+    _timer?.cancel();
+    setState(() {
+      _isLoading = true;
+      _usingOfflineBank = false;
+    });
+
+    List<ExamQuestion> loaded = [];
+    try {
+      final api = context.read<AviationApiService>();
+      final apiQuestions = await api.fetchExamQuestions(
+        examType: _selectedExamType,
+        count: limit,
+      );
+      loaded = apiQuestions
+          .map(_mapApiQuestion)
+          .where((q) => q.options.length >= 2 && q.question.isNotEmpty)
+          .toList();
+    } catch (e) {
+      loaded = [];
+    }
+
+    if (!mounted) return;
+
+    bool usedFallback = false;
+    if (loaded.isEmpty) {
+      // Offline fallback bank — used ONLY when the live API returns nothing
+      // (no network, API down, or empty response). See
+      // [_getOfflineFallbackQuestions].
+      loaded = _getOfflineFallbackQuestions(_selectedExamType);
+      usedFallback = true;
+    }
+
+    loaded.shuffle(Random());
+    loaded = loaded.take(limit).toList();
+
+    setState(() {
+      _questions = loaded;
+      _selectedAnswers = List.filled(_questions.length, null);
+      _currentQuestion = 0;
+      _score = 0;
+      _timeLeft = timed ? 150 * 60 : 999999; // 150 minutes (FAA standard)
+      _examStarted = true;
+      _examFinished = false;
+      _isLoading = false;
+      _usingOfflineBank = usedFallback;
+    });
+
+    if (timed) _startTimer();
+  }
+
+  /// Converts a live [AviationQuestion] into the local [ExamQuestion] model,
+  /// guarding against out-of-range indices and empty fields.
+  ExamQuestion _mapApiQuestion(AviationQuestion q) {
+    final opts = q.options
+        .map((o) => o.text)
+        .where((t) => t.isNotEmpty)
+        .toList();
+    var correct = q.correctAnswer;
+    if (correct < 0 || correct >= opts.length) correct = 0;
+    return ExamQuestion(
+      id: q.id.isNotEmpty ? q.id : 'api_${q.question.hashCode}',
+      question: q.question,
+      options: opts,
+      correctIndex: correct,
+      explanation:
+          q.explanation.isNotEmpty ? q.explanation : 'No explanation provided.',
+      reference: q.authority.isNotEmpty ? q.authority : 'FAA',
+      category: _prettySubject(q.subject),
+    );
+  }
+
+  String _prettySubject(String subject) {
+    if (subject.isEmpty) return 'General';
+    return subject
+        .split('-')
+        .map((w) => w.isEmpty ? w : '${w[0].toUpperCase()}${w.substring(1)}')
+        .join(' ');
   }
 
   void _startTimer() {
@@ -125,9 +208,41 @@ class _ExamScreenState extends State<ExamScreen> {
 
   @override
   Widget build(BuildContext context) {
+    if (_isLoading) return _buildLoading();
     if (!_examStarted) return _buildExamSelector();
     if (_examFinished) return _buildResults();
     return _buildExamUI();
+  }
+
+  Widget _buildLoading() {
+    return Scaffold(
+      backgroundColor: const Color(0xFF0A1628),
+      appBar: AppBar(title: const Text('FAA KNOWLEDGE TESTS')),
+      body: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            const CircularProgressIndicator(
+              valueColor: AlwaysStoppedAnimation(Color(0xFF00BCD4)),
+            ),
+            const SizedBox(height: 20),
+            Text(
+              'Loading live question bank…',
+              style: GoogleFonts.inter(fontSize: 14, color: Colors.white70),
+            ),
+            const SizedBox(height: 6),
+            Text(
+              _selectedExamType,
+              style: GoogleFonts.orbitron(
+                fontSize: 11,
+                color: const Color(0xFF00BCD4),
+                letterSpacing: 1.5,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
   }
 
   Widget _buildExamSelector() {
@@ -164,7 +279,7 @@ class _ExamScreenState extends State<ExamScreen> {
                   ),
                   const SizedBox(height: 8),
                   Text(
-                    'Practice with real FAA exam questions. '
+                    'Practice with a live FAA-style question bank. '
                     '60 questions · 150 minutes · 70% passing score.',
                     style: GoogleFonts.inter(
                       fontSize: 13,
@@ -278,20 +393,7 @@ class _ExamScreenState extends State<ExamScreen> {
             SizedBox(
               width: double.infinity,
               child: OutlinedButton(
-                onPressed: () {
-                  // Quick quiz mode - 10 questions, no timer
-                  setState(() {
-                    _questions = _getQuestionsForExam(_selectedExamType);
-                    _questions.shuffle(Random());
-                    _questions = _questions.take(10).toList();
-                    _selectedAnswers = List.filled(_questions.length, null);
-                    _currentQuestion = 0;
-                    _score = 0;
-                    _timeLeft = 999999;
-                    _examStarted = true;
-                    _examFinished = false;
-                  });
-                },
+                onPressed: _startQuickQuiz,
                 style: OutlinedButton.styleFrom(
                   foregroundColor: const Color(0xFFFFB300),
                   side: const BorderSide(color: Color(0xFFFFB300)),
@@ -375,6 +477,27 @@ class _ExamScreenState extends State<ExamScreen> {
             valueColor: const AlwaysStoppedAnimation(Color(0xFF00BCD4)),
             minHeight: 3,
           ),
+          if (_usingOfflineBank)
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+              color: const Color(0xFFFFB300).withValues(alpha: 0.12),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const Icon(Icons.cloud_off,
+                      size: 14, color: Color(0xFFFFB300)),
+                  const SizedBox(width: 6),
+                  Text(
+                    'Offline practice bank (live questions unavailable)',
+                    style: GoogleFonts.inter(
+                      fontSize: 11,
+                      color: const Color(0xFFFFB300),
+                    ),
+                  ),
+                ],
+              ),
+            ),
           Expanded(
             child: SingleChildScrollView(
               padding: const EdgeInsets.all(20),
@@ -823,8 +946,17 @@ class _ExamScreenState extends State<ExamScreen> {
     return infos[type] ?? {'icon': Icons.quiz, 'color': const Color(0xFF00BCD4), 'desc': '60 questions · 150 min'};
   }
 
-  List<ExamQuestion> _getQuestionsForExam(String examType) {
-    // Comprehensive FAA-style questions
+  // ---------------------------------------------------------------------------
+  // OFFLINE FALLBACK BANK
+  //
+  // These hardcoded questions are used ONLY when the live API
+  // (AviationApiService.fetchExamQuestions) returns nothing — e.g. the device
+  // is offline or the RotatePilot API is unavailable. Under normal, online
+  // operation the exam is populated from the live question bank and these are
+  // never shown. They are intentionally general FAA-knowledge questions so the
+  // app remains usable for any selected exam type while offline.
+  // ---------------------------------------------------------------------------
+  List<ExamQuestion> _getOfflineFallbackQuestions(String examType) {
     return [
       ExamQuestion(
         id: 'par_001',
@@ -1020,6 +1152,97 @@ class _ExamScreenState extends State<ExamScreen> {
         explanation: 'High density altitude (high elevation, high temperature, high humidity) reduces air density, resulting in less engine power, less lift, and degraded propeller efficiency — all requiring longer takeoff distances.',
         reference: 'PHAK Chapter 11',
         category: 'Aerodynamics',
+      ),
+      ExamQuestion(
+        id: 'par_016',
+        question: 'What does a special VFR clearance allow a pilot to do?',
+        options: [
+          'Operate in Class A airspace without an IFR clearance',
+          'Operate within controlled airspace below basic VFR minimums with ATC clearance, clear of clouds and at least 1 SM visibility',
+          'Ignore right-of-way rules during an emergency',
+        ],
+        correctIndex: 1,
+        explanation: 'Special VFR lets a pilot operate within surface-area controlled airspace below basic VFR weather minimums, provided ATC issues a clearance, the aircraft remains clear of clouds, and flight visibility is at least 1 SM.',
+        reference: '14 CFR 91.157',
+        category: 'Airspace',
+      ),
+      ExamQuestion(
+        id: 'par_017',
+        question: 'What is the appropriate action when experiencing spatial disorientation at night?',
+        options: [
+          'Rely on outside visual references only',
+          'Trust and rely on the flight instruments',
+          'Make immediate large control inputs to recover',
+        ],
+        correctIndex: 1,
+        explanation: 'Spatial disorientation occurs when bodily senses conflict with reality. Pilots must trust and rely on the flight instruments rather than physical sensations, using smooth control inputs.',
+        reference: 'PHAK Chapter 17',
+        category: 'Human Factors',
+      ),
+      ExamQuestion(
+        id: 'par_018',
+        question: 'On an instrument approach, what does the term "decision altitude (DA)" refer to?',
+        options: [
+          'The altitude at which a missed approach must be initiated if the required visual references are not in sight (precision approach)',
+          'The lowest altitude authorized for en route flight',
+          'The altitude at which the autopilot must be disengaged',
+        ],
+        correctIndex: 0,
+        explanation: 'On a precision approach (e.g., ILS), the decision altitude is the altitude at which the pilot must decide to continue to land (with required visual references) or execute a missed approach.',
+        reference: 'AIM 5-4-5',
+        category: 'Instrument Procedures',
+      ),
+      ExamQuestion(
+        id: 'par_019',
+        question: 'Under Part 107, what is the maximum groundspeed allowed for a small unmanned aircraft?',
+        options: [
+          '87 knots (100 mph)',
+          '100 knots (115 mph)',
+          '55 knots (63 mph)',
+        ],
+        correctIndex: 0,
+        explanation: 'Per 14 CFR 107.51, a small unmanned aircraft may not exceed a groundspeed of 87 knots (100 mph) and may not fly higher than 400 ft AGL (or within 400 ft of a structure).',
+        reference: '14 CFR 107.51',
+        category: 'Regulations',
+      ),
+      ExamQuestion(
+        id: 'par_020',
+        question: 'What is the primary purpose of carburetor heat?',
+        options: [
+          'To increase engine power for takeoff',
+          'To prevent or remove induction-system icing by warming the air entering the carburetor',
+          'To lean the fuel-air mixture at altitude',
+        ],
+        correctIndex: 1,
+        explanation: 'Carburetor heat routes warm air into the induction system to prevent or clear carburetor ice, which can form even in warm weather with high humidity at reduced power settings.',
+        reference: 'PHAK Chapter 7',
+        category: 'Aircraft Systems',
+      ),
+      ExamQuestion(
+        id: 'par_021',
+        question: 'When operating radio communications, what does "squawk 7600" indicate?',
+        options: [
+          'Hijacking in progress',
+          'Two-way radio communication failure',
+          'General emergency',
+        ],
+        correctIndex: 1,
+        explanation: 'Transponder code 7600 indicates a two-way radio communication (comm) failure. 7500 = hijacking; 7700 = general emergency.',
+        reference: 'AIM 6-4-2',
+        category: 'Communications',
+      ),
+      ExamQuestion(
+        id: 'par_022',
+        question: 'What is the recommended entry into a standard traffic pattern at a non-towered airport?',
+        options: [
+          'A straight-in approach to the active runway',
+          'A 45° entry to the downwind leg at pattern altitude',
+          'A direct crosswind entry from any direction',
+        ],
+        correctIndex: 1,
+        explanation: 'The FAA recommends entering the traffic pattern at a non-towered airport on a 45° angle to the midpoint of the downwind leg at pattern altitude.',
+        reference: 'AIM 4-3-3',
+        category: 'Operational Procedures',
       ),
     ];
   }

@@ -15,6 +15,7 @@ import 'services/flight_tracker_service.dart';
 import 'services/flashcard_service.dart';
 import 'services/premium_service.dart';
 import 'services/ad_service.dart';
+import 'services/auth_service.dart';
 
 import 'screens/home_screen.dart';
 import 'screens/weather_screen.dart';
@@ -31,6 +32,22 @@ import 'screens/exam_screen.dart';
 import 'screens/logbook_screen.dart';
 import 'screens/flight_plan_screen.dart';
 import 'screens/flight_tracker_screen.dart';
+import 'screens/map_screen.dart';
+import 'screens/e6b_screen.dart';
+import 'screens/weight_balance_screen.dart';
+import 'screens/fuel_screen.dart';
+import 'screens/notam_screen.dart';
+import 'screens/ai_assistant_screen.dart';
+import 'screens/documents_screen.dart';
+import 'screens/account_screen.dart';
+import 'screens/debrief_screen.dart';
+import 'screens/alerts_screen.dart';
+import 'screens/integrations_screen.dart';
+import 'screens/charts_screen.dart';
+import 'screens/wind_screen.dart';
+import 'screens/radio_screen.dart';
+import 'screens/regulations_screen.dart';
+import 'screens/navdb_screen.dart';
 import 'screens/endorsements_screen.dart';
 import 'screens/career_screen.dart';
 import 'screens/notifications_screen.dart';
@@ -55,6 +72,9 @@ void main() async {
 
   // Initialize AdMob SDK
   await AdService().initialize();
+
+  // Restore any existing AmericanGroupLLC backend session.
+  await AuthService.instance.init();
 
   // Lock orientation to portrait + landscape
   await SystemChrome.setPreferredOrientations([
@@ -96,6 +116,8 @@ class PilotEnRouteApp extends StatelessWidget {
         // ── Monetization Services ─────────────────────────────────────────
         ChangeNotifierProvider(create: (_) => PremiumService()),
         ChangeNotifierProvider(create: (_) => AdService()),
+        // ── Auth (AmericanGroupLLC backend) — shared singleton ────────────
+        ChangeNotifierProvider<AuthService>.value(value: AuthService.instance),
       ],
       child: MaterialApp(
         title: 'PilotEnRoute',
@@ -119,6 +141,22 @@ class PilotEnRouteApp extends StatelessWidget {
           '/logbook': (ctx) => const LogbookScreen(),
           '/flight-plan': (ctx) => const FlightPlanScreen(),
           '/flight-tracker': (ctx) => const FlightTrackerScreen(),
+          '/map': (ctx) => const MapScreen(),
+          '/e6b': (ctx) => const E6BScreen(),
+          '/weight-balance': (ctx) => const WeightBalanceScreen(),
+          '/fuel': (ctx) => const FuelScreen(),
+          '/notams': (ctx) => const NotamScreen(),
+          '/ai': (ctx) => const AiAssistantScreen(),
+          '/documents': (ctx) => const DocumentsScreen(),
+          '/account': (ctx) => const AccountScreen(),
+          '/debrief': (ctx) => const DebriefScreen(),
+          '/alerts': (ctx) => const AlertsScreen(),
+          '/integrations': (ctx) => const IntegrationsScreen(),
+          '/charts': (ctx) => const ChartsScreen(),
+          '/wind': (ctx) => const WindScreen(),
+          '/radio': (ctx) => const RadioScreen(),
+          '/regulations': (ctx) => const RegulationsScreen(),
+          '/navdb': (ctx) => const NavDbScreen(),
           '/endorsements': (ctx) => const EndorsementsScreen(),
           '/career': (ctx) => const CareerScreen(),
           '/notifications': (ctx) => const NotificationsScreen(),

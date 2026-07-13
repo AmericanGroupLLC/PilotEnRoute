@@ -87,18 +87,23 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
           onPressed: () => Scaffold.of(ctx).openDrawer(),
         ),
       ),
+      titleSpacing: 0,
       title: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          const Icon(Icons.flight, color: Color(0xFF00BCD4), size: 22),
-          const SizedBox(width: 8),
-          Text(
-            'PILOT EN ROUTE',
-            style: GoogleFonts.orbitron(
-              fontSize: 16,
-              fontWeight: FontWeight.bold,
-              color: Colors.white,
-              letterSpacing: 2,
+          const Icon(Icons.flight, color: Color(0xFF00BCD4), size: 20),
+          const SizedBox(width: 6),
+          Flexible(
+            child: Text(
+              'PILOT EN ROUTE',
+              overflow: TextOverflow.ellipsis,
+              softWrap: false,
+              style: GoogleFonts.orbitron(
+                fontSize: 14,
+                fontWeight: FontWeight.bold,
+                color: Colors.white,
+                letterSpacing: 1.2,
+              ),
             ),
           ),
         ],
@@ -214,7 +219,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
           const SizedBox(height: 16),
           Row(
             children: [
-              _buildStatBadge('3,500+', 'Questions'),
+              _buildStatBadge('Live', 'FAA Q-Bank'),
               const SizedBox(width: 12),
               _buildStatBadge('500+', 'Airports'),
               const SizedBox(width: 12),

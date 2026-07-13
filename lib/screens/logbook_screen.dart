@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
+import 'package:printing/printing.dart';
 import '../services/logbook_service.dart';
 
 class LogbookScreen extends StatefulWidget {
@@ -14,6 +15,7 @@ class LogbookScreen extends StatefulWidget {
 class _LogbookScreenState extends State<LogbookScreen>
     with SingleTickerProviderStateMixin {
   late TabController _tabController;
+  bool _isExporting = false;
 
   @override
   void initState() {
@@ -30,6 +32,26 @@ class _LogbookScreenState extends State<LogbookScreen>
     super.dispose();
   }
 
+  Future<void> _exportPdf(LogbookService service) async {
+    if (_isExporting) return;
+    setState(() => _isExporting = true);
+    try {
+      final bytes = await service.buildLogbookPdf();
+      if (!mounted) return;
+      await Printing.layoutPdf(
+        onLayout: (_) async => bytes,
+        name: 'pilot_logbook.pdf',
+      );
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Could not export logbook PDF: $e')),
+      );
+    } finally {
+      if (mounted) setState(() => _isExporting = false);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Consumer<LogbookService>(
@@ -39,6 +61,21 @@ class _LogbookScreenState extends State<LogbookScreen>
           appBar: AppBar(
             title: const Text('PILOT LOGBOOK'),
             actions: [
+              IconButton(
+                tooltip: 'Export logbook as PDF',
+                icon: _isExporting
+                    ? const SizedBox(
+                        width: 18,
+                        height: 18,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          valueColor:
+                              AlwaysStoppedAnimation<Color>(Colors.white),
+                        ),
+                      )
+                    : const Icon(Icons.picture_as_pdf_outlined),
+                onPressed: _isExporting ? null : () => _exportPdf(service),
+              ),
               IconButton(
                 icon: const Icon(Icons.add),
                 onPressed: () => _showAddEntryDialog(context, service),
@@ -298,6 +335,40 @@ class _LogbookScreenState extends State<LogbookScreen>
           _buildTotalsGrid(t),
           const SizedBox(height: 20),
           _buildLandingsCard(t),
+          const SizedBox(height: 20),
+          SizedBox(
+            width: double.infinity,
+            child: OutlinedButton.icon(
+              onPressed: _isExporting ? null : () => _exportPdf(service),
+              style: OutlinedButton.styleFrom(
+                foregroundColor: const Color(0xFF00BCD4),
+                side: const BorderSide(color: Color(0xFF00BCD4)),
+                padding: const EdgeInsets.symmetric(vertical: 14),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+              ),
+              icon: _isExporting
+                  ? const SizedBox(
+                      width: 16,
+                      height: 16,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2,
+                        valueColor:
+                            AlwaysStoppedAnimation<Color>(Color(0xFF00BCD4)),
+                      ),
+                    )
+                  : const Icon(Icons.picture_as_pdf_outlined, size: 18),
+              label: Text(
+                _isExporting ? 'GENERATING…' : 'EXPORT LOGBOOK PDF',
+                style: GoogleFonts.orbitron(
+                  fontSize: 11,
+                  fontWeight: FontWeight.bold,
+                  letterSpacing: 1.5,
+                ),
+              ),
+            ),
+          ),
         ],
       ),
     );

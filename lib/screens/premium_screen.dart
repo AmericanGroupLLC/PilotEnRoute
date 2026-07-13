@@ -192,7 +192,7 @@ class _PremiumScreenState extends State<PremiumScreen>
         icon: Icons.quiz,
         color: const Color(0xFF4CAF50),
         title: 'Unlimited Exam Questions',
-        subtitle: 'Full access to 3,000+ FAA past-paper questions',
+        subtitle: 'Full access to the live FAA-style question bank',
         free: false,
       ),
       _FeatureItem(

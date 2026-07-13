@@ -70,7 +70,9 @@ class _EndorsementsScreenState extends State<EndorsementsScreen>
         borderRadius: BorderRadius.circular(14),
         border: Border.all(color: Colors.white12),
       ),
-      child: ExpansionTile(
+      child: Material(
+        type: MaterialType.transparency,
+        child: ExpansionTile(
         tilePadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
         childrenPadding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
         leading: Container(
@@ -168,6 +170,7 @@ class _EndorsementsScreenState extends State<EndorsementsScreen>
             ],
           ),
         ],
+        ),
       ),
     );
   }

@@ -19,7 +19,7 @@ class BackendConfig {
   // ── Supabase (direct DB access if ever needed; gateway is preferred) ──
   static const String supabaseUrl = 'https://smvvjivvlprjhzhoizym.supabase.co';
   static const String supabaseAnonKey =
-      'sb_publishable_nqtYGp48NKiRF53zivkpsQ_bRiqDSfc';
+      'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNtdnZqaXZ2bHByamh6aG9penltIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODAyMDIxMDMsImV4cCI6MjA5NTc3ODEwM30.csC-AHt-nI6BaZd6yt7imxbpAkS5tEOjqcpetZGWkF0';
 
   // ── Firebase (Phone OTP / SMS auth) ──
   static const String firebaseProjectId = 'americangroupllc-5bdfc';

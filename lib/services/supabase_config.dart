@@ -9,10 +9,12 @@
 class SupabaseConfig {
   static const String url = 'https://smvvjivvlprjhzhoizym.supabase.co';
   static const String anonKey =
-      'sb_publishable_nqtYGp48NKiRF53zivkpsQ_bRiqDSfc';
+      'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNtdnZqaXZ2bHByamh6aG9penltIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODAyMDIxMDMsImV4cCI6MjA5NTc3ODEwM30.csC-AHt-nI6BaZd6yt7imxbpAkS5tEOjqcpetZGWkF0';
 
   static const String qaEmail = 'qa@safecodeg.com';
-  static const String qaPassword = 'QATest@2026!';
+  static const String qaPassword = 'QATest@2024!';
   static const String devEmail = 'dev@safecodeg.com';
-  static const String devPassword = 'DevTest@2026!';
+  static const String devPassword = 'DevTest@2024!';
+  static const String adminEmail = 'admin@safecodeg.com';
+  static const String adminPassword = 'AdminTest@2024!';
 }

@@ -1,4 +1,4 @@
-package com.pilotapp.pilot_enroute
+package com.americangroupllc.pilot_enroute
 
 import io.flutter.embedding.android.FlutterActivity
 

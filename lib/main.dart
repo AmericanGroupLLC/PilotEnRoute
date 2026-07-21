@@ -4,6 +4,11 @@ import 'package:provider/provider.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:timezone/data/latest.dart' as tz;
+// `show Supabase` keeps the import narrow so it can't clash with the
+// `provider` package's `Provider` (both packages export a `Provider` symbol).
+import 'package:supabase_flutter/supabase_flutter.dart' show Supabase;
+
+import 'services/supabase_config.dart';
 
 import 'services/aviation_api_service.dart';
 import 'services/weather_service.dart';
@@ -61,6 +66,18 @@ import 'screens/store_screen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
+  // Initialize the org's Supabase backend before anything reads the client.
+  // Wrapped in try/catch so a misconfiguration or offline start can never
+  // block app launch — AuthService degrades gracefully (see loginEmail).
+  try {
+    await Supabase.initialize(
+      url: SupabaseConfig.url,
+      anonKey: SupabaseConfig.anonKey,
+    );
+  } catch (e) {
+    debugPrint('Supabase.initialize failed: $e');
+  }
 
   // Initialize Hive for local storage
   await Hive.initFlutter();

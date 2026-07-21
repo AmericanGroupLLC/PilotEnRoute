@@ -3,6 +3,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 
 import '../services/auth_service.dart';
+import '../services/supabase_config.dart';
 import 'home_screen.dart';
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -41,8 +42,9 @@ class _SplashScaffold extends StatelessWidget {
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// LoginScreen — email/password sign-in against the AmericanGroupLLC backend,
-// plus a one-tap "Use test account" button and a "Continue as guest" option.
+// LoginScreen — email/password sign-in against the org's Supabase backend,
+// plus a one-tap "Use test account" button (shared QA account) and a
+// "Continue as guest" option.
 // ─────────────────────────────────────────────────────────────────────────────
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -79,8 +81,9 @@ class _LoginScreenState extends State<LoginScreen> {
   }
 
   Future<void> _useTestAccount() async {
-    _emailCtrl.text = AuthService.testEmail;
-    _passwordCtrl.text = AuthService.testPassword;
+    // One-tap sign-in with the shared QA account from SupabaseConfig.
+    _emailCtrl.text = SupabaseConfig.qaEmail;
+    _passwordCtrl.text = SupabaseConfig.qaPassword;
     await _run(() => _auth.signInWithTestAccount());
   }
 

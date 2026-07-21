@@ -113,3 +113,35 @@ tied to store IAP product IDs and OAuth configuration.
 CI (`.github/workflows/`) runs analyze/test and builds. **Always run `flutter pub get` before
 analyze/test**: a stale `package_config.json` produces thousands of false "uri_does_not_exist"
 errors. A clean analyze reports 0 errors / 0 warnings and ~33 informational lints.
+
+---
+
+## Authentication & Backend (Supabase) — current
+
+The app authenticates against the org's **Supabase** backend.
+
+- **Config**: `lib/services/supabase_config.dart` (`SupabaseConfig`) holds the
+  `url`, `anonKey` (publishable), and the shared `qaEmail`/`qaPassword` +
+  `devEmail`/`devPassword` test accounts. The publishable key is client-safe.
+- **Init**: `main()` calls `await Supabase.initialize(url: SupabaseConfig.url,
+  anonKey: SupabaseConfig.anonKey)` inside a `try/catch` **before** `runApp`, so
+  a misconfigured/offline start can never block launch.
+- **Email/password**: `AuthService.loginEmail()` uses
+  `Supabase.instance.client.auth.signInWithPassword(...)`. Supabase persists and
+  auto-restores its own session; `AuthService.init()` adopts a live Supabase
+  session on startup (it takes precedence over any local/legacy session).
+- **One-tap test account**: the login screen's "Use test account" button calls
+  `signInWithTestAccount()` → `loginEmail(SupabaseConfig.qaEmail,
+  SupabaseConfig.qaPassword)`.
+- **Offline fallback (dev/CI)**: on a **network/socket error** (couldn't reach
+  Supabase) *and* only when the entered credentials match a `SupabaseConfig`
+  QA/Dev test account, `AuthService` falls back to a **persisted local demo
+  session** (`shared_preferences`). A genuine Supabase `AuthException` (bad
+  credentials, etc.) is returned to the UI and **never** falls back. A networked
+  device always uses the real Supabase backend.
+- **Sign-out**: `AuthService.signOut()` clears **both** sessions — it calls
+  `Supabase...auth.signOut()` and wipes the persisted local demo session (and any
+  legacy backend token).
+- **Social / phone**: Google/Apple/Facebook (OAuth start URL + WebView) and
+  Firebase Phone OTP still go through the AmericanGroupLLC API gateway
+  (`lib/config/backend_config.dart`); these paths are unchanged.

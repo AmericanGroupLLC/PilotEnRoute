@@ -4,17 +4,34 @@ import 'dart:convert';
 import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
+// Narrow `show` list keeps Supabase's exports (which include a `Provider`
+// symbol) from clashing with other packages elsewhere in the app.
+import 'package:supabase_flutter/supabase_flutter.dart'
+    show Supabase, AuthException, AuthRetryableFetchException, User;
 
 import '../config/backend_config.dart';
+import 'supabase_config.dart';
 
 // ─────────────────────────────────────────────────────────────────────────────
-// AuthService — REAL client against the AmericanGroupLLC backend.
+// AuthService — REAL client against the org's Supabase backend.
 //
-// Supports Email/Password, backend-brokered social login (Google/Apple/
-// Facebook via OAuth start URL + WebView), and Firebase Phone OTP verification.
+// Email/password sign-in goes through Supabase Auth
+// (`Supabase.instance.client.auth.signInWithPassword`). Supabase persists and
+// auto-restores its own session, so a networked device always uses the real
+// backend.
 //
-// Endpoints and client-public config live in BackendConfig. This service never
-// throws to the UI: every operation returns an AuthResult or a safe fallback.
+// Backend-brokered social login (Google/Apple/Facebook via OAuth start URL +
+// WebView) and Firebase Phone OTP verification still go through the
+// AmericanGroupLLC API gateway (see BackendConfig) and are unchanged.
+//
+// Offline fallback: when the device cannot reach Supabase (network/socket
+// error) AND the entered credentials match a shared SupabaseConfig QA/Dev test
+// account, we fall back to a persisted local demo session so the app stays
+// testable without connectivity. A genuine Supabase AuthException (bad
+// credentials, etc.) NEVER falls back. See [loginEmail].
+//
+// This service never throws to the UI: every operation returns an AuthResult
+// or a safe fallback.
 //
 // TODO(secure-storage): move JWTs to flutter_secure_storage / Keychain /
 // Keystore per the integration guide. shared_preferences is used for now
@@ -128,12 +145,9 @@ class AuthService extends ChangeNotifier {
   static const String _kLocalEmailKey = 'agl_local_email';
   static const String _kLocalNameKey = 'agl_local_name';
 
-  // ── Built-in offline test account ────────────────────────────────────────────
-  // Works with NO backend and NO network — the credentials are validated
-  // locally and a persisted session is created. Use the "Use test account"
-  // button on the login screen, or type these credentials manually.
-  static const String testEmail = 'test@americangroupllc.com';
-  static const String testPassword = 'Test1234!';
+  // ── Local demo (offline fallback) identifiers ────────────────────────────────
+  static const String _kLocalDemoToken = 'local-demo-token';
+  static const String _kLocalDemoUserId = 'local-demo-user';
 
   /// Validation rule (referenced by the UI).
   static const int minPasswordLength = 6;
@@ -150,6 +164,7 @@ class AuthService extends ChangeNotifier {
   bool _isBusy = false;
   bool _isLocal = false;
   bool _guest = false;
+  bool _supabaseSession = false;
 
   // ── Public getters (contract) ───────────────────────────────────────────────
   AuthUser? get currentUser => _currentUser;
@@ -172,22 +187,31 @@ class AuthService extends ChangeNotifier {
 
   // ── Lifecycle ────────────────────────────────────────────────────────────────
 
-  /// Load persisted session from prefs, then best-effort refresh the profile.
+  /// Restore any persisted session, then best-effort refresh the profile.
   /// Safe to call multiple times.
+  ///
+  /// Precedence: a live Supabase session (auto-restored by the SDK on a
+  /// networked device) wins; otherwise a persisted local demo session; otherwise
+  /// a legacy BackendConfig token session (social / phone).
   Future<void> init() async {
     try {
       final prefs = await SharedPreferences.getInstance();
-      _accessToken = prefs.getString(_kAccessTokenKey);
-      _refreshToken = prefs.getString(_kRefreshTokenKey);
-      _userId = prefs.getString(_kUserIdKey);
       _isLocal = prefs.getBool(_kIsLocalKey) ?? false;
       if (_isLocal) {
+        // Offline demo session persisted by the network fallback.
+        _accessToken = _kLocalDemoToken;
+        _userId = prefs.getString(_kUserIdKey);
         _currentUser = AuthUser(
-          id: _userId ?? 'local-test-user',
-          email: prefs.getString(_kLocalEmailKey) ?? testEmail,
+          id: _userId ?? _kLocalDemoUserId,
+          email: prefs.getString(_kLocalEmailKey) ?? SupabaseConfig.qaEmail,
           name: prefs.getString(_kLocalNameKey) ?? 'Test Pilot',
           role: UserRole.student,
         );
+      } else {
+        // Legacy backend-token session (social / phone login).
+        _accessToken = prefs.getString(_kAccessTokenKey);
+        _refreshToken = prefs.getString(_kRefreshTokenKey);
+        _userId = prefs.getString(_kUserIdKey);
       }
     } catch (_) {
       // Corrupt/unavailable prefs — treat as signed out, never crash.
@@ -197,13 +221,32 @@ class AuthService extends ChangeNotifier {
       _isLocal = false;
       _currentUser = null;
     }
+
+    // Adopt a real Supabase session if the SDK auto-restored one. This takes
+    // precedence over any legacy/local session above.
+    _supabaseSession = false;
+    try {
+      final session = Supabase.instance.client.auth.currentSession;
+      final user = Supabase.instance.client.auth.currentUser;
+      if (session != null && user != null) {
+        _supabaseSession = true;
+        _isLocal = false;
+        _accessToken = session.accessToken;
+        _refreshToken = session.refreshToken;
+        _userId = user.id;
+        _currentUser = _userFromSupabase(user);
+      }
+    } catch (_) {
+      // Supabase not initialized / unavailable — ignore and use any local state.
+    }
+
     _initialized = true;
     notifyListeners();
 
-    // For the offline test account we already have the user in-memory and must
-    // NOT hit the network (there is no real token to validate).
-    if (_accessToken != null && !_isLocal) {
-      // Best-effort: populate the profile. Ignores failures.
+    // Best-effort profile fetch only for legacy backend-token sessions. The
+    // local demo session has no server to hit, and a Supabase session already
+    // carries its user.
+    if (_accessToken != null && !_isLocal && !_supabaseSession) {
       try {
         await fetchMe();
       } catch (_) {
@@ -231,20 +274,106 @@ class AuthService extends ChangeNotifier {
     return _authWithTokens(BackendConfig.registerPath, body);
   }
 
+  /// Email/password sign-in via the org's Supabase Auth backend.
+  ///
+  /// A networked device always authenticates against Supabase. Only when the
+  /// device cannot reach Supabase (network/socket error) AND the credentials
+  /// match a shared SupabaseConfig QA/Dev test account do we fall back to a
+  /// persisted local demo session. A genuine Supabase [AuthException] (bad
+  /// credentials, unconfirmed email, etc.) is returned as-is and NEVER falls
+  /// back.
   Future<AuthResult> loginEmail(String email, String password) async {
-    // Built-in offline test account — validated locally, no network needed.
-    if (email.trim().toLowerCase() == testEmail && password == testPassword) {
-      return _signInLocalTest();
+    final normalizedEmail = email.trim();
+    _setBusy(true);
+    try {
+      final response =
+          await Supabase.instance.client.auth.signInWithPassword(
+        email: normalizedEmail,
+        password: password,
+      );
+      final sUser = response.user;
+      final sSession = response.session;
+      if (sUser == null || sSession == null) {
+        return const AuthResult.failure('Invalid credentials.');
+      }
+      // Real Supabase session — supersedes any stale local demo session.
+      await _clearLocalDemoSession();
+      _supabaseSession = true;
+      _isLocal = false;
+      _guest = false;
+      _accessToken = sSession.accessToken;
+      _refreshToken = sSession.refreshToken;
+      _userId = sUser.id;
+      final user = _userFromSupabase(sUser);
+      _currentUser = user;
+      notifyListeners();
+      return AuthResult.success(user);
+    } on AuthRetryableFetchException {
+      // Retryable transport failure (couldn't reach Supabase). Treat as an
+      // offline/network error — eligible for the local demo fallback.
+      return _networkFallback(normalizedEmail, password);
+    } on AuthException catch (e) {
+      // Definitive rejection from Supabase (bad credentials, etc.). Never fall
+      // back to the local demo session, even for a test account.
+      return AuthResult.failure(e.message);
+    } catch (_) {
+      // SocketException / http ClientException / TimeoutException / any other
+      // transport failure — same offline fallback rules as above.
+      return _networkFallback(normalizedEmail, password);
+    } finally {
+      _setBusy(false);
     }
-    return _authWithTokens(BackendConfig.loginPath, {
-      'email': email.trim(),
-      'password': password,
-    });
   }
 
-  /// Convenience entry point for the "Use test account" button.
+  /// Convenience entry point for the one-tap "Use test account" button — signs
+  /// in with the shared QA account from SupabaseConfig.
   Future<AuthResult> signInWithTestAccount() =>
-      loginEmail(testEmail, testPassword);
+      loginEmail(SupabaseConfig.qaEmail, SupabaseConfig.qaPassword);
+
+  /// Offline fallback path: only shared SupabaseConfig test accounts may drop to
+  /// a local demo session when Supabase is unreachable; everyone else gets a
+  /// normal network error.
+  Future<AuthResult> _networkFallback(String email, String password) async {
+    if (_isSupabaseTestAccount(email, password)) {
+      return _signInLocalDemo(email);
+    }
+    return const AuthResult.failure(
+      'Network error. Check your connection and try again.',
+    );
+  }
+
+  /// True when [email]/[password] match a shared SupabaseConfig QA or Dev
+  /// account (case-insensitive on the email).
+  bool _isSupabaseTestAccount(String email, String password) {
+    final e = email.trim().toLowerCase();
+    return (e == SupabaseConfig.qaEmail.toLowerCase() &&
+            password == SupabaseConfig.qaPassword) ||
+        (e == SupabaseConfig.devEmail.toLowerCase() &&
+            password == SupabaseConfig.devPassword);
+  }
+
+  /// Map a Supabase [User] onto the app's [AuthUser], reading name/role from
+  /// user metadata when present.
+  AuthUser _userFromSupabase(User u) {
+    final meta = u.userMetadata ?? const <String, dynamic>{};
+    String? metaStr(List<String> keys) {
+      for (final k in keys) {
+        final v = meta[k];
+        if (v != null) {
+          final s = v.toString().trim();
+          if (s.isNotEmpty) return s;
+        }
+      }
+      return null;
+    }
+
+    return AuthUser(
+      id: u.id,
+      email: u.email ?? metaStr(['email']) ?? '',
+      name: metaStr(['name', 'full_name', 'display_name']),
+      role: UserRoleX.fromId(metaStr(['role', 'user_role'])),
+    );
+  }
 
   /// Enter the app without signing in (in-memory only; login shows again on a
   /// fresh launch).
@@ -254,36 +383,49 @@ class AuthService extends ChangeNotifier {
     notifyListeners();
   }
 
-  /// Create a persisted, offline session for the built-in test account.
-  Future<AuthResult> _signInLocalTest() async {
-    _setBusy(true);
+  /// Create/restore a persisted OFFLINE demo session for a shared SupabaseConfig
+  /// test account. Only reached from the network fallback in [loginEmail] when
+  /// Supabase is unreachable — a networked device always uses the real backend.
+  /// Busy state is managed by the caller.
+  Future<AuthResult> _signInLocalDemo(String email) async {
+    final user = AuthUser(
+      id: _kLocalDemoUserId,
+      email: email,
+      name: 'Test Pilot',
+      role: UserRole.student,
+    );
+    _accessToken = _kLocalDemoToken;
+    _refreshToken = null;
+    _userId = user.id;
+    _currentUser = user;
+    _isLocal = true;
+    _supabaseSession = false;
+    _guest = false;
     try {
-      const user = AuthUser(
-        id: 'local-test-user',
-        email: testEmail,
-        name: 'Test Pilot',
-        role: UserRole.student,
-      );
-      _accessToken = 'local-test-token';
-      _refreshToken = null;
-      _userId = user.id;
-      _currentUser = user;
-      _isLocal = true;
-      _guest = false;
-      try {
-        final prefs = await SharedPreferences.getInstance();
-        await prefs.setString(_kAccessTokenKey, _accessToken!);
-        await prefs.setString(_kUserIdKey, _userId!);
-        await prefs.setBool(_kIsLocalKey, true);
-        await prefs.setString(_kLocalEmailKey, user.email);
-        await prefs.setString(_kLocalNameKey, user.name!);
-      } catch (_) {
-        // In-memory session still works for this run.
-      }
-      notifyListeners();
-      return const AuthResult.success(user);
-    } finally {
-      _setBusy(false);
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setString(_kAccessTokenKey, _accessToken!);
+      await prefs.setString(_kUserIdKey, _userId!);
+      await prefs.setBool(_kIsLocalKey, true);
+      await prefs.setString(_kLocalEmailKey, user.email);
+      await prefs.setString(_kLocalNameKey, user.name!);
+    } catch (_) {
+      // In-memory session still works for this run.
+    }
+    notifyListeners();
+    return AuthResult.success(user);
+  }
+
+  /// Remove only the persisted local demo session keys (used when a real
+  /// Supabase session takes over).
+  Future<void> _clearLocalDemoSession() async {
+    _isLocal = false;
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.remove(_kIsLocalKey);
+      await prefs.remove(_kLocalEmailKey);
+      await prefs.remove(_kLocalNameKey);
+    } catch (_) {
+      // Ignore — in-memory state is already updated.
     }
   }
 
@@ -403,10 +545,13 @@ class AuthService extends ChangeNotifier {
     }
   }
 
-  /// Sign out: best-effort backend logout, then clear all local state.
+  /// Sign out and clear BOTH sessions: the Supabase session and the persisted
+  /// local demo session (plus any legacy backend token). Best-effort network
+  /// calls; clearing local state is what matters.
   Future<void> signOut() async {
+    // Legacy backend token session → best-effort backend logout.
     final token = _accessToken;
-    if (token != null) {
+    if (token != null && !_isLocal && !_supabaseSession) {
       try {
         await http
             .post(
@@ -421,6 +566,15 @@ class AuthService extends ChangeNotifier {
         // Ignore — clearing local state below is what matters.
       }
     }
+
+    // Sign out of Supabase (clears its persisted session on disk).
+    try {
+      await Supabase.instance.client.auth.signOut();
+    } catch (_) {
+      // Supabase unavailable/offline — local clear below still applies.
+    }
+
+    _supabaseSession = false;
     await _clearTokens();
   }
 

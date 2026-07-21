@@ -84,3 +84,31 @@ App launch → `main()` inits Hive/tz/notifications/AdMob/auth → `MultiProvide
 - AdMob/IAP still use placeholder/test IDs — replace before store release (see README checklist).
 - Android release currently signs with the debug keystore (TODO in `build.gradle.kts`).
 - Two asset dirs (`assets/icons/`, `assets/lottie/`) exist only as placeholders (`.gitkeep`) to satisfy pubspec declarations.
+
+---
+
+## Auth / Backend (Supabase) — authoritative
+
+**Backend = org Supabase.** Email/password sign-in goes through Supabase Auth.
+
+- `lib/services/supabase_config.dart` → `SupabaseConfig`: `url`, `anonKey`
+  (publishable), `qaEmail`/`qaPassword`, `devEmail`/`devPassword`. Use these
+  constants; do not hardcode credentials.
+- `lib/main.dart` → `Supabase.initialize(url: SupabaseConfig.url, anonKey:
+  SupabaseConfig.anonKey)` in a `try/catch` before `runApp`.
+- `lib/services/auth_service.dart`:
+  - `loginEmail()` → `Supabase.instance.client.auth.signInWithPassword(...)`.
+  - `signInWithTestAccount()` → QA account from `SupabaseConfig` (one-tap "Use
+    test account" button in `login_screen.dart`).
+  - **Offline fallback**: network/socket error + creds match a `SupabaseConfig`
+    QA/Dev account → persisted local demo session (`shared_preferences`). A
+    Supabase `AuthException` never falls back. `AuthRetryableFetchException`
+    (transport-retryable) is treated as a network error and may fall back.
+  - `signOut()` clears **both** the Supabase session and the local demo session.
+  - `init()` restores a live Supabase session (preferred), else a persisted
+    local demo session, else a legacy backend-token session.
+- Social login + Firebase phone OTP still use the AmericanGroupLLC gateway in
+  `lib/config/backend_config.dart` (`account_screen.dart`); unchanged.
+
+**Where to change auth:** `auth_service.dart` (logic), `login_screen.dart` (UI),
+`supabase_config.dart` (endpoints/test creds).

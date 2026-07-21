@@ -124,6 +124,16 @@ class AuthService extends ChangeNotifier {
   static const String _kAccessTokenKey = 'agl_access_token';
   static const String _kRefreshTokenKey = 'agl_refresh_token';
   static const String _kUserIdKey = 'agl_user_id';
+  static const String _kIsLocalKey = 'agl_is_local_session';
+  static const String _kLocalEmailKey = 'agl_local_email';
+  static const String _kLocalNameKey = 'agl_local_name';
+
+  // ── Built-in offline test account ────────────────────────────────────────────
+  // Works with NO backend and NO network — the credentials are validated
+  // locally and a persisted session is created. Use the "Use test account"
+  // button on the login screen, or type these credentials manually.
+  static const String testEmail = 'test@americangroupllc.com';
+  static const String testPassword = 'Test1234!';
 
   /// Validation rule (referenced by the UI).
   static const int minPasswordLength = 6;
@@ -138,6 +148,8 @@ class AuthService extends ChangeNotifier {
   AuthUser? _currentUser;
   bool _initialized = false;
   bool _isBusy = false;
+  bool _isLocal = false;
+  bool _guest = false;
 
   // ── Public getters (contract) ───────────────────────────────────────────────
   AuthUser? get currentUser => _currentUser;
@@ -145,6 +157,15 @@ class AuthService extends ChangeNotifier {
   String? get accessToken => _accessToken;
   bool get isBusy => _isBusy;
   bool get isInitialized => _initialized;
+
+  /// True when signed in with the built-in offline test account.
+  bool get isLocalSession => _isLocal;
+
+  /// True when the user chose to browse without signing in.
+  bool get isGuest => _guest;
+
+  /// The gate should show the main app when authenticated OR browsing as guest.
+  bool get canEnterApp => isAuthenticated || _guest;
 
   /// Test Firebase ID token for SIM-less phone-auth testing.
   static String get phoneTestToken => BackendConfig.phoneTestFirebaseToken;
@@ -159,16 +180,29 @@ class AuthService extends ChangeNotifier {
       _accessToken = prefs.getString(_kAccessTokenKey);
       _refreshToken = prefs.getString(_kRefreshTokenKey);
       _userId = prefs.getString(_kUserIdKey);
+      _isLocal = prefs.getBool(_kIsLocalKey) ?? false;
+      if (_isLocal) {
+        _currentUser = AuthUser(
+          id: _userId ?? 'local-test-user',
+          email: prefs.getString(_kLocalEmailKey) ?? testEmail,
+          name: prefs.getString(_kLocalNameKey) ?? 'Test Pilot',
+          role: UserRole.student,
+        );
+      }
     } catch (_) {
       // Corrupt/unavailable prefs — treat as signed out, never crash.
       _accessToken = null;
       _refreshToken = null;
       _userId = null;
+      _isLocal = false;
+      _currentUser = null;
     }
     _initialized = true;
     notifyListeners();
 
-    if (_accessToken != null) {
+    // For the offline test account we already have the user in-memory and must
+    // NOT hit the network (there is no real token to validate).
+    if (_accessToken != null && !_isLocal) {
       // Best-effort: populate the profile. Ignores failures.
       try {
         await fetchMe();
@@ -198,10 +232,59 @@ class AuthService extends ChangeNotifier {
   }
 
   Future<AuthResult> loginEmail(String email, String password) async {
+    // Built-in offline test account — validated locally, no network needed.
+    if (email.trim().toLowerCase() == testEmail && password == testPassword) {
+      return _signInLocalTest();
+    }
     return _authWithTokens(BackendConfig.loginPath, {
       'email': email.trim(),
       'password': password,
     });
+  }
+
+  /// Convenience entry point for the "Use test account" button.
+  Future<AuthResult> signInWithTestAccount() =>
+      loginEmail(testEmail, testPassword);
+
+  /// Enter the app without signing in (in-memory only; login shows again on a
+  /// fresh launch).
+  void continueAsGuest() {
+    if (_guest) return;
+    _guest = true;
+    notifyListeners();
+  }
+
+  /// Create a persisted, offline session for the built-in test account.
+  Future<AuthResult> _signInLocalTest() async {
+    _setBusy(true);
+    try {
+      const user = AuthUser(
+        id: 'local-test-user',
+        email: testEmail,
+        name: 'Test Pilot',
+        role: UserRole.student,
+      );
+      _accessToken = 'local-test-token';
+      _refreshToken = null;
+      _userId = user.id;
+      _currentUser = user;
+      _isLocal = true;
+      _guest = false;
+      try {
+        final prefs = await SharedPreferences.getInstance();
+        await prefs.setString(_kAccessTokenKey, _accessToken!);
+        await prefs.setString(_kUserIdKey, _userId!);
+        await prefs.setBool(_kIsLocalKey, true);
+        await prefs.setString(_kLocalEmailKey, user.email);
+        await prefs.setString(_kLocalNameKey, user.name!);
+      } catch (_) {
+        // In-memory session still works for this run.
+      }
+      notifyListeners();
+      return const AuthResult.success(user);
+    } finally {
+      _setBusy(false);
+    }
   }
 
   // ── Social login ──────────────────────────────────────────────────────────────
@@ -510,11 +593,16 @@ class AuthService extends ChangeNotifier {
     _refreshToken = null;
     _userId = null;
     _currentUser = null;
+    _isLocal = false;
+    _guest = false;
     try {
       final prefs = await SharedPreferences.getInstance();
       await prefs.remove(_kAccessTokenKey);
       await prefs.remove(_kRefreshTokenKey);
       await prefs.remove(_kUserIdKey);
+      await prefs.remove(_kIsLocalKey);
+      await prefs.remove(_kLocalEmailKey);
+      await prefs.remove(_kLocalNameKey);
     } catch (_) {
       // Ignore — in-memory state is already cleared.
     }

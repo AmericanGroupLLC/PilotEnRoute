@@ -17,6 +17,7 @@ import 'services/premium_service.dart';
 import 'services/ad_service.dart';
 import 'services/auth_service.dart';
 
+import 'screens/login_screen.dart';
 import 'screens/home_screen.dart';
 import 'screens/weather_screen.dart';
 import 'screens/news_screen.dart';
@@ -126,7 +127,11 @@ class PilotEnRouteApp extends StatelessWidget {
         initialRoute: '/',
         routes: {
           // ── Core Screens ───────────────────────────────────────────────
-          '/': (ctx) => const HomeScreen(),
+          // Root gate: shows the login screen until the user signs in (or taps
+          // "Continue without signing in"), then the home dashboard.
+          '/': (ctx) => const AuthGate(),
+          '/login': (ctx) => const LoginScreen(),
+          '/home': (ctx) => const HomeScreen(),
           '/weather': (ctx) => const WeatherScreen(),
           '/news': (ctx) => const NewsScreen(),
           '/quiz': (ctx) => const QuizScreen(),

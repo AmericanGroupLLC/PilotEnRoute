@@ -363,3 +363,25 @@ Proprietary — © 2026 American Group LLC. All rights reserved.
 - [Aviation Weather Center](https://aviationweather.gov)
 - [OpenSky Network](https://opensky-network.org)
 - [RotatePilot API](https://rotatepilot.com/developers)
+
+## Test Account (offline demo login)
+
+PilotEnRoute ships with a built-in **offline test account** for reviewers and
+QA. It is validated locally by `AuthService` — no backend or network required —
+and creates a persisted session that survives app restarts.
+
+| Field    | Value                          |
+| -------- | ------------------------------ |
+| Email    | `test@americangroupllc.com`    |
+| Password | `Test1234!`                    |
+
+**How to sign in**
+
+1. Launch the app — the login screen is shown before the main navigation.
+2. Tap **"Use test account"** (one tap) — or type the credentials above and tap
+   **SIGN IN**.
+3. You land on the home dashboard.
+
+You can also tap **"Continue without signing in"** to browse as a guest, or use
+the account screen to sign out. Real email/password, social, and phone logins
+continue to work against the AmericanGroupLLC backend as before.

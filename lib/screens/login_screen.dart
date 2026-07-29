@@ -105,6 +105,22 @@ class _LoginScreenState extends State<LoginScreen> {
     _auth.continueAsGuest();
   }
 
+  /// Runs a real native OAuth sign-in (Apple / Google). On success the AuthGate
+  /// rebuilds into the app; a genuine failure surfaces an honest message, while
+  /// a user cancellation (backing out of the sheet) stays silent.
+  Future<void> _runSocial(Future<AuthResult> Function() action) async {
+    setState(() {
+      _submitting = true;
+      _error = null;
+    });
+    final result = await action();
+    if (!mounted) return;
+    setState(() => _submitting = false);
+    if (!result.ok && !result.cancelled) {
+      setState(() => _error = result.error ?? 'Sign in failed.');
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -213,6 +229,20 @@ class _LoginScreenState extends State<LoginScreen> {
                         ),
                       ),
                     ),
+                    const SizedBox(height: 20),
+                    _buildDivider(),
+                    const SizedBox(height: 20),
+                    _buildSocialButton(
+                      label: 'Sign in with Apple',
+                      icon: Icons.apple,
+                      onPressed: () => _runSocial(_auth.signInWithApple),
+                    ),
+                    const SizedBox(height: 12),
+                    _buildSocialButton(
+                      label: 'Continue with Google',
+                      icon: Icons.g_mobiledata,
+                      onPressed: () => _runSocial(_auth.signInWithGoogle),
+                    ),
                     const SizedBox(height: 16),
                     TextButton(
                       onPressed: _submitting ? null : _continueAsGuest,
@@ -254,6 +284,47 @@ class _LoginScreenState extends State<LoginScreen> {
             color: _cyan,
             size: 48,
           ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildDivider() {
+    return Row(
+      children: [
+        const Expanded(child: Divider(color: Colors.white24)),
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 12),
+          child: Text(
+            'OR',
+            style: GoogleFonts.inter(
+              color: Colors.white38,
+              fontSize: 12,
+              fontWeight: FontWeight.w600,
+              letterSpacing: 1,
+            ),
+          ),
+        ),
+        const Expanded(child: Divider(color: Colors.white24)),
+      ],
+    );
+  }
+
+  Widget _buildSocialButton({
+    required String label,
+    required IconData icon,
+    required VoidCallback onPressed,
+  }) {
+    return OutlinedButton.icon(
+      onPressed: _submitting ? null : onPressed,
+      icon: Icon(icon, color: Colors.white),
+      label: Text(label),
+      style: OutlinedButton.styleFrom(
+        foregroundColor: Colors.white,
+        side: const BorderSide(color: Colors.white24),
+        padding: const EdgeInsets.symmetric(vertical: 16),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(12),
         ),
       ),
     );

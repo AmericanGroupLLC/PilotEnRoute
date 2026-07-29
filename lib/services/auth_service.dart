@@ -1,13 +1,25 @@
 import 'dart:async';
 import 'dart:convert';
+import 'dart:math' show Random;
 
+import 'package:crypto/crypto.dart' show sha256;
 import 'package:flutter/foundation.dart';
+import 'package:google_sign_in/google_sign_in.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:sign_in_with_apple/sign_in_with_apple.dart';
 // Narrow `show` list keeps Supabase's exports (which include a `Provider`
 // symbol) from clashing with other packages elsewhere in the app.
 import 'package:supabase_flutter/supabase_flutter.dart'
-    show Supabase, AuthException, AuthRetryableFetchException, User;
+    show
+        Supabase,
+        AuthException,
+        AuthResponse,
+        AuthRetryableFetchException,
+        AuthState,
+        AuthChangeEvent,
+        OAuthProvider,
+        User;
 
 import '../config/backend_config.dart';
 import 'supabase_config.dart';
@@ -113,19 +125,30 @@ class AuthUser {
 
 /// Result of any auth operation. Never throws to the UI layer.
 class AuthResult {
-  const AuthResult(this.ok, {this.error, this.user});
+  const AuthResult(this.ok, {this.error, this.user, this.cancelled = false});
 
   const AuthResult.success(AuthUser this.user)
       : ok = true,
-        error = null;
+        error = null,
+        cancelled = false;
 
   const AuthResult.failure(String this.error)
       : ok = false,
-        user = null;
+        user = null,
+        cancelled = false;
+
+  /// The user backed out of a native sign-in sheet (Apple / Google). Not an
+  /// error — the UI stays silent rather than showing a failure message.
+  const AuthResult.cancelled()
+      : ok = false,
+        error = null,
+        user = null,
+        cancelled = true;
 
   final bool ok;
   final String? error;
   final AuthUser? user;
+  final bool cancelled;
 }
 
 class AuthService extends ChangeNotifier {
@@ -165,6 +188,11 @@ class AuthService extends ChangeNotifier {
   bool _isLocal = false;
   bool _guest = false;
   bool _supabaseSession = false;
+
+  /// Live subscription to Supabase auth-state changes (sign-in / token-refresh /
+  /// sign-out). Kept so a background token refresh or an out-of-band session
+  /// change keeps the app's auth state — and the AuthGate — in sync.
+  StreamSubscription<AuthState>? _authSub;
 
   // ── Public getters (contract) ───────────────────────────────────────────────
   AuthUser? get currentUser => _currentUser;
@@ -238,6 +266,18 @@ class AuthService extends ChangeNotifier {
       }
     } catch (_) {
       // Supabase not initialized / unavailable — ignore and use any local state.
+    }
+
+    // AUTO-LOGIN: keep the app in sync with the persistent, auto-refreshing
+    // Supabase session for its whole lifetime. We subscribe once; the SDK emits
+    // signedIn on restore, tokenRefreshed in the background, and signedOut only
+    // on an explicit sign-out — never on launch — so a returning user stays
+    // signed in with no login screen.
+    try {
+      _authSub ??=
+          Supabase.instance.client.auth.onAuthStateChange.listen(_onAuthState);
+    } catch (_) {
+      // Supabase not initialized (offline) — nothing to observe.
     }
 
     _initialized = true;
@@ -373,6 +413,228 @@ class AuthService extends ChangeNotifier {
       name: metaStr(['name', 'full_name', 'display_name']),
       role: UserRoleX.fromId(metaStr(['role', 'user_role'])),
     );
+  }
+
+  /// Reacts to Supabase auth-state changes so the app's session state (and the
+  /// AuthGate) tracks background token refreshes and out-of-band changes.
+  void _onAuthState(AuthState data) {
+    final session = data.session;
+    switch (data.event) {
+      case AuthChangeEvent.signedOut:
+        // Only clear if a Supabase session was the active one; never clobber a
+        // local demo or guest session.
+        if (_supabaseSession) {
+          _supabaseSession = false;
+          _accessToken = null;
+          _refreshToken = null;
+          _userId = null;
+          _currentUser = null;
+          notifyListeners();
+        }
+      case AuthChangeEvent.signedIn:
+      case AuthChangeEvent.tokenRefreshed:
+      case AuthChangeEvent.userUpdated:
+        if (session == null) return;
+        _supabaseSession = true;
+        _isLocal = false;
+        _guest = false;
+        _accessToken = session.accessToken;
+        _refreshToken = session.refreshToken;
+        _userId = session.user.id;
+        var mapped = _userFromSupabase(session.user);
+        // Preserve a name captured elsewhere (e.g. Apple's first-authorization
+        // full name) that the raw token/metadata may not carry.
+        final existing = _currentUser;
+        if ((mapped.name == null || mapped.name!.trim().isEmpty) &&
+            existing != null &&
+            existing.id == mapped.id &&
+            (existing.name?.trim().isNotEmpty ?? false)) {
+          mapped = AuthUser(
+            id: mapped.id,
+            email: mapped.email,
+            name: existing.name,
+            role: mapped.role,
+          );
+        }
+        _currentUser = mapped;
+        notifyListeners();
+      default:
+        // initialSession / passwordRecovery / mfa — no state change here.
+        break;
+    }
+  }
+
+  // ── Native OAuth (Supabase-native ID-token flow) ────────────────────────────
+
+  /// Sign in with Apple via the Supabase-native ID-token flow.
+  ///
+  /// Generates a cryptographically random raw nonce and sends its SHA-256 hash
+  /// to Apple; Apple binds the hash into the returned identity token, and
+  /// Supabase re-derives the hash from the raw nonce to verify the binding
+  /// (replay protection). Supabase auto-creates the account on first sign-in.
+  Future<AuthResult> signInWithApple() async {
+    _setBusy(true);
+    try {
+      final rawNonce = _generateNonce();
+      final hashedNonce = sha256.convert(utf8.encode(rawNonce)).toString();
+
+      final credential = await SignInWithApple.getAppleIDCredential(
+        scopes: const [
+          AppleIDAuthorizationScopes.email,
+          AppleIDAuthorizationScopes.fullName,
+        ],
+        nonce: hashedNonce,
+      );
+
+      final idToken = credential.identityToken;
+      if (idToken == null) {
+        return const AuthResult.failure(
+          'Apple sign-in failed: missing identity token.',
+        );
+      }
+
+      final res = await Supabase.instance.client.auth.signInWithIdToken(
+        provider: OAuthProvider.apple,
+        idToken: idToken,
+        nonce: rawNonce,
+      );
+
+      // Apple returns the name only on the FIRST authorization — capture it now.
+      final fullName = [credential.givenName, credential.familyName]
+          .whereType<String>()
+          .where((s) => s.trim().isNotEmpty)
+          .join(' ')
+          .trim();
+      return await _adoptSupabaseSession(
+        res,
+        preferredName: fullName.isNotEmpty ? fullName : null,
+      );
+    } on SignInWithAppleAuthorizationException catch (e) {
+      if (e.code == AuthorizationErrorCode.canceled) {
+        return const AuthResult.cancelled();
+      }
+      return const AuthResult.failure('Apple sign-in failed. Please try again.');
+    } on AuthException catch (e) {
+      return AuthResult.failure(e.message);
+    } catch (_) {
+      return const AuthResult.failure(
+        'Sign-in unavailable right now. Please try again.',
+      );
+    } finally {
+      _setBusy(false);
+    }
+  }
+
+  /// Sign in with Google via the Supabase-native ID-token flow.
+  ///
+  /// The native SDK returns a Google `idToken` (+ `accessToken`); Supabase
+  /// exchanges them for a session and auto-creates the account on first
+  /// sign-in. [SupabaseConfig.googleServerClientId] (the web/server client id)
+  /// must match the Google provider's configured Client ID in the Supabase
+  /// dashboard, or the exchange is rejected.
+  Future<AuthResult> signInWithGoogle() async {
+    _setBusy(true);
+    try {
+      const iosClientId = SupabaseConfig.googleIosClientId;
+      final googleSignIn = GoogleSignIn(
+        serverClientId: SupabaseConfig.googleServerClientId,
+        clientId: iosClientId.isNotEmpty ? iosClientId : null,
+      );
+
+      final account = await googleSignIn.signIn();
+      if (account == null) {
+        return const AuthResult.cancelled();
+      }
+      final googleAuth = await account.authentication;
+      final idToken = googleAuth.idToken;
+      if (idToken == null) {
+        return const AuthResult.failure(
+          'Google sign-in failed: missing ID token.',
+        );
+      }
+
+      final res = await Supabase.instance.client.auth.signInWithIdToken(
+        provider: OAuthProvider.google,
+        idToken: idToken,
+        accessToken: googleAuth.accessToken,
+      );
+      return await _adoptSupabaseSession(res);
+    } on AuthException catch (e) {
+      return AuthResult.failure(e.message);
+    } catch (e) {
+      if (_looksCancelled(e)) return const AuthResult.cancelled();
+      return const AuthResult.failure(
+        'Sign-in unavailable right now. Please try again.',
+      );
+    } finally {
+      _setBusy(false);
+    }
+  }
+
+  /// Seamless, no-login identity. Creates a real (anonymous) Supabase session
+  /// that persists and can later be upgraded to a full account.
+  Future<AuthResult> signInAnonymously() async {
+    _setBusy(true);
+    try {
+      final res = await Supabase.instance.client.auth.signInAnonymously();
+      return await _adoptSupabaseSession(res, preferredName: 'Guest');
+    } on AuthException catch (e) {
+      return AuthResult.failure(e.message);
+    } catch (_) {
+      return const AuthResult.failure('Anonymous sign-in failed.');
+    } finally {
+      _setBusy(false);
+    }
+  }
+
+  /// Adopts a live Supabase [res]ponse as the current session (supersedes any
+  /// stale local demo session). [preferredName] supplies a display name the
+  /// token itself may not carry (e.g. Apple's first-authorization full name).
+  Future<AuthResult> _adoptSupabaseSession(
+    AuthResponse res, {
+    String? preferredName,
+  }) async {
+    final sUser = res.user;
+    final sSession = res.session;
+    if (sUser == null || sSession == null) {
+      return const AuthResult.failure('Sign-in failed: no session returned.');
+    }
+    await _clearLocalDemoSession();
+    _supabaseSession = true;
+    _isLocal = false;
+    _guest = false;
+    _accessToken = sSession.accessToken;
+    _refreshToken = sSession.refreshToken;
+    _userId = sUser.id;
+    var user = _userFromSupabase(sUser);
+    if ((user.name == null || user.name!.trim().isEmpty) &&
+        preferredName != null &&
+        preferredName.trim().isNotEmpty) {
+      user = AuthUser(
+        id: user.id,
+        email: user.email,
+        name: preferredName.trim(),
+        role: user.role,
+      );
+    }
+    _currentUser = user;
+    notifyListeners();
+    return AuthResult.success(user);
+  }
+
+  /// Cryptographically secure random nonce (URL-safe charset) for Apple sign-in.
+  String _generateNonce([int length = 32]) {
+    const charset =
+        '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz-._';
+    final random = Random.secure();
+    return List.generate(length, (_) => charset[random.nextInt(charset.length)])
+        .join();
+  }
+
+  /// Heuristic: did a native SDK throw because the user backed out?
+  bool _looksCancelled(Object e) {
+    final s = e.toString().toLowerCase();
+    return s.contains('cancel') || s.contains('canceled');
   }
 
   /// Enter the app without signing in (in-memory only; login shows again on a
@@ -572,6 +834,14 @@ class AuthService extends ChangeNotifier {
       await Supabase.instance.client.auth.signOut();
     } catch (_) {
       // Supabase unavailable/offline — local clear below still applies.
+    }
+
+    // Clear the native Google session so the next sign-in re-prompts the
+    // account chooser (no silent re-login with the previous account).
+    try {
+      await GoogleSignIn().signOut();
+    } catch (_) {
+      // No cached Google account / plugin unavailable — ignore.
     }
 
     _supabaseSession = false;

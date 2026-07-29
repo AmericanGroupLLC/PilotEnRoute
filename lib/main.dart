@@ -6,7 +6,8 @@ import 'package:hive_flutter/hive_flutter.dart';
 import 'package:timezone/data/latest.dart' as tz;
 // `show Supabase` keeps the import narrow so it can't clash with the
 // `provider` package's `Provider` (both packages export a `Provider` symbol).
-import 'package:supabase_flutter/supabase_flutter.dart' show Supabase;
+import 'package:supabase_flutter/supabase_flutter.dart'
+    show Supabase, FlutterAuthClientOptions;
 
 import 'services/supabase_config.dart';
 
@@ -74,6 +75,13 @@ void main() async {
     await Supabase.initialize(
       url: SupabaseConfig.url,
       anonKey: SupabaseConfig.anonKey,
+      // AUTO-LOGIN: keep the default persistent, auto-refreshing session so a
+      // returning user is signed in on launch with no login screen. The session
+      // is stored in the platform-secure local store (Keychain/Keystore) and
+      // the access token is refreshed in the background.
+      authOptions: const FlutterAuthClientOptions(
+        autoRefreshToken: true,
+      ),
     );
   } catch (e) {
     debugPrint('Supabase.initialize failed: $e');

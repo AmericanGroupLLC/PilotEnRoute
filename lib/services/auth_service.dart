@@ -96,11 +96,11 @@ class AuthUser {
   final UserRole role;
 
   Map<String, dynamic> toJson() => {
-        'id': id,
-        'email': email,
-        'name': name,
-        'role': role.id,
-      };
+    'id': id,
+    'email': email,
+    'name': name,
+    'role': role.id,
+  };
 
   factory AuthUser.fromJson(Map<String, dynamic> json) {
     String? pick(List<String> keys) {
@@ -128,22 +128,22 @@ class AuthResult {
   const AuthResult(this.ok, {this.error, this.user, this.cancelled = false});
 
   const AuthResult.success(AuthUser this.user)
-      : ok = true,
-        error = null,
-        cancelled = false;
+    : ok = true,
+      error = null,
+      cancelled = false;
 
   const AuthResult.failure(String this.error)
-      : ok = false,
-        user = null,
-        cancelled = false;
+    : ok = false,
+      user = null,
+      cancelled = false;
 
   /// The user backed out of a native sign-in sheet (Apple / Google). Not an
   /// error — the UI stays silent rather than showing a failure message.
   const AuthResult.cancelled()
-      : ok = false,
-        error = null,
-        user = null,
-        cancelled = true;
+    : ok = false,
+      error = null,
+      user = null,
+      cancelled = true;
 
   final bool ok;
   final String? error;
@@ -231,7 +231,13 @@ class AuthService extends ChangeNotifier {
         _userId = prefs.getString(_kUserIdKey);
         _currentUser = AuthUser(
           id: _userId ?? _kLocalDemoUserId,
-          email: prefs.getString(_kLocalEmailKey) ?? SupabaseConfig.qaEmail,
+          // qaEmail is empty in a shipped build, so fall back to a neutral
+          // placeholder rather than rendering an empty address.
+          email:
+              prefs.getString(_kLocalEmailKey) ??
+              (SupabaseConfig.qaEmail.isNotEmpty
+                  ? SupabaseConfig.qaEmail
+                  : 'demo@local'),
           name: prefs.getString(_kLocalNameKey) ?? 'Test Pilot',
           role: UserRole.student,
         );
@@ -274,8 +280,9 @@ class AuthService extends ChangeNotifier {
     // on an explicit sign-out — never on launch — so a returning user stays
     // signed in with no login screen.
     try {
-      _authSub ??=
-          Supabase.instance.client.auth.onAuthStateChange.listen(_onAuthState);
+      _authSub ??= Supabase.instance.client.auth.onAuthStateChange.listen(
+        _onAuthState,
+      );
     } catch (_) {
       // Supabase not initialized (offline) — nothing to observe.
     }
@@ -326,8 +333,7 @@ class AuthService extends ChangeNotifier {
     final normalizedEmail = email.trim();
     _setBusy(true);
     try {
-      final response =
-          await Supabase.instance.client.auth.signInWithPassword(
+      final response = await Supabase.instance.client.auth.signInWithPassword(
         email: normalizedEmail,
         password: password,
       );
@@ -367,8 +373,18 @@ class AuthService extends ChangeNotifier {
 
   /// Convenience entry point for the one-tap "Use test account" button — signs
   /// in with the shared QA account from SupabaseConfig.
-  Future<AuthResult> signInWithTestAccount() =>
-      loginEmail(SupabaseConfig.qaEmail, SupabaseConfig.qaPassword);
+  ///
+  /// Fails fast in a build with no QA credentials rather than attempting a
+  /// sign-in with two empty strings.
+  Future<AuthResult> signInWithTestAccount() {
+    if (!SupabaseConfig.testAccountEnabled) {
+      throw StateError(
+        'No QA credentials in this build. Supply QA_EMAIL / QA_PASSWORD via '
+        '--dart-define for an internal build.',
+      );
+    }
+    return loginEmail(SupabaseConfig.qaEmail, SupabaseConfig.qaPassword);
+  }
 
   /// Offline fallback path: only shared SupabaseConfig test accounts may drop to
   /// a local demo session when Supabase is unreachable; everyone else gets a
@@ -386,9 +402,11 @@ class AuthService extends ChangeNotifier {
   /// account (case-insensitive on the email).
   bool _isSupabaseTestAccount(String email, String password) {
     final e = email.trim().toLowerCase();
-    return (e == SupabaseConfig.qaEmail.toLowerCase() &&
+    return (SupabaseConfig.testAccountEnabled &&
+            e == SupabaseConfig.qaEmail.toLowerCase() &&
             password == SupabaseConfig.qaPassword) ||
-        (e == SupabaseConfig.devEmail.toLowerCase() &&
+        (SupabaseConfig.devAccountEnabled &&
+            e == SupabaseConfig.devEmail.toLowerCase() &&
             password == SupabaseConfig.devPassword);
   }
 
@@ -500,11 +518,10 @@ class AuthService extends ChangeNotifier {
       );
 
       // Apple returns the name only on the FIRST authorization — capture it now.
-      final fullName = [credential.givenName, credential.familyName]
-          .whereType<String>()
-          .where((s) => s.trim().isNotEmpty)
-          .join(' ')
-          .trim();
+      final fullName = [
+        credential.givenName,
+        credential.familyName,
+      ].whereType<String>().where((s) => s.trim().isNotEmpty).join(' ').trim();
       return await _adoptSupabaseSession(
         res,
         preferredName: fullName.isNotEmpty ? fullName : null,
@@ -513,7 +530,9 @@ class AuthService extends ChangeNotifier {
       if (e.code == AuthorizationErrorCode.canceled) {
         return const AuthResult.cancelled();
       }
-      return const AuthResult.failure('Apple sign-in failed. Please try again.');
+      return const AuthResult.failure(
+        'Apple sign-in failed. Please try again.',
+      );
     } on AuthException catch (e) {
       return AuthResult.failure(e.message);
     } catch (_) {
@@ -627,8 +646,10 @@ class AuthService extends ChangeNotifier {
     const charset =
         '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz-._';
     final random = Random.secure();
-    return List.generate(length, (_) => charset[random.nextInt(charset.length)])
-        .join();
+    return List.generate(
+      length,
+      (_) => charset[random.nextInt(charset.length)],
+    ).join();
   }
 
   /// Heuristic: did a native SDK throw because the user backed out?
@@ -934,7 +955,12 @@ class AuthService extends ChangeNotifier {
     final inner = map['user'] ?? map['data'];
     if (inner is Map<String, dynamic>) return AuthUser.fromJson(inner);
     if (_userId != null && _userId!.isNotEmpty) {
-      return AuthUser(id: _userId!, email: '', name: null, role: UserRole.student);
+      return AuthUser(
+        id: _userId!,
+        email: '',
+        name: null,
+        role: UserRole.student,
+      );
     }
     return null;
   }
@@ -942,9 +968,9 @@ class AuthService extends ChangeNotifier {
   Uri _uri(String path) => Uri.parse('${BackendConfig.apiBaseUrl}$path');
 
   Map<String, String> _authHeaders(String token) => {
-        'Content-Type': 'application/json',
-        'Authorization': 'Bearer $token',
-      };
+    'Content-Type': 'application/json',
+    'Authorization': 'Bearer $token',
+  };
 
   Map<String, dynamic>? _decode(String body) {
     if (body.isEmpty) return null;
@@ -971,7 +997,12 @@ class AuthService extends ChangeNotifier {
   /// Extract the standard {"error":"..."} envelope, with sensible fallbacks.
   String _errorFrom(Map<String, dynamic>? map, int status) {
     if (map != null) {
-      final err = _str(map, ['error', 'message', 'detail', 'error_description']);
+      final err = _str(map, [
+        'error',
+        'message',
+        'detail',
+        'error_description',
+      ]);
       if (err != null && err.isNotEmpty) return err;
     }
     if (status == 401 || status == 403) {

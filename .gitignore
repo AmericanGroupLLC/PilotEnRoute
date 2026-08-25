@@ -44,3 +44,6 @@ app.*.map.json
 /android/app/profile
 /android/app/release
 .localflutter/
+
+# Real QA credentials for internal builds — never commit
+env/secrets.json

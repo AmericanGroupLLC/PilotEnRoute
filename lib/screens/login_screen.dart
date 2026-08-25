@@ -34,9 +34,7 @@ class _SplashScaffold extends StatelessWidget {
   Widget build(BuildContext context) {
     return const Scaffold(
       backgroundColor: Color(0xFF0A1628),
-      body: Center(
-        child: CircularProgressIndicator(color: Color(0xFF00BCD4)),
-      ),
+      body: Center(child: CircularProgressIndicator(color: Color(0xFF00BCD4))),
     );
   }
 }
@@ -82,6 +80,8 @@ class _LoginScreenState extends State<LoginScreen> {
 
   Future<void> _useTestAccount() async {
     // One-tap sign-in with the shared QA account from SupabaseConfig.
+    // Inert unless this build was given credentials.
+    if (!SupabaseConfig.testAccountEnabled) return;
     _emailCtrl.text = SupabaseConfig.qaEmail;
     _passwordCtrl.text = SupabaseConfig.qaPassword;
     await _run(() => _auth.signInWithTestAccount());
@@ -188,8 +188,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                 : Icons.visibility_off_outlined,
                             color: Colors.white54,
                           ),
-                          onPressed: () =>
-                              setState(() => _obscure = !_obscure),
+                          onPressed: () => setState(() => _obscure = !_obscure),
                         ),
                       ),
                       validator: _auth.validatePasswordField,
@@ -246,9 +245,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     const SizedBox(height: 16),
                     TextButton(
                       onPressed: _submitting ? null : _continueAsGuest,
-                      style: TextButton.styleFrom(
-                        foregroundColor: _cyan,
-                      ),
+                      style: TextButton.styleFrom(foregroundColor: _cyan),
                       child: const Text('Continue without signing in'),
                     ),
                   ],
@@ -279,11 +276,8 @@ class _LoginScreenState extends State<LoginScreen> {
           height: 88,
           width: 88,
           fit: BoxFit.cover,
-          errorBuilder: (_, __, ___) => const Icon(
-            Icons.flight_takeoff,
-            color: _cyan,
-            size: 48,
-          ),
+          errorBuilder: (_, __, ___) =>
+              const Icon(Icons.flight_takeoff, color: _cyan, size: 48),
         ),
       ),
     );
@@ -323,9 +317,7 @@ class _LoginScreenState extends State<LoginScreen> {
         foregroundColor: Colors.white,
         side: const BorderSide(color: Colors.white24),
         padding: const EdgeInsets.symmetric(vertical: 16),
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(12),
-        ),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       ),
     );
   }

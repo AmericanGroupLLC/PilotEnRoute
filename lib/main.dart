@@ -9,6 +9,7 @@ import 'package:timezone/data/latest.dart' as tz;
 import 'package:supabase_flutter/supabase_flutter.dart'
     show Supabase, FlutterAuthClientOptions;
 
+import 'app_env.dart';
 import 'services/supabase_config.dart';
 
 import 'services/aviation_api_service.dart';
@@ -67,6 +68,13 @@ import 'screens/store_screen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  // Fail loudly in dev if this binary was built without (or with the wrong)
+  // --dart-define-from-file=env/<env>.json. In release this only reports.
+  AppEnv.validate(
+    supabaseUrl: SupabaseConfig.url,
+    supabaseAnonKey: SupabaseConfig.anonKey,
+    testAccountEnabled: SupabaseConfig.testAccountEnabled,
+  );
 
   // Initialize the org's Supabase backend before anything reads the client.
   // Wrapped in try/catch so a misconfiguration or offline start can never
@@ -79,9 +87,7 @@ void main() async {
       // returning user is signed in on launch with no login screen. The session
       // is stored in the platform-secure local store (Keychain/Keystore) and
       // the access token is refreshed in the background.
-      authOptions: const FlutterAuthClientOptions(
-        autoRefreshToken: true,
-      ),
+      authOptions: const FlutterAuthClientOptions(autoRefreshToken: true),
     );
   } catch (e) {
     debugPrint('Supabase.initialize failed: $e');
@@ -277,14 +283,9 @@ class PilotEnRouteApp extends StatelessWidget {
       cardTheme: CardThemeData(
         color: const Color(0xFF112240),
         elevation: 4,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(16),
-        ),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       ),
-      dividerTheme: const DividerThemeData(
-        color: Colors.white12,
-        thickness: 1,
-      ),
+      dividerTheme: const DividerThemeData(color: Colors.white12, thickness: 1),
       textTheme: TextTheme(
         displayLarge: GoogleFonts.orbitron(color: Colors.white),
         displayMedium: GoogleFonts.orbitron(color: Colors.white),
@@ -293,16 +294,24 @@ class PilotEnRouteApp extends StatelessWidget {
         headlineMedium: GoogleFonts.orbitron(color: Colors.white),
         headlineSmall: GoogleFonts.orbitron(color: Colors.white),
         titleLarge: GoogleFonts.inter(
-            color: Colors.white, fontWeight: FontWeight.bold),
+          color: Colors.white,
+          fontWeight: FontWeight.bold,
+        ),
         titleMedium: GoogleFonts.inter(
-            color: Colors.white, fontWeight: FontWeight.w600),
+          color: Colors.white,
+          fontWeight: FontWeight.w600,
+        ),
         titleSmall: GoogleFonts.inter(
-            color: Colors.white70, fontWeight: FontWeight.w500),
+          color: Colors.white70,
+          fontWeight: FontWeight.w500,
+        ),
         bodyLarge: GoogleFonts.inter(color: Colors.white),
         bodyMedium: GoogleFonts.inter(color: Colors.white70),
         bodySmall: GoogleFonts.inter(color: Colors.white54),
         labelLarge: GoogleFonts.inter(
-            color: Colors.white, fontWeight: FontWeight.w600),
+          color: Colors.white,
+          fontWeight: FontWeight.w600,
+        ),
         labelMedium: GoogleFonts.inter(color: Colors.white70),
         labelSmall: GoogleFonts.inter(color: Colors.white54),
       ),

@@ -1,22 +1,46 @@
+import 'package:flutter/foundation.dart' show kReleaseMode;
+
 /// Central Supabase backend configuration for the AmericanGroupLLC platform.
 ///
 /// The URL + anon (publishable) key are safe to ship in the client — the
 /// publishable key only grants access allowed by Row Level Security policies.
 ///
-/// The QA / Dev entries are the shared test accounts provisioned in the backend
-/// for automated + manual testing (per the org integration guide). They power the
-/// one-tap "Use test account" button on the login screen.
+/// The QA / Dev entries are supplied at build time and are empty in anything
+/// shipped, so the one-tap "Use test account" path is inert in a release build.
 class SupabaseConfig {
-  static const String url = 'https://smvvjivvlprjhzhoizym.supabase.co';
-  static const String anonKey =
-      'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNtdnZqaXZ2bHByamh6aG9penltIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODAyMDIxMDMsImV4cCI6MjA5NTc3ODEwM30.csC-AHt-nI6BaZd6yt7imxbpAkS5tEOjqcpetZGWkF0';
+  static const String url = String.fromEnvironment(
+    'SUPABASE_URL',
+    defaultValue: 'https://smvvjivvlprjhzhoizym.supabase.co',
+  );
+  static const String anonKey = String.fromEnvironment(
+    'SUPABASE_ANON_KEY',
+    defaultValue:
+        'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNtdnZqaXZ2bHByamh6aG9penltIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODAyMDIxMDMsImV4cCI6MjA5NTc3ODEwM30.csC-AHt-nI6BaZd6yt7imxbpAkS5tEOjqcpetZGWkF0',
+  );
 
-  static const String qaEmail = 'qa@safecodeg.com';
-  static const String qaPassword = 'QATest@2024!';
-  static const String devEmail = 'dev@safecodeg.com';
-  static const String devPassword = 'DevTest@2024!';
-  static const String adminEmail = 'admin@safecodeg.com';
-  static const String adminPassword = 'AdminTest@2024!';
+  // Supplied at build time for internal/QA builds ONLY — never compiled into a
+  // shipped binary:
+  //
+  //   flutter run --dart-define=QA_EMAIL=... --dart-define=QA_PASSWORD=...
+  //
+  // With no defines (the release default) every one of these is the empty
+  // string and the whole test-account path is inert. Guard any use of them on
+  // [testAccountEnabled]; never compare user input against them directly,
+  // because '' == '' would otherwise authenticate an empty form.
+  static const String qaEmail = String.fromEnvironment('QA_EMAIL');
+  static const String qaPassword = String.fromEnvironment('QA_PASSWORD');
+  static const String devEmail = String.fromEnvironment('DEV_EMAIL');
+  static const String devPassword = String.fromEnvironment('DEV_PASSWORD');
+  static const String adminEmail = String.fromEnvironment('ADMIN_EMAIL');
+  static const String adminPassword = String.fromEnvironment('ADMIN_PASSWORD');
+
+  /// True only in a non-release build that was actually given QA credentials.
+  static bool get testAccountEnabled =>
+      !kReleaseMode && qaEmail.isNotEmpty && qaPassword.isNotEmpty;
+
+  /// True when a dev-tier define pair was supplied to a non-release build.
+  static bool get devAccountEnabled =>
+      !kReleaseMode && devEmail.isNotEmpty && devPassword.isNotEmpty;
 
   // ── Native OAuth client identifiers ────────────────────────────────────────
   // These are PUBLIC OAuth client IDs (safe to ship in the client binary — they

@@ -1,0 +1,21 @@
+Thanks for reviewing PilotEnRoute.
+
+PilotEnRoute is an aviation STUDY and record-keeping app, not a navigation or avionics product - the listing, the terms and the in-app disclaimer all say so. Sign-in is OPTIONAL: tap "Continue as guest" on the login screen and every feature is available. No demo account is needed.
+
+Test instructions:
+1. Launch the app and step through onboarding.
+2. On the login screen tap "Continue as guest" - this is the intended review path and no account is required.
+3. Open Education and start any subject, then take an exam and review the debrief.
+4. Open Tools and use the E6B flight computer.
+5. Open Logbook and add an entry, then open Endorsements and Documents.
+6. Open Checklists and create a checklist.
+7. Open Weather to see live conditions pulled from public aviation sources.
+8. Notification reminders (daily quiz, medical expiry) use INEXACT alarms; the app requests no exact-alarm permission.
+
+Privacy:
+• Data collected: Your logbook entries, endorsements, documents, checklists and study progress, held on your device. Sign-in is optional; if you use it, your email is held by our authentication provider.
+• Network: Public aviation weather and airport data sources. No server of our own is required for the app to function.
+• Location: Used only to show weather and airports near you, while the app is in use. You can decline and search by identifier instead.
+• Tracking: None. The app does not read the advertising identifier and shows no App Tracking Transparency prompt.
+
+If you need anything else, please email contact@safecodeg.com and we will respond within one business day.

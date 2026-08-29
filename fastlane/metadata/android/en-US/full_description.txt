@@ -1,0 +1,16 @@
+PilotEnRoute is a study and record-keeping companion for pilots and student pilots. It is a training tool for use on the ground - not an avionics or navigation product.
+
+<b>Study</b>
+FAA ground-school material by subject, with exams, flashcards and a debrief so you can see what you actually know. Part 107 drone training for remote pilots. Career guidance on ratings and the path between them.
+
+<b>Tools</b>
+An E6B flight computer. A flight planner with fuel and weight considerations. Build-your-own checklists. Airport information and chart reference. Live weather from public aviation sources, for planning.
+
+<b>Records</b>
+A digital logbook for your hours, plus endorsements and documents kept together, with a reminder before your medical expires.
+
+<b>No account required</b>
+Sign-in is optional - "Continue as guest" unlocks everything.
+
+<b>Read this before you fly</b>
+PilotEnRoute is NOT approved for navigation and must not be used as a primary or sole source for any flight operation. It is not an EFB replacement, not a substitute for official charts, official weather briefings, the AIM, or your POH/AFM, and it is not certified by the FAA or any aviation authority. Every figure is for study and planning only. Verify everything against official sources and comply with all applicable regulations.

@@ -1,0 +1,1 @@
+aviation,pilot,FAA,ground school,logbook,E6B,checkride,drone,part 107,flight training,student pilot

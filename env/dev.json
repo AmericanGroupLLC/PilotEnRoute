@@ -2,8 +2,8 @@
   "APP_ENV": "dev",
   "SUPABASE_URL": "https://smvvjivvlprjhzhoizym.supabase.co",
   "SUPABASE_ANON_KEY": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNtdnZqaXZ2bHByamh6aG9penltIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODAyMDIxMDMsImV4cCI6MjA5NTc3ODEwM30.csC-AHt-nI6BaZd6yt7imxbpAkS5tEOjqcpetZGWkF0",
-  "PRIVACY_URL": "https://safecodeg.com/pilotenroute/privacy",
-  "TERMS_URL": "https://safecodeg.com/pilotenroute/terms",
+  "PRIVACY_URL": "https://americangroupllc.github.io/policy/pilotenroute/",
+  "TERMS_URL": "https://americangroupllc.github.io/policy/pilotenroute/terms.html",
   "SUPPORT_URL": "mailto:support@safecodeg.com",
   "APP_STORE_URL": "https://apps.apple.com/app/pilotenroute/id0000000000",
   "PLAY_STORE_URL": "https://play.google.com/store/apps/details?id=com.americangroupllc.pilotenroute.dev"

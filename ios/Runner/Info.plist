@@ -66,31 +66,14 @@
 			</dict>
 		</dict>
 	</dict>
-	<key>NSBluetoothAlwaysUsageDescription</key>
-	<string>PilotEnRoute uses Bluetooth to connect with Garmin aviation devices and ADS-B receivers.</string>
-	<key>NSBluetoothPeripheralUsageDescription</key>
-	<string>PilotEnRoute uses Bluetooth to connect with Garmin aviation devices and ADS-B receivers.</string>
 	<key>NSCameraUsageDescription</key>
 	<string>PilotEnRoute uses the camera to scan aircraft tail numbers and QR codes for quick aircraft lookup.</string>
-	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
-	<string>PilotEnRoute uses your location to provide real-time weather and airspace alerts.</string>
-	<key>NSLocationWhenInUseUsageDescription</key>
-	<string>PilotEnRoute uses your location to show nearby airports and local weather conditions.</string>
-	<key>NSMicrophoneUsageDescription</key>
-	<string>PilotEnRoute uses the microphone for voice-guided checklists and audio training features.</string>
 	<key>NSPhotoLibraryAddUsageDescription</key>
 	<string>PilotEnRoute saves logbook reports and charts to your photo library.</string>
 	<key>NSPhotoLibraryUsageDescription</key>
 	<string>PilotEnRoute accesses your photo library to attach photos to logbook entries.</string>
-	<key>NSSpeechRecognitionUsageDescription</key>
-	<string>PilotEnRoute uses speech recognition for hands-free checklist navigation.</string>
 	<key>UIApplicationSupportsIndirectInputEvents</key>
 	<true/>
-	<key>UIBackgroundModes</key>
-	<array>
-		<string>fetch</string>
-		<string>remote-notification</string>
-	</array>
 	<key>UILaunchScreen</key>
 	<dict/>
 	<key>UIRequiredDeviceCapabilities</key>

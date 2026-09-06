@@ -47,3 +47,9 @@ app.*.map.json
 
 # Real QA credentials for internal builds — never commit
 env/secrets.json
+
+# Gradle output under the Android module (the root-anchored /build/ above
+# does not reach it).
+android/build/
+android/.gradle/
+android/.kotlin/

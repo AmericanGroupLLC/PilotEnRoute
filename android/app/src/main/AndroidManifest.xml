@@ -10,8 +10,6 @@
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
 
     <!-- Location (for weather at current location) -->
-    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
-    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
 
     <!-- Storage (for logbook PDF export) -->
     <!-- Superseded by the READ_MEDIA_* permissions on API 33+, where this
@@ -58,6 +56,14 @@
                 <action android:name="com.htc.intent.action.QUICKBOOT_POWERON" />
             </intent-filter>
         </receiver>
+
+        <!-- AdMob application ID. The Google Mobile Ads SDK throws an
+             IllegalStateException from MobileAds.initialize() when this
+             meta-data is missing, which crashed the app on launch. Value is
+             supplied by the admobAppId manifest placeholder in build.gradle. -->
+        <meta-data
+            android:name="com.google.android.gms.ads.APPLICATION_ID"
+            android:value="${admobAppId}" />
 
         <meta-data
             android:name="flutterEmbedding"

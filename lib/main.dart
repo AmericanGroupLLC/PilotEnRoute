@@ -65,9 +65,13 @@ import 'screens/emergency_screen.dart';
 import 'screens/profile_screen.dart';
 import 'screens/premium_screen.dart';
 import 'screens/store_screen.dart';
+import 'services/error_reporter.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  // Capture framework and uncaught async errors. No-op sink by
+  // default - see services/error_reporter.dart to attach a crash service.
+  ErrorReporter.install();
   // Fail loudly in dev if this binary was built without (or with the wrong)
   // --dart-define-from-file=env/<env>.json. In release this only reports.
   AppEnv.validate(

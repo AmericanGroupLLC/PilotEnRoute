@@ -88,6 +88,7 @@ platform :ios do
       app_identifier: APP_ID,
       team_id: TEAM_ID,
       git_url: ENV.fetch("MATCH_GIT_URL"),
+      git_branch: ENV.fetch("MATCH_GIT_BRANCH", "match-certificates"),
       api_key: asc_api_key,
       readonly: !ENV["CI"].to_s.empty?
     )

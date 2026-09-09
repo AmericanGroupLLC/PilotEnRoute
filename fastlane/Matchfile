@@ -1,14 +1,16 @@
-# match stores signing certificates and provisioning profiles in a private git
-# repo so local machines and CI share one identity.
+# match stores signing certificates and provisioning profiles, encrypted, on a
+# dedicated branch of the backend repo so everything lives in one place.
 #
-#   export MATCH_GIT_URL=git@github.com:AmericanGroupLLC/certificates.git
-#   export MATCH_PASSWORD=<the repo passphrase>
+#   export MATCH_GIT_URL=https://github.com/AmericanGroupLLC/AmericanGroupLLC-Backend.git
+#   export MATCH_GIT_BRANCH=match-certificates
+#   export MATCH_PASSWORD=<the passphrase>
 #   bundle exec fastlane match appstore
 #
-# CI runs match in readonly mode, so create the profiles from a developer
-# machine first.
+# CI runs match readonly, so create the profiles from a developer Mac first.
 
-git_url(ENV["MATCH_GIT_URL"]) if ENV["MATCH_GIT_URL"]
+git_url(ENV.fetch("MATCH_GIT_URL",
+                  "https://github.com/AmericanGroupLLC/AmericanGroupLLC-Backend.git"))
+git_branch(ENV.fetch("MATCH_GIT_BRANCH", "match-certificates"))
 storage_mode("git")
 type("appstore")
 app_identifier(["com.americangroupllc.pilotenroute"])

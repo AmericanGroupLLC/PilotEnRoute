@@ -1,0 +1,63 @@
+name: Release
+
+# Manual delivery through Fastlane. Every credential is a repository secret;
+# the lanes fail loudly if one is missing.
+on:
+  workflow_dispatch:
+    inputs:
+      platform:
+        description: Platform to deliver
+        required: true
+        default: android
+        type: choice
+        options: [android, ios]
+      lane:
+        description: beta (TestFlight / Play internal) or release (store draft)
+        required: true
+        default: beta
+        type: choice
+        options: [beta, release, metadata]
+
+jobs:
+  deliver:
+    runs-on: ${{ inputs.platform == 'ios' && 'macos-latest' || 'ubuntu-latest' }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: "3.2"
+          bundler-cache: true
+
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+
+      - run: flutter pub get
+
+      - name: Decode Android upload keystore
+        if: inputs.platform == 'android'
+        run: echo "${{ secrets.ANDROID_KEYSTORE_BASE64 }}" | base64 -d > "$RUNNER_TEMP/upload.jks"
+
+      - name: Write Play service account
+        if: inputs.platform == 'android'
+        run: echo '${{ secrets.PLAY_SERVICE_ACCOUNT_JSON }}' > "$RUNNER_TEMP/play.json"
+
+      - name: Fastlane ${{ inputs.platform }} ${{ inputs.lane }}
+        env:
+          # iOS — App Store Connect API key
+          ASC_KEY_ID: ${{ secrets.ASC_KEY_ID }}
+          ASC_ISSUER_ID: ${{ secrets.ASC_ISSUER_ID }}
+          ASC_KEY_CONTENT: ${{ secrets.ASC_KEY_CONTENT }}
+          # iOS — match (optional; automatic signing is used when unset)
+          MATCH_GIT_URL: ${{ secrets.MATCH_GIT_URL }}
+          MATCH_PASSWORD: ${{ secrets.MATCH_PASSWORD }}
+          MATCH_GIT_BASIC_AUTHORIZATION: ${{ secrets.MATCH_GIT_BASIC_AUTHORIZATION }}
+          # Android
+          PLAY_JSON_KEY_FILE: ${{ runner.temp }}/play.json
+          ANDROID_KEYSTORE_PATH: ${{ runner.temp }}/upload.jks
+          ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+          ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
+        run: bundle exec fastlane ${{ inputs.platform }} ${{ inputs.lane }}

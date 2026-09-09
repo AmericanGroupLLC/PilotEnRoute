@@ -12,10 +12,6 @@ checklist. Regenerate after significant changes.
 - [ ] Crashlytics not wired — a crash in the wild is invisible.
 - [ ] AdMob is using Google's **test** app id — it serves test ads and earns nothing. Replace with this app's real id.
 
-## Medium
-
-- [ ] No release tags. Tag each store submission `v<version>+<build>` so a crash report can be traced to a build.
-
 ## Needs someone with console access
 
 These cannot be resolved from the repository:

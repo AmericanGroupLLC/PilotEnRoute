@@ -1,0 +1,197 @@
+# AGL standard Fastlane — PilotEnRoute (com.americangroupllc.pilotenroute)
+#
+# Auth is entirely env-driven so the same lanes run locally and in CI with no
+# secrets in the repo.
+#
+#   iOS      ASC_KEY_CONTENT (base64 .p8), ASC_KEY_ID, ASC_ISSUER_ID
+#   Signing  MATCH_GIT_URL + MATCH_PASSWORD to use match; omit them to fall
+#            back to Xcode automatic signing
+#   Android  PLAY_JSON_KEY_FILE (path to a Play service-account JSON) and
+#            ANDROID_KEYSTORE_PATH / ANDROID_KEYSTORE_PASSWORD /
+#            ANDROID_KEY_ALIAS / ANDROID_KEY_PASSWORD
+#
+# Run everything through `bundle exec fastlane <platform> <lane>` so the
+# fastlane version is pinned by the Gemfile.
+
+default_platform(:ios)
+
+APP_ID = "com.americangroupllc.pilotenroute".freeze
+TEAM_ID = "TLH7Z3G27A".freeze
+
+# `flutter build appbundle` writes to a flavour-qualified directory whenever the
+# build passes --flavor: bundle/<flavour>Release/app-<flavour>-release.aab. The
+# unflavoured path is never produced for a flavoured app, so derive it from the
+# same flavour the android build lane uses rather than hardcoding it.
+FLAVOR = "prod".freeze
+AAB_PATH = File.expand_path(
+  if FLAVOR.empty?
+    "../build/app/outputs/bundle/release/app-release.aab"
+  else
+    "../build/app/outputs/bundle/#{FLAVOR}Release/app-#{FLAVOR}-release.aab"
+  end,
+  __dir__
+).freeze
+
+def asc_api_key
+  key = ENV["ASC_KEY_CONTENT"].to_s.strip
+  UI.user_error!("ASC_KEY_CONTENT is empty — set the base64 .p8 as a secret") if key.empty?
+  app_store_connect_api_key(
+    key_id: ENV.fetch("ASC_KEY_ID"),
+    issuer_id: ENV.fetch("ASC_ISSUER_ID"),
+    key_content: key,
+    is_key_content_base64: true,
+    in_house: false
+  )
+end
+
+def latest_ipa
+  ipa = Dir[File.expand_path("../build/ios/ipa/*.ipa", __dir__)]
+        .max_by { |f| File.mtime(f) }
+  UI.user_error!("No .ipa in build/ios/ipa — run the ios `build` lane first") if ipa.nil?
+  ipa
+end
+
+# fastlane runs under `bundle exec`; handing that env to Flutter breaks its
+# CocoaPods detection. Strip the bundler vars for Flutter subprocesses.
+def flutter_sh(cmd)
+  runner = lambda { sh("cd .. && flutter #{cmd}") }
+  if defined?(Bundler) && Bundler.respond_to?(:with_unbundled_env)
+    Bundler.with_unbundled_env(&runner)
+  else
+    runner.call
+  end
+end
+
+def require_env!(*keys)
+  missing = keys.reject { |k| ENV[k] && !ENV[k].empty? }
+  return if missing.empty?
+
+  UI.user_error!("Missing required environment variable(s): #{missing.join(', ')}")
+end
+
+platform :ios do
+  desc "Run the Flutter test suite"
+  lane :test do
+    flutter_sh("test")
+  end
+
+  desc "Sync signing certificates with match (no-op unless MATCH_GIT_URL is set)"
+  lane :signing do |options|
+    if ENV["MATCH_GIT_URL"].to_s.empty?
+      UI.important("MATCH_GIT_URL not set — relying on Xcode automatic signing.")
+      next
+    end
+
+    require_env!("MATCH_PASSWORD")
+    match(
+      type: options[:type] || "appstore",
+      app_identifier: APP_ID,
+      team_id: TEAM_ID,
+      git_url: ENV.fetch("MATCH_GIT_URL"),
+      api_key: asc_api_key,
+      readonly: !ENV["CI"].to_s.empty?
+    )
+  end
+
+  desc "Build a release IPA"
+  lane :build do
+    signing
+    flutter_sh("build ipa --release --flavor prod")
+  end
+
+  desc "Upload the listing metadata only (no binary)"
+  lane :metadata do
+    deliver(
+      api_key: asc_api_key,
+      app_identifier: APP_ID,
+      skip_binary_upload: true,
+      skip_screenshots: true,
+      overwrite_screenshots: false,
+      force: true,
+      precheck_include_in_app_purchases: false
+    )
+  end
+
+  desc "Build and ship to TestFlight"
+  lane :beta do
+    build
+    upload_to_testflight(
+      api_key: asc_api_key,
+      app_identifier: APP_ID,
+      ipa: latest_ipa,
+      skip_waiting_for_build_processing: true
+    )
+  end
+
+  desc "Build, then upload binary + metadata to App Store Connect"
+  lane :release do
+    test
+    build
+    deliver(
+      api_key: asc_api_key,
+      app_identifier: APP_ID,
+      ipa: latest_ipa,
+      skip_screenshots: false,
+      overwrite_screenshots: true,
+      submit_for_review: false,
+      force: true,
+      precheck_include_in_app_purchases: false
+    )
+  end
+end
+
+platform :android do
+  desc "Run the Flutter test suite"
+  lane :test do
+    flutter_sh("test")
+  end
+
+  desc "Build a signed release AAB"
+  lane :build do
+    require_env!(
+      "ANDROID_KEYSTORE_PATH",
+      "ANDROID_KEYSTORE_PASSWORD",
+      "ANDROID_KEY_ALIAS",
+      "ANDROID_KEY_PASSWORD"
+    )
+    flutter_sh("build appbundle --release --flavor prod")
+  end
+
+  desc "Upload the Play listing metadata only (no binary)"
+  lane :metadata do
+    upload_to_play_store(
+      package_name: APP_ID,
+      json_key: ENV.fetch("PLAY_JSON_KEY_FILE", "fastlane/play-service-account.json"),
+      skip_upload_aab: true,
+      skip_upload_apk: true,
+      skip_upload_changelogs: false,
+      skip_upload_images: false,
+      skip_upload_screenshots: false
+    )
+  end
+
+  desc "Upload the AAB to the Play internal track"
+  lane :beta do
+    build
+    upload_to_play_store(
+      package_name: APP_ID,
+      json_key: ENV.fetch("PLAY_JSON_KEY_FILE", "fastlane/play-service-account.json"),
+      aab: AAB_PATH,
+      track: "internal",
+      release_status: "draft"
+    )
+  end
+
+  desc "Upload the AAB to Play production as a draft"
+  lane :release do
+    test
+    build
+    upload_to_play_store(
+      package_name: APP_ID,
+      json_key: ENV.fetch("PLAY_JSON_KEY_FILE", "fastlane/play-service-account.json"),
+      aab: AAB_PATH,
+      track: "production",
+      release_status: "draft"
+    )
+  end
+end

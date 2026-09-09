@@ -1,0 +1,12 @@
+app_identifier("com.americangroupllc.pilotenroute")
+team_id("TLH7Z3G27A") # American Group LLC
+
+# Auth uses an App Store Connect API key (ASC_KEY_ID / ASC_ISSUER_ID /
+# ASC_KEY_CONTENT), so no Apple ID is required. FASTLANE_USER is only needed
+# for the handful of actions that still use username auth.
+apple_id(ENV["FASTLANE_USER"]) if ENV["FASTLANE_USER"]
+
+for_platform :android do
+  json_key_file(ENV.fetch("PLAY_JSON_KEY_FILE", "fastlane/play-service-account.json"))
+  package_name("com.americangroupllc.pilotenroute")
+end

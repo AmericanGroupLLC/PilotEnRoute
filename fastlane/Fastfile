@@ -148,12 +148,17 @@ platform :android do
 
   desc "Build a signed release AAB"
   lane :build do
-    require_env!(
-      "ANDROID_KEYSTORE_PATH",
-      "ANDROID_KEYSTORE_PASSWORD",
-      "ANDROID_KEY_ALIAS",
-      "ANDROID_KEY_PASSWORD"
-    )
+    # Gradle takes signing from android/key.properties or, failing that, from
+    # the environment. Only insist on the env vars when there is no properties
+    # file, so a developer with a local key.properties is not blocked.
+    unless File.exist?(File.expand_path("../android/key.properties", __dir__))
+      require_env!(
+        "ANDROID_KEYSTORE_PATH",
+        "ANDROID_KEYSTORE_PASSWORD",
+        "ANDROID_KEY_ALIAS",
+        "ANDROID_KEY_PASSWORD"
+      )
+    end
     flutter_sh("build appbundle --release --flavor prod")
   end
 

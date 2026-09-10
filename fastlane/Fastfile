@@ -106,9 +106,19 @@ platform :ios do
       precheck_include_in_app_purchases: false
     )
   end
+
+  desc "Alias for `release` — the name the release runbook uses"
+  lane :production do
+    release
+  end
 end
 
 platform :android do
+  desc "Run the Flutter test suite"
+  lane :test do
+    flutter_sh("test")
+  end
+
   desc "Build a release AAB"
   lane :build do
     flutter_sh("build appbundle --release --flavor prod")
@@ -151,5 +161,10 @@ platform :android do
       track: "production",
       release_status: "draft"
     )
+  end
+
+  desc "Alias for `release` — the name the release runbook uses"
+  lane :production do
+    release
   end
 end

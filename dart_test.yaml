@@ -1,0 +1,6 @@
+# `sanity` marks the fast release-configuration checks that run on every pull
+# request. The full suite runs nightly in agl-manifest, batched across the
+# portfolio, which is where the CI minutes used to go.
+tags:
+  sanity:
+    description: Fast release-configuration checks. Run with --tags sanity.

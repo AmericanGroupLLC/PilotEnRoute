@@ -97,5 +97,23 @@
 	</array>
 	<key>UIViewControllerBasedStatusBarAppearance</key>
 	<false/>
+	<!-- The languages this binary can actually serve. iOS shows only
+	     these on the App Store page, so it has to match the ARB files
+	     and android/app resConfigs. -->
+	<key>CFBundleLocalizations</key>
+	<array>
+		<string>en</string>
+		<string>es</string>
+		<string>zh</string>
+		<string>hi</string>
+		<string>fr</string>
+		<string>ar</string>
+		<string>de</string>
+		<string>ja</string>
+		<string>pt</string>
+		<string>ko</string>
+		<string>it</string>
+		<string>ru</string>
+	</array>
 </dict>
 </plist>

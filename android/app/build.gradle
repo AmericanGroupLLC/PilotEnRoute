@@ -60,6 +60,9 @@ android {
     }
 
     defaultConfig {
+        // Ships only the languages this app has strings for; every
+        // other locale bundled by a dependency is stripped.
+        resConfigs "en", "es", "zh", "hi", "fr", "ar", "de", "ja", "pt", "ko", "it", "ru"
         applicationId "com.americangroupllc.pilotenroute"
         minSdkVersion flutter.minSdkVersion
         targetSdkVersion flutter.targetSdkVersion

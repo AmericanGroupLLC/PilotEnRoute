@@ -1,3 +1,4 @@
+import 'package:agl_i18n/agl_i18n.dart';
 import 'package:agl_observability/agl_observability.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -162,6 +163,12 @@ class PilotEnRouteApp extends StatelessWidget {
         ChangeNotifierProvider<AuthService>.value(value: AuthService.instance),
       ],
       child: MaterialApp(
+      // The twelve languages the portfolio ships. `locale` is deliberately not
+      // set: with it null Flutter resolves against the device, so a phone
+      // already in Spanish opens a Spanish app without the user hunting for a
+      // setting. AglLanguageScreen is how an app offers an override.
+      localizationsDelegates: aglLocalizationsDelegates(null),
+      supportedLocales: AglLocales.standard,
         title: 'PilotEnRoute',
         debugShowCheckedModeBanner: false,
         theme: _buildTheme(),

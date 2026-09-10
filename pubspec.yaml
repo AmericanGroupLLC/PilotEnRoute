@@ -7,6 +7,15 @@ environment:
   sdk: '>=3.0.0 <4.0.0'
 
 dependencies:
+  # The portfolio's twelve languages, the locale controller, the picker and
+  # the vocabulary every AGL app shares.
+  agl_i18n:
+    git:
+      url: https://github.com/AmericanGroupLLC/AmericanGroupLLC-Backend.git
+      path: packages/agl_i18n
+      ref: dev
+  flutter_localizations:
+    sdk: flutter
   agl_ads:
     git:
       url: https://github.com/AmericanGroupLLC/AmericanGroupLLC-Backend.git
@@ -66,7 +75,7 @@ dependencies:
   connectivity_plus: ^6.0.3
   device_info_plus: ^10.1.2
   package_info_plus: ^8.0.2
-  intl: ^0.19.0
+  intl: any  # pinned by flutter_localizations; see docs/I18N.md
   image_picker: ^1.1.2
   qr_flutter: ^4.1.0
 

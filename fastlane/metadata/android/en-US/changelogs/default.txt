@@ -1,0 +1,13 @@
+First release of PilotEnRoute.
+
+• FAA ground-school study with exams, flashcards and debriefs
+• Part 107 drone training
+• E6B flight computer, flight planner, fuel and weight tools
+• Build-your-own checklists, airport information and chart reference
+• Digital logbook, endorsements and documents, with a medical-expiry reminder
+• Live weather from public aviation sources
+• Sign-in optional - "Continue as guest" unlocks everything
+
+Not approved for navigation. A study and planning tool only - always verify against official sources.
+
+Feedback: contact@safecodeg.com

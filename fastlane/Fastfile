@@ -54,6 +54,7 @@ platform :ios do
   desc "Build a release IPA"
   lane :build do
     flutter_sh("build ipa --release --flavor prod")
+    upload_dsyms
   end
 
   desc "Upload the listing metadata only (no binary)"
@@ -133,6 +134,7 @@ platform :android do
       package_name: "com.americangroupllc.pilotenroute",
       json_key: ENV.fetch("PLAY_JSON_KEY_FILE", "fastlane/play-service-account.json"),
       aab: AAB_PATH,
+      mapping_paths: Dir[File.expand_path("../build/app/outputs/mapping/release/mapping.txt", __dir__)],
       track: "internal",
       release_status: "draft"
     )
@@ -145,6 +147,7 @@ platform :android do
       package_name: "com.americangroupllc.pilotenroute",
       json_key: ENV.fetch("PLAY_JSON_KEY_FILE", "fastlane/play-service-account.json"),
       aab: AAB_PATH,
+      mapping_paths: Dir[File.expand_path("../build/app/outputs/mapping/release/mapping.txt", __dir__)],
       track: "production",
       release_status: "draft"
     )

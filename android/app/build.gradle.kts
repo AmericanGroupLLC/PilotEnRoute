@@ -5,6 +5,17 @@ plugins {
     id("dev.flutter.flutter-gradle-plugin")
 }
 
+// Firebase applies itself as soon as the config file is present. The Google
+// Services plugin fails the build outright when google-services.json is
+// missing, so it must not be applied unconditionally — and this way enabling
+// Crashlytics is a file drop, with no code change and no new release.
+// The Crashlytics plugin uploads the R8 mapping file for every release build,
+// which is what makes an obfuscated stack trace readable in the console.
+if (file("google-services.json").exists()) {
+    apply(plugin = "com.google.gms.google-services")
+    apply(plugin = "com.google.firebase.crashlytics")
+}
+
 android {
     namespace = "com.americangroupllc.pilot_enroute"
     compileSdk = flutter.compileSdkVersion

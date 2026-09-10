@@ -9,6 +9,11 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
+  agl_observability:
+    git:
+      url: https://github.com/AmericanGroupLLC/AmericanGroupLLC-Backend.git
+      path: packages/agl_observability
+      ref: dev
 
   # ── Core UI ──────────────────────────────────────────────────────────────────
   cupertino_icons: ^1.0.8
@@ -56,7 +61,6 @@ dependencies:
   connectivity_plus: ^6.0.3
   device_info_plus: ^10.1.2
   package_info_plus: ^8.0.2
-  share_plus: ^9.0.0
   intl: ^0.19.0
   image_picker: ^1.1.2
   qr_flutter: ^4.1.0

@@ -53,3 +53,22 @@ env/secrets.json
 android/build/
 android/.gradle/
 android/.kotlin/
+
+# ── Signing and delivery secrets — never commit ──────────────────────────────
+# An upload keystore in git is unrecoverable: the key is public from the moment
+# it is pushed, and with Play App Signing off the listing can never be updated
+# again. The Firebase config files are deliberately NOT here — Google documents
+# them as non-secret, they ship inside the binary anyway, and CI needs them in
+# the checkout for the Crashlytics Gradle plugin to apply and upload a mapping.
+**/key.properties
+*.jks
+*.keystore
+*.p8
+*.p12
+*.mobileprovision
+*.cer
+**/fastlane/play-service-account.json
+**/fastlane/*.json.enc
+env/*.json
+!env/*.example.json
+!env/example.json

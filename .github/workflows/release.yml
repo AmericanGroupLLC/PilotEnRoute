@@ -22,6 +22,24 @@ jobs:
   deliver:
     runs-on: ${{ inputs.platform == 'ios' && 'macos-latest' || 'ubuntu-latest' }}
     steps:
+      # agl_i18n, agl_observability and agl_ads are git dependencies on the
+      # private AmericanGroupLLC-Backend repository. A runner's built-in token
+      # only reaches its own repo, so without this `flutter pub get` fails with
+      # "could not read Username for 'https://github.com'".
+      - name: Authenticate pub for the private shared packages
+        env:
+          TOKEN: ${{ secrets.AGL_PACKAGES_TOKEN }}
+        run: |
+          if [ -z "$TOKEN" ]; then
+            echo "::error::AGL_PACKAGES_TOKEN is not set. Add it as an \
+          organization secret with read access to AmericanGroupLLC-Backend — \
+          pub cannot fetch the shared packages without it."
+            exit 1
+          fi
+          git config --global \
+            url."https://x-access-token:$TOKEN@github.com/".insteadOf \
+            "https://github.com/"
+
       - uses: actions/checkout@v4
 
       - uses: ruby/setup-ruby@v1

@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'package:agl_ads/agl_ads.dart';
 import 'package:flutter/foundation.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'premium_service.dart';
@@ -60,7 +61,16 @@ class AdService extends ChangeNotifier {
   // ── Initialize MobileAds SDK ─────────────────────────────────────────────
   Future<void> initialize() async {
     if (kIsWeb) return; // AdMob not supported on web
+    // AdMob policy: in the EEA, the UK and Switzerland an ad may not be
+    // *requested* until the user has been asked — a non-personalised ad is
+    // not a substitute. UMP decides whether a form is required from the
+    // user's own location, so there is no geo-check here; everywhere else
+    // it reports "not required" and this costs one no-op call.
+    await AglConsent.gather();
     await MobileAds.instance.initialize();
+    // Caches the answer for AglConsent.adsAllowed, which is what the
+    // synchronous ad call sites below read.
+    await AglConsent.refresh();
     // Set test device IDs in debug mode
     if (kDebugMode) {
       await MobileAds.instance.updateRequestConfiguration(
@@ -76,6 +86,10 @@ class AdService extends ChangeNotifier {
   // ── Check if ads should show (premium users see no ads) ──────────────────
   bool shouldShowAds() {
     if (kIsWeb) return false;
+    // No ad may be requested until UMP says consent allows it. This is the
+    // predicate every caller already checks before createBannerAd(), which
+    // returns a non-nullable BannerAd and so cannot decline on its own.
+    if (!AglConsent.adsAllowed) return false;
     return !PremiumService().isPremium;
   }
 
@@ -96,6 +110,8 @@ class AdService extends ChangeNotifier {
 
   // ── Interstitial Ad ──────────────────────────────────────────────────────
   void _loadInterstitialAd() {
+    // No ad may be requested until UMP says consent allows it.
+    if (!AglConsent.adsAllowed) return;
     if (kIsWeb) return;
     InterstitialAd.load(
       adUnitId: AdUnitIds.interstitial,
@@ -142,6 +158,8 @@ class AdService extends ChangeNotifier {
 
   // ── Rewarded Ad (for unlocking extra exam questions) ─────────────────────
   void _loadRewardedAd() {
+    // No ad may be requested until UMP says consent allows it.
+    if (!AglConsent.adsAllowed) return;
     if (kIsWeb) return;
     RewardedAd.load(
       adUnitId: AdUnitIds.rewarded,

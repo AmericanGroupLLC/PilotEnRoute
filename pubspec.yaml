@@ -7,6 +7,11 @@ environment:
   sdk: '>=3.0.0 <4.0.0'
 
 dependencies:
+  agl_ads:
+    git:
+      url: https://github.com/AmericanGroupLLC/AmericanGroupLLC-Backend.git
+      path: packages/agl_ads
+      ref: dev
   flutter:
     sdk: flutter
   agl_observability:

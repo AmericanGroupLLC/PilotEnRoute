@@ -51,6 +51,7 @@ class _FlightTrackerScreenState extends State<FlightTrackerScreen>
             title: const Text('FLIGHT TRACKER'),
             actions: [
               IconButton(
+                tooltip: 'Refresh',
                 icon: const Icon(Icons.refresh),
                 onPressed: () => service.fetchNearbyFlights(),
               ),

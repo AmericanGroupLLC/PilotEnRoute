@@ -482,6 +482,7 @@ class _FlashcardScreenState extends State<FlashcardScreen>
         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
         children: [
           IconButton(
+            tooltip: 'Back',
             onPressed: _previous,
             icon: const Icon(Icons.arrow_back_ios, color: Colors.white54),
             iconSize: 28,
@@ -521,6 +522,7 @@ class _FlashcardScreenState extends State<FlashcardScreen>
             ),
           ),
           IconButton(
+            tooltip: 'Forward',
             onPressed: _next,
             icon: const Icon(Icons.arrow_forward_ios, color: Colors.white54),
             iconSize: 28,

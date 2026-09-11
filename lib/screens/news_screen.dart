@@ -31,6 +31,7 @@ class _NewsScreenState extends State<NewsScreen> {
         title: const Text('AVIATION NEWS'),
         actions: [
           IconButton(
+            tooltip: 'Refresh',
             icon: const Icon(Icons.refresh),
             onPressed: () => context.read<NewsService>().fetchAllNews(),
           ),

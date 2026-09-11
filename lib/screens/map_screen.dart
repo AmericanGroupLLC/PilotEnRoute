@@ -661,6 +661,7 @@ class _MapScreenState extends State<MapScreen> {
             fillColor: const Color(0xFF112240).withAlpha(240),
             prefixIcon: const Icon(Icons.search, color: Color(0xFF00BCD4)),
             suffixIcon: IconButton(
+              tooltip: 'Forward',
               icon: const Icon(Icons.arrow_forward, color: Color(0xFF00BCD4)),
               onPressed: _searchAirport,
             ),

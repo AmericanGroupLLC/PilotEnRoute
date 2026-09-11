@@ -32,6 +32,7 @@ class _FlightPlanScreenState extends State<FlightPlanScreen> {
             title: const Text('FLIGHT PLANS'),
             actions: [
               IconButton(
+                tooltip: 'Add',
                 icon: const Icon(Icons.add),
                 onPressed: () => setState(() => _creating = true),
               ),
@@ -343,6 +344,7 @@ class _FlightPlanScreenState extends State<FlightPlanScreen> {
               Row(
                 children: [
                   IconButton(
+                    tooltip: 'Back',
                     onPressed: () => setState(() => _creating = false),
                     icon: const Icon(Icons.arrow_back, color: Colors.white),
                   ),

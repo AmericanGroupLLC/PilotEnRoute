@@ -385,6 +385,7 @@ class _AccountScreenState extends State<AccountScreen> {
               validator: _auth.validatePasswordField,
               onSubmitted: (_) => _submitEmail(),
               suffix: IconButton(
+                tooltip: 'Hide',
                 icon: Icon(
                   _obscurePassword ? Icons.visibility_off : Icons.visibility,
                   color: Colors.white54,

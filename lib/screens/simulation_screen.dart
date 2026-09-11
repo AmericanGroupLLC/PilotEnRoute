@@ -50,6 +50,7 @@ class _SimulationScreenState extends State<SimulationScreen> {
         actions: [
           if (_gameStarted)
             IconButton(
+              tooltip: 'Stop',
               icon: const Icon(Icons.stop_circle_outlined),
               onPressed: () => setState(() => _gameStarted = false),
             ),

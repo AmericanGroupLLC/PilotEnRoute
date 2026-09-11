@@ -162,6 +162,7 @@ class _DebriefScreenState extends State<DebriefScreen> {
                       )
                     else
                       IconButton(
+                        tooltip: 'Delete',
                         icon: const Icon(Icons.delete_outline, color: Colors.white38, size: 20),
                         onPressed: () => _confirmDelete(track),
                       ),
@@ -521,6 +522,7 @@ class _ReplayViewState extends State<_ReplayView> {
           Row(
             children: [
               IconButton(
+                tooltip: 'Pause',
                 iconSize: 40,
                 icon: Icon(
                   _playing ? Icons.pause_circle_filled : Icons.play_circle_fill,

@@ -81,6 +81,7 @@ class _PremiumScreenState extends State<PremiumScreen>
       floating: true,
       backgroundColor: const Color(0xFF0A0E1A),
       leading: IconButton(
+        tooltip: 'Close',
         icon: const Icon(Icons.close, color: Colors.white),
         onPressed: () => Navigator.pop(context),
       ),
@@ -624,6 +625,7 @@ class _PremiumScreenState extends State<PremiumScreen>
       appBar: AppBar(
         backgroundColor: const Color(0xFF0A0E1A),
         leading: IconButton(
+          tooltip: 'Close',
           icon: const Icon(Icons.close, color: Colors.white),
           onPressed: () => Navigator.pop(context),
         ),

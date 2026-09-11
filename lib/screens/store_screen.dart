@@ -181,6 +181,7 @@ class _StoreScreenState extends State<StoreScreen>
           prefixIcon: const Icon(Icons.search, color: Colors.white38),
           suffixIcon: _searchQuery.isNotEmpty
               ? IconButton(
+                tooltip: 'Clear',
                   icon: const Icon(Icons.clear, color: Colors.white38),
                   onPressed: () {
                     _searchController.clear();

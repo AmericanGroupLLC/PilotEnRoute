@@ -83,6 +83,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
       elevation: 0,
       leading: Builder(
         builder: (ctx) => IconButton(
+          tooltip: 'Menu',
           icon: const Icon(Icons.menu, color: Colors.white),
           onPressed: () => Scaffold.of(ctx).openDrawer(),
         ),
@@ -140,10 +141,12 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
           onPressed: () => Navigator.pushNamed(context, '/store'),
         ),
         IconButton(
+          tooltip: 'Notifications',
           icon: const Icon(Icons.notifications_outlined, color: Colors.white70),
           onPressed: () => Navigator.pushNamed(context, '/notifications'),
         ),
         IconButton(
+          tooltip: 'Profile',
           icon: const Icon(Icons.person_outline, color: Colors.white70),
           onPressed: () => Navigator.pushNamed(context, '/profile'),
         ),

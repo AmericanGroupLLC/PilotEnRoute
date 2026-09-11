@@ -465,6 +465,7 @@ class _IntegrationsScreenState extends State<IntegrationsScreen> {
                         ),
                       ),
                       IconButton(
+                        tooltip: 'Close',
                         onPressed: () => Navigator.of(ctx).maybePop(),
                         icon: const Icon(Icons.close, color: Colors.white54),
                       ),

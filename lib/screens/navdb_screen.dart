@@ -143,6 +143,7 @@ class _NavDbScreenState extends State<NavDbScreen>
           suffixIcon: _query.isEmpty
               ? null
               : IconButton(
+                tooltip: 'Clear',
                   icon: const Icon(Icons.clear, color: Colors.white38),
                   onPressed: () {
                     _searchController.clear();
@@ -315,6 +316,7 @@ class _NavDbScreenState extends State<NavDbScreen>
             ),
           ),
           IconButton(
+            tooltip: 'Rate',
             icon: const Icon(Icons.star, color: _amber),
             onPressed: () => _service.toggleFavorite(ident),
           ),
@@ -411,6 +413,7 @@ class _NavDbScreenState extends State<NavDbScreen>
             ),
           ),
           IconButton(
+            tooltip: 'Delete',
             icon: const Icon(Icons.delete_outline, color: Colors.white38),
             onPressed: () => _service.removeUserWaypoint(wp.id),
           ),
@@ -585,6 +588,7 @@ class _NavDbScreenState extends State<NavDbScreen>
               _typeChip(navaid.type),
               const Spacer(),
               IconButton(
+                tooltip: 'Rate',
                 padding: EdgeInsets.zero,
                 constraints: const BoxConstraints(),
                 icon: Icon(

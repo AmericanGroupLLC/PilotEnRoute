@@ -269,74 +269,74 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
 
   Widget _buildModulesGrid() {
     final modules = [
-      ModuleData(
+      const ModuleData(
         title: 'AI Flight\nSimulator',
         icon: Icons.flight_takeoff,
-        color: const Color(0xFF1565C0),
+        color: Color(0xFF1565C0),
         route: '/simulation',
         badge: 'NEW',
       ),
-      ModuleData(
+      const ModuleData(
         title: 'FAA\nEducation',
         icon: Icons.school,
-        color: const Color(0xFF00695C),
+        color: Color(0xFF00695C),
         route: '/education',
       ),
-      ModuleData(
+      const ModuleData(
         title: 'Smart\nChecklists',
         icon: Icons.checklist_rtl,
-        color: const Color(0xFF6A1B9A),
+        color: Color(0xFF6A1B9A),
         route: '/checklist',
       ),
-      ModuleData(
+      const ModuleData(
         title: 'Emergency\nTrainer',
         icon: Icons.warning_amber,
-        color: const Color(0xFFB71C1C),
+        color: Color(0xFFB71C1C),
         route: '/emergency',
         badge: 'SIM',
       ),
-      ModuleData(
+      const ModuleData(
         title: 'Drone\nEducation',
         icon: Icons.toys,
-        color: const Color(0xFF00838F),
+        color: Color(0xFF00838F),
         route: '/drone',
       ),
-      ModuleData(
+      const ModuleData(
         title: 'Live\nWeather',
         icon: Icons.cloud,
-        color: const Color(0xFF1565C0),
+        color: Color(0xFF1565C0),
         route: '/weather',
         badge: 'LIVE',
       ),
-      ModuleData(
+      const ModuleData(
         title: 'Aviation\nNews',
         icon: Icons.newspaper,
-        color: const Color(0xFF4E342E),
+        color: Color(0xFF4E342E),
         route: '/news',
         badge: 'LIVE',
       ),
-      ModuleData(
+      const ModuleData(
         title: 'Airport\nLookup',
         icon: Icons.local_airport,
-        color: const Color(0xFF1B5E20),
+        color: Color(0xFF1B5E20),
         route: '/airport',
       ),
-      ModuleData(
+      const ModuleData(
         title: 'ATPL\nQuiz',
         icon: Icons.quiz,
-        color: const Color(0xFFE65100),
+        color: Color(0xFFE65100),
         route: '/quiz',
       ),
-      ModuleData(
+      const ModuleData(
         title: 'Aviation\nGlossary',
         icon: Icons.menu_book,
-        color: const Color(0xFF37474F),
+        color: Color(0xFF37474F),
         route: '/glossary',
       ),
-      ModuleData(
+      const ModuleData(
         title: 'Garmin\nConnect',
         icon: Icons.watch,
-        color: const Color(0xFF1A237E),
+        color: Color(0xFF1A237E),
         route: '/garmin',
         badge: 'GPS',
       ),

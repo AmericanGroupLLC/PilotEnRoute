@@ -16,9 +16,9 @@ void main() {
     testWidgets('renders with title and icon', (WidgetTester tester) async {
       await tester.pumpWidget(
         MaterialApp(
-          home: Scaffold(
+          home: const Scaffold(
             body: ModuleCard(
-              data: const ModuleData(
+              data: ModuleData(
                 title: 'Test Module',
                 icon: Icons.flight,
                 color: Colors.blue,
@@ -38,9 +38,9 @@ void main() {
     testWidgets('renders with badge when provided', (WidgetTester tester) async {
       await tester.pumpWidget(
         MaterialApp(
-          home: Scaffold(
+          home: const Scaffold(
             body: ModuleCard(
-              data: const ModuleData(
+              data: ModuleData(
                 title: 'Premium Module',
                 icon: Icons.star,
                 color: Colors.amber,
@@ -61,9 +61,9 @@ void main() {
     testWidgets('tapping navigates to route', (WidgetTester tester) async {
       await tester.pumpWidget(
         MaterialApp(
-          home: Scaffold(
+          home: const Scaffold(
             body: ModuleCard(
-              data: const ModuleData(
+              data: ModuleData(
                 title: 'Weather',
                 icon: Icons.cloud,
                 color: Colors.blue,
@@ -90,8 +90,8 @@ void main() {
         ChangeNotifierProvider<PremiumService>.value(
           value: PremiumService(),
           child: MaterialApp(
-            home: Scaffold(
-              body: const PremiumGate(
+            home: const Scaffold(
+              body: PremiumGate(
                 feature: 'locked_feature',
                 title: 'Locked Feature',
                 description: 'Upgrade to unlock this locked feature.',
@@ -114,8 +114,8 @@ void main() {
         ChangeNotifierProvider<PremiumService>.value(
           value: PremiumService(),
           child: MaterialApp(
-            home: Scaffold(
-              body: const PremiumGate(
+            home: const Scaffold(
+              body: PremiumGate(
                 feature: 'logbook_export',
                 title: 'Logbook Export',
                 description: 'Export your logbook to PDF.',

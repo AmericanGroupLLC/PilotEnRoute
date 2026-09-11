@@ -21,27 +21,27 @@ packages:
     dependency: "direct main"
     description:
       path: "packages/agl_ads"
-      ref: dev
-      resolved-ref: a388de3f2a3829a3f5cc084a2346549fe6279d8a
-      url: "https://github.com/AmericanGroupLLC/AmericanGroupLLC-Backend.git"
+      ref: master
+      resolved-ref: f0fc3b237de24a4f0b2a3b9548bf09b4bd9377c6
+      url: "https://github.com/AmericanGroupLLC/agl-manifest.git"
     source: git
     version: "1.0.0"
   agl_i18n:
     dependency: "direct main"
     description:
       path: "packages/agl_i18n"
-      ref: dev
-      resolved-ref: a388de3f2a3829a3f5cc084a2346549fe6279d8a
-      url: "https://github.com/AmericanGroupLLC/AmericanGroupLLC-Backend.git"
+      ref: master
+      resolved-ref: f0fc3b237de24a4f0b2a3b9548bf09b4bd9377c6
+      url: "https://github.com/AmericanGroupLLC/agl-manifest.git"
     source: git
     version: "1.0.0"
   agl_observability:
     dependency: "direct main"
     description:
       path: "packages/agl_observability"
-      ref: dev
-      resolved-ref: "0e5b90e61a70bd1ab044bea2c4f0661b7d4e3922"
-      url: "https://github.com/AmericanGroupLLC/AmericanGroupLLC-Backend.git"
+      ref: master
+      resolved-ref: f0fc3b237de24a4f0b2a3b9548bf09b4bd9377c6
+      url: "https://github.com/AmericanGroupLLC/agl-manifest.git"
     source: git
     version: "1.0.0"
   analyzer:

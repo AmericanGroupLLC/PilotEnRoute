@@ -208,7 +208,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                 SwitchListTile(
                   value: _settings[key] ?? true,
                   onChanged: (v) => _toggleSetting(key, v),
-                  activeColor: color,
+                  activeThumbColor: color,
                   secondary: Container(
                     width: 36,
                     height: 36,

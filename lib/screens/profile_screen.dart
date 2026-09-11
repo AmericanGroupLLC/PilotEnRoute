@@ -140,9 +140,9 @@ class _ProfileScreenState extends State<ProfileScreen>
                 Container(
                   width: 90,
                   height: 90,
-                  decoration: BoxDecoration(
+                  decoration: const BoxDecoration(
                     shape: BoxShape.circle,
-                    gradient: const LinearGradient(
+                    gradient: LinearGradient(
                       colors: [Color(0xFF00BCD4), Color(0xFF0097A7)],
                     ),
                   ),
@@ -172,7 +172,7 @@ class _ProfileScreenState extends State<ProfileScreen>
           _sectionLabel('PILOT CERTIFICATE LEVEL'),
           const SizedBox(height: 8),
           DropdownButtonFormField<String>(
-            value: _pilotLevel,
+            initialValue: _pilotLevel,
             dropdownColor: const Color(0xFF112240),
             style: GoogleFonts.inter(color: Colors.white, fontSize: 14),
             decoration: const InputDecoration(),
@@ -219,7 +219,7 @@ class _ProfileScreenState extends State<ProfileScreen>
           _sectionLabel('MEDICAL CERTIFICATE CLASS'),
           const SizedBox(height: 8),
           DropdownButtonFormField<String>(
-            value: _medicalClass,
+            initialValue: _medicalClass,
             dropdownColor: const Color(0xFF112240),
             style: GoogleFonts.inter(color: Colors.white, fontSize: 14),
             decoration: const InputDecoration(),

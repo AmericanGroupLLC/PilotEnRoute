@@ -317,14 +317,14 @@ class _StoreScreenState extends State<StoreScreen>
             // Product image area
             Container(
               height: 110,
-              decoration: BoxDecoration(
-                gradient: const LinearGradient(
+              decoration: const BoxDecoration(
+                gradient: LinearGradient(
                   colors: [Color(0xFF1565C0), Color(0xFF0D47A1)],
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
                 ),
                 borderRadius:
-                    const BorderRadius.vertical(top: Radius.circular(16)),
+                    BorderRadius.vertical(top: Radius.circular(16)),
               ),
               child: Stack(
                 children: [
@@ -457,13 +457,13 @@ class _StoreScreenState extends State<StoreScreen>
             Container(
               width: 100,
               height: 100,
-              decoration: BoxDecoration(
-                gradient: const LinearGradient(
+              decoration: const BoxDecoration(
+                gradient: LinearGradient(
                   colors: [Color(0xFF1565C0), Color(0xFF0D47A1)],
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
                 ),
-                borderRadius: const BorderRadius.horizontal(
+                borderRadius: BorderRadius.horizontal(
                     left: Radius.circular(16)),
               ),
               child: Stack(

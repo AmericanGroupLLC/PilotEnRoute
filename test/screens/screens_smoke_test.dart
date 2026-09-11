@@ -1,5 +1,6 @@
 /// Smoke tests — verify every screen renders without crashing.
 /// These tests do NOT require a real device or network connection.
+library;
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:provider/provider.dart';

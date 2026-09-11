@@ -4,7 +4,6 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:flame/game.dart';
 import 'package:flame/components.dart';
 import 'package:flame/events.dart';
-import 'package:flame/input.dart';
 
 // ─── Lightweight AI Flight Simulation ─────────────────────────────────────────
 // Uses the Flame game engine for 2D top-down flight simulation.
@@ -484,7 +483,7 @@ class FlightSimGame extends FlameGame with TapCallbacks {
 
   // AI autopilot targets
   double _targetAltitude = 5000.0;
-  double _targetHeading = 0.0;
+  final double _targetHeading = 0.0;
   double _targetAirspeed = 120.0;
 
   late TextComponent _altText;

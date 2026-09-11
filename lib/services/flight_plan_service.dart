@@ -284,7 +284,7 @@ ALTERNATE: ${plan.alternate ?? 'NONE'}
 CRUISE ALT: ${plan.cruiseAltitude} ft MSL
 TAS: ${plan.cruiseSpeed} kts
 ETD: ${etdStr}Z
-ETE: ${eteStr}
+ETE: $eteStr
 ROUTE: ${plan.route ?? plan.waypoints.map((w) => w.identifier).join(' ')}
 REMARKS: ${plan.remarks}
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━

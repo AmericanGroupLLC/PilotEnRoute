@@ -302,7 +302,7 @@ class _FlashcardScreenState extends State<FlashcardScreen>
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Icon(Icons.touch_app, color: Colors.white38, size: 16),
+                const Icon(Icons.touch_app, color: Colors.white38, size: 16),
                 const SizedBox(width: 6),
                 Text(
                   'Tap to reveal answer',

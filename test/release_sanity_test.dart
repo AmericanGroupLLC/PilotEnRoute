@@ -1,6 +1,7 @@
 @Tags(['sanity'])
 library;
 
+import 'dart:convert';
 import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
@@ -78,6 +79,25 @@ void main() {
           reason: 'the manifest exists but is not a member of the Runner '
               'target, so it is never copied into the .app and Apple never '
               'sees it');
+    });
+
+    test('a Firebase config, if present, is the real project', () {
+      // A placeholder config is worse than none. The Gradle plugin applies,
+      // Crashlytics initialises, AglCrash.isActive turns true — and every
+      // report goes to a project that does not exist. That looks exactly like
+      // an app which never crashes. MyHealth carried one of these
+      // (project myhealth-local-dev, project_number 000000000000).
+      final file = File('android/app/google-services.json');
+      if (!file.existsSync()) return;
+
+      final config = jsonDecode(file.readAsStringSync()) as Map<String, dynamic>;
+      final info = config['project_info'] as Map<String, dynamic>;
+
+      expect(info['project_id'], 'americangroupllc-5bdfc',
+          reason: 'this google-services.json is for a different Firebase '
+              'project, so no crash would ever arrive');
+      expect(info['project_number'], isNot(matches(r'^0+$')),
+          reason: 'a project_number of all zeros is a placeholder');
     });
 
     test('uncaught errors are captured before the app runs', () {

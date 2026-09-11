@@ -1,3 +1,18 @@
+# GitHub Actions is DISABLED for this repository.
+#
+# All CI and delivery for the portfolio runs in one place:
+#   https://github.com/AmericanGroupLLC/agl-manifest
+#
+# 37 repositories each running their own pipeline meant paying the runner boot,
+# the Flutter SDK download and a cold pub cache 37 times over — and the macOS
+# half bills at 10x. The manifest does the same work once for the batch.
+#
+# This file is kept, not deleted, so the pipeline is recoverable: re-enable with
+#   gh api -X PUT /repos/AmericanGroupLLC/PilotEnRoute/actions/permissions -F enabled=true
+#
+# To validate just this app right now, from agl-manifest:
+#   bundle exec fastlane validate apps:PilotEnRoute
+
 name: Release
 
 # Manual delivery through Fastlane. Every credential is a repository secret;

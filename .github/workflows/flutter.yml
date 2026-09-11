@@ -1,12 +1,17 @@
+# Superseded by agl-manifest.
+#
+# This duplicated the Flutter pipeline that now runs for the whole portfolio in
+# one batch — see AmericanGroupLLC-Backend/docs/DELIVERY_ARCHITECTURE.md. It was
+# spending a runner (and in some cases a macOS runner, billed at 10x) on every
+# push to do work the nightly batch already does.
+#
+# Left in place rather than deleted, and still runnable by hand, in case it
+# carries a step the standard pipeline does not.
+
 name: PilotEnRoute CI/CD
 
 on:
-  push:
-    branches: [ master, main ]
-  pull_request:
-    branches: [ master, main ]
-  release:
-    types: [ published ]
+  workflow_dispatch:
 
 jobs:
   # ── Analyze & Test ──────────────────────────────────────────────────────────

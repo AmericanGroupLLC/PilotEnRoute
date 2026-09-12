@@ -797,7 +797,13 @@ class _AccountScreenState extends State<AccountScreen> {
   Widget _supportRow() {
     return _card(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-      child: ListTile(
+      // A ListTile paints its ink splash on the nearest Material ancestor,
+      // which here is behind the card's opaque decoration — so the tap gave no
+      // feedback at all. A transparent Material inside the card is the surface
+      // the splash needs. (Flutter asserts on this in debug.)
+      child: Material(
+        type: MaterialType.transparency,
+        child: ListTile(
         contentPadding: const EdgeInsets.symmetric(horizontal: 8),
         leading: const Icon(Icons.support_agent_outlined, color: _kCyan),
         title: Text(
@@ -813,6 +819,7 @@ class _AccountScreenState extends State<AccountScreen> {
         ),
         trailing: const Icon(Icons.chevron_right, color: Colors.white38),
         onTap: _contactSupport,
+        ),
       ),
     );
   }

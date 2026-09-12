@@ -157,8 +157,12 @@ class PilotEnRouteApp extends StatelessWidget {
         ChangeNotifierProvider(create: (_) => FlightTrackerService()),
         ChangeNotifierProvider(create: (_) => FlashcardService()),
         // ── Monetization Services ─────────────────────────────────────────
-        ChangeNotifierProvider(create: (_) => PremiumService()),
-        ChangeNotifierProvider(create: (_) => AdService()),
+        // Both are process-wide singletons (`factory X() => _instance`), so
+        // they must be provided with `.value`: `create:` makes the provider
+        // the owner and it calls dispose() on teardown, which permanently
+        // poisons the singleton for the rest of the process.
+        ChangeNotifierProvider<PremiumService>.value(value: PremiumService()),
+        ChangeNotifierProvider<AdService>.value(value: AdService()),
         // ── Auth (AmericanGroupLLC backend) — shared singleton ────────────
         ChangeNotifierProvider<AuthService>.value(value: AuthService.instance),
       ],

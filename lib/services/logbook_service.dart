@@ -215,8 +215,12 @@ class LogbookService extends ChangeNotifier {
       await _db!.insert('logbook_entries', entry.toMap());
       await loadEntries();
     } else {
+      // Every column must be copied. The earlier version of this branch left
+      // out SIC, CFI given, instrument time, night takeoffs/landings and
+      // approaches, so a logged IFR lesson lost its approaches and the
+      // instrument-currency check below silently read false.
       _entries.insert(0, LogbookEntry(
-        id: _entries.length + 1,
+        id: _nextInMemoryId(),
         date: entry.date,
         aircraftType: entry.aircraftType,
         tailNumber: entry.tailNumber,
@@ -224,16 +228,36 @@ class LogbookService extends ChangeNotifier {
         to: entry.to,
         totalTime: entry.totalTime,
         picTime: entry.picTime,
+        sicTime: entry.sicTime,
         dualReceived: entry.dualReceived,
+        cfiGiven: entry.cfiGiven,
         crossCountry: entry.crossCountry,
         night: entry.night,
+        actualInstrument: entry.actualInstrument,
+        simulatedInstrument: entry.simulatedInstrument,
         dayTakeoffs: entry.dayTakeoffs,
         dayLandings: entry.dayLandings,
+        nightTakeoffs: entry.nightTakeoffs,
+        nightLandings: entry.nightLandings,
+        approaches: entry.approaches,
         remarks: entry.remarks,
+        conditions: entry.conditions,
       ));
       _calculateTotals();
       notifyListeners();
     }
+  }
+
+  /// Next free id for the in-memory store. Counting entries would reuse an id
+  /// after a delete, and deleteEntry() removes *by* id — so two rows would
+  /// disappear at once.
+  int _nextInMemoryId() {
+    var max = 0;
+    for (final e in _entries) {
+      final id = e.id ?? 0;
+      if (id > max) max = id;
+    }
+    return max + 1;
   }
 
   Future<void> deleteEntry(int id) async {
@@ -331,7 +355,9 @@ class LogbookService extends ChangeNotifier {
     final entries = List<LogbookEntry>.from(_entries);
     final t = _totals;
     final dateFmt = DateFormat('MM/dd/yyyy');
-    final generatedFmt = DateFormat('MMM d, yyyy • HH:mm');
+    // ASCII only: the PDF is drawn with the built-in Helvetica, which has no
+    // glyph for U+2022 and dropped the separator from the exported header.
+    final generatedFmt = DateFormat('MMM d, yyyy - HH:mm');
 
     String h(double v) => v.toStringAsFixed(1);
     int ldg(LogbookEntry e) => e.dayLandings + e.nightLandings;

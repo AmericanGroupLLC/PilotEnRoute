@@ -58,11 +58,15 @@ class _AdBannerWidgetState extends State<AdBannerWidget> {
 
         // Mobile: show real AdMob banner or placeholder while loading
         if (_isAdLoaded && _bannerAd != null) {
-          return Container(
-            alignment: Alignment.center,
-            width: _bannerAd!.size.width.toDouble(),
-            height: _bannerAd!.size.height.toDouble(),
-            child: AdWidget(ad: _bannerAd!),
+          return Semantics(
+            container: true,
+            label: 'Advertisement',
+            child: Container(
+              alignment: Alignment.center,
+              width: _bannerAd!.size.width.toDouble(),
+              height: _bannerAd!.size.height.toDouble(),
+              child: AdWidget(ad: _bannerAd!),
+            ),
           );
         }
 
@@ -133,35 +137,46 @@ class _AdBannerWidgetState extends State<AdBannerWidget> {
   }
 
   Widget _adLabel() {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 2),
-      decoration: BoxDecoration(
-        color: const Color(0xFF1E3A5F),
-        borderRadius: BorderRadius.circular(3),
-      ),
-      child: Text(
-        'AD',
-        style: GoogleFonts.inter(
-          color: Colors.white54,
-          fontSize: 9,
-          fontWeight: FontWeight.bold,
+    return Semantics(
+      container: true,
+      label: 'Advertisement',
+      excludeSemantics: true,
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 2),
+        decoration: BoxDecoration(
+          color: const Color(0xFF1E3A5F),
+          borderRadius: BorderRadius.circular(3),
+        ),
+        child: Text(
+          'AD',
+          style: GoogleFonts.inter(
+            color: Colors.white54,
+            fontSize: 9,
+            fontWeight: FontWeight.bold,
+          ),
         ),
       ),
     );
   }
 
   Widget _upgradeButton(BuildContext context) {
-    return TextButton(
-      onPressed: () => Navigator.push(
-        context,
-        MaterialPageRoute(builder: (_) => const PremiumScreen()),
-      ),
-      child: Text(
-        'Go Premium',
-        style: GoogleFonts.inter(
-          color: const Color(0xFFFFD700),
-          fontSize: 11,
-          fontWeight: FontWeight.w600,
+    return Semantics(
+      container: true,
+      button: true,
+      label: 'Go Premium, remove ads',
+      excludeSemantics: true,
+      child: TextButton(
+        onPressed: () => Navigator.push(
+          context,
+          MaterialPageRoute(builder: (_) => const PremiumScreen()),
+        ),
+        child: Text(
+          'Go Premium',
+          style: GoogleFonts.inter(
+            color: const Color(0xFFFFD700),
+            fontSize: 11,
+            fontWeight: FontWeight.w600,
+          ),
         ),
       ),
     );

@@ -263,6 +263,18 @@ class _ChecklistScreenState extends State<ChecklistScreen> {
     _saveChecked();
   }
 
+  /// Spoken description of one checklist line: the action, its target value,
+  /// and whether it is a critical or user-added item. The checked state is
+  /// carried by the `checked` flag on the surrounding [Semantics] node.
+  static String _itemSemanticLabel(Map<String, dynamic> item) {
+    final parts = <String>[item['action'] as String];
+    final value = item['value'];
+    if (value is String && value.isNotEmpty) parts.add(value);
+    if (item['critical'] == true) parts.add('critical item');
+    if (item['custom'] == true) parts.add('custom item');
+    return parts.join(', ');
+  }
+
   @override
   Widget build(BuildContext context) {
     final phases = _getPhases(_selectedAircraft);
@@ -301,7 +313,14 @@ class _ChecklistScreenState extends State<ChecklistScreen> {
               itemBuilder: (context, i) {
                 final ac = _aircraft[i];
                 final selected = _selectedAircraft == ac;
-                return GestureDetector(
+                return Semantics(
+                  container: true,
+                  button: true,
+                  inMutuallyExclusiveGroup: true,
+                  selected: selected,
+                  label: 'Aircraft $ac',
+                  excludeSemantics: true,
+                  child: GestureDetector(
                   onTap: () {
                     setState(() => _selectedAircraft = ac);
                     _loadCustomForCurrent();
@@ -325,6 +344,7 @@ class _ChecklistScreenState extends State<ChecklistScreen> {
                       ),
                     ),
                   ),
+                  ),
                 );
               },
             ),
@@ -340,7 +360,14 @@ class _ChecklistScreenState extends State<ChecklistScreen> {
                 final phase = phases[i];
                 final selected = _selectedPhase == phase['name'];
                 final color = phase['color'] as Color;
-                return GestureDetector(
+                return Semantics(
+                  container: true,
+                  button: true,
+                  inMutuallyExclusiveGroup: true,
+                  selected: selected,
+                  label: '${phase['name']} phase',
+                  excludeSemantics: true,
+                  child: GestureDetector(
                   onTap: () {
                     setState(() => _selectedPhase = phase['name'] as String);
                     _loadCustomForCurrent();
@@ -370,32 +397,44 @@ class _ChecklistScreenState extends State<ChecklistScreen> {
                       ],
                     ),
                   ),
+                  ),
                 );
               },
             ),
           ),
           // Progress
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-            child: Row(
-              children: [
-                Text(
-                  '$doneCount / ${checkableItems.length}',
-                  style: GoogleFonts.orbitron(fontSize: 11, color: Colors.white54),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: ClipRRect(
-                    borderRadius: BorderRadius.circular(4),
-                    child: LinearProgressIndicator(
-                      value: checkableItems.isEmpty ? 0 : doneCount / checkableItems.length,
-                      backgroundColor: Colors.white12,
-                      valueColor: const AlwaysStoppedAnimation(Color(0xFF4CAF50)),
-                      minHeight: 4,
+          Semantics(
+            container: true,
+            liveRegion: true,
+            label: '$doneCount of ${checkableItems.length} items complete in '
+                'the $_selectedPhase checklist',
+            excludeSemantics: true,
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+              child: Row(
+                children: [
+                  Text(
+                    '$doneCount / ${checkableItems.length}',
+                    style: GoogleFonts.orbitron(
+                        fontSize: 11, color: Colors.white54),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(4),
+                      child: LinearProgressIndicator(
+                        value: checkableItems.isEmpty
+                            ? 0
+                            : doneCount / checkableItems.length,
+                        backgroundColor: Colors.white12,
+                        valueColor:
+                            const AlwaysStoppedAnimation(Color(0xFF4CAF50)),
+                        minHeight: 4,
+                      ),
                     ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
           ),
           // Disclaimer
@@ -418,20 +457,29 @@ class _ChecklistScreenState extends State<ChecklistScreen> {
                 final isCustom = item['custom'] == true;
 
                 if (item['type'] == 'header') {
-                  return Padding(
-                    padding: const EdgeInsets.fromLTRB(0, 16, 0, 8),
-                    child: Text(
-                      item['text'] as String,
-                      style: GoogleFonts.orbitron(
-                        fontSize: 10,
-                        color: const Color(0xFF00BCD4),
-                        letterSpacing: 2,
+                  return Semantics(
+                    container: true,
+                    header: true,
+                    child: Padding(
+                      padding: const EdgeInsets.fromLTRB(0, 16, 0, 8),
+                      child: Text(
+                        item['text'] as String,
+                        style: GoogleFonts.orbitron(
+                          fontSize: 10,
+                          color: const Color(0xFF00BCD4),
+                          letterSpacing: 2,
+                        ),
                       ),
                     ),
                   );
                 }
 
-                return GestureDetector(
+                return Semantics(
+                  container: true,
+                  checked: isChecked,
+                  label: _itemSemanticLabel(item),
+                  onTap: () => _toggle(key, isChecked),
+                  child: GestureDetector(
                   onTap: () => _toggle(key, isChecked),
                   child: AnimatedContainer(
                     duration: const Duration(milliseconds: 200),
@@ -472,6 +520,7 @@ class _ChecklistScreenState extends State<ChecklistScreen> {
                         ),
                         const SizedBox(width: 12),
                         Expanded(
+                          child: ExcludeSemantics(
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
@@ -497,9 +546,11 @@ class _ChecklistScreenState extends State<ChecklistScreen> {
                                 ),
                             ],
                           ),
+                          ),
                         ),
                         if (isCustom)
-                          Container(
+                          ExcludeSemantics(
+                          child: Container(
                             margin: const EdgeInsets.only(right: 4),
                             padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                             decoration: BoxDecoration(
@@ -515,8 +566,10 @@ class _ChecklistScreenState extends State<ChecklistScreen> {
                               ),
                             ),
                           ),
+                          ),
                         if (item['critical'] == true)
-                          Container(
+                          ExcludeSemantics(
+                          child: Container(
                             padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                             decoration: BoxDecoration(
                               color: const Color(0xFFF44336).withValues(alpha: 0.15),
@@ -531,16 +584,18 @@ class _ChecklistScreenState extends State<ChecklistScreen> {
                               ),
                             ),
                           ),
+                          ),
                         if (isCustom)
                           IconButton(
                             icon: const Icon(Icons.delete_outline, size: 18, color: Colors.white38),
                             padding: EdgeInsets.zero,
                             constraints: const BoxConstraints(minWidth: 32, minHeight: 32),
-                            tooltip: 'Delete',
+                            tooltip: 'Delete ${item['action']}',
                             onPressed: () => _deleteCustomItem(item),
                           ),
                       ],
                     ),
+                  ),
                   ),
                 );
               },

@@ -153,7 +153,14 @@ class _EmergencyScreenState extends State<EmergencyScreen> {
   }
 
   Widget _buildScenarioCard(EmergencyScenario scenario) {
-    return GestureDetector(
+    return Semantics(
+      container: true,
+      button: true,
+      label: '${scenario.title}. ${scenario.description}. '
+          '${scenario.difficulty} difficulty, '
+          '${scenario.timeLimitSeconds} second time limit',
+      excludeSemantics: true,
+      child: GestureDetector(
       onTap: () => _startScenario(scenario),
       child: Container(
         margin: const EdgeInsets.only(bottom: 10),
@@ -229,6 +236,7 @@ class _EmergencyScreenState extends State<EmergencyScreen> {
           ],
         ),
       ),
+      ),
     );
   }
 
@@ -243,27 +251,33 @@ class _EmergencyScreenState extends State<EmergencyScreen> {
         title: Text(scenario.title),
         backgroundColor: const Color(0xFF7F0000),
         actions: [
-          Container(
-            margin: const EdgeInsets.only(right: 12),
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-            decoration: BoxDecoration(
-              color: _timeLeft < 30
-                  ? const Color(0xFFF44336).withValues(alpha: 0.3)
-                  : Colors.white12,
-              borderRadius: BorderRadius.circular(20),
-            ),
-            child: Row(
-              children: [
-                const Icon(Icons.timer, size: 14, color: Colors.white),
-                const SizedBox(width: 4),
-                Text(
-                  '$_timeLeft s',
-                  style: GoogleFonts.orbitron(
-                    fontSize: 12,
-                    color: _timeLeft < 30 ? const Color(0xFFF44336) : Colors.white,
+          Semantics(
+            container: true,
+            label: '$_timeLeft seconds remaining',
+            excludeSemantics: true,
+            child: Container(
+              margin: const EdgeInsets.only(right: 12),
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+              decoration: BoxDecoration(
+                color: _timeLeft < 30
+                    ? const Color(0xFFF44336).withValues(alpha: 0.3)
+                    : Colors.white12,
+                borderRadius: BorderRadius.circular(20),
+              ),
+              child: Row(
+                children: [
+                  const Icon(Icons.timer, size: 14, color: Colors.white),
+                  const SizedBox(width: 4),
+                  Text(
+                    '$_timeLeft s',
+                    style: GoogleFonts.orbitron(
+                      fontSize: 12,
+                      color:
+                          _timeLeft < 30 ? const Color(0xFFF44336) : Colors.white,
+                    ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
           ),
         ],

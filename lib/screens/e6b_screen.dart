@@ -165,13 +165,17 @@ class _Panel extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            title,
-            style: GoogleFonts.orbitron(
-              color: _kCyan,
-              fontSize: 12,
-              letterSpacing: 1.2,
-              fontWeight: FontWeight.w600,
+          Semantics(
+            container: true,
+            header: true,
+            child: Text(
+              title,
+              style: GoogleFonts.orbitron(
+                color: _kCyan,
+                fontSize: 12,
+                letterSpacing: 1.2,
+                fontWeight: FontWeight.w600,
+              ),
             ),
           ),
           const SizedBox(height: 16),
@@ -198,31 +202,36 @@ class _ResultTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 6),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.baseline,
-        textBaseline: TextBaseline.alphabetic,
-        children: [
-          Expanded(
-            child: Text(
-              label,
-              style: GoogleFonts.inter(
-                color: Colors.white70,
-                fontSize: 13,
+    return Semantics(
+      container: true,
+      label: '$label: ${value == '—' ? 'not available' : value}',
+      excludeSemantics: true,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 6),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.baseline,
+          textBaseline: TextBaseline.alphabetic,
+          children: [
+            Expanded(
+              child: Text(
+                label,
+                style: GoogleFonts.inter(
+                  color: Colors.white70,
+                  fontSize: 13,
+                ),
               ),
             ),
-          ),
-          const SizedBox(width: 12),
-          Text(
-            value,
-            style: GoogleFonts.orbitron(
-              color: color,
-              fontSize: big ? 26 : 18,
-              fontWeight: FontWeight.w700,
+            const SizedBox(width: 12),
+            Text(
+              value,
+              style: GoogleFonts.orbitron(
+                color: color,
+                fontSize: big ? 26 : 18,
+                fontWeight: FontWeight.w700,
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
@@ -248,13 +257,17 @@ class _ResultCard extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            title,
-            style: GoogleFonts.orbitron(
-              color: _kAmber,
-              fontSize: 11,
-              letterSpacing: 1.2,
-              fontWeight: FontWeight.w600,
+          Semantics(
+            container: true,
+            header: true,
+            child: Text(
+              title,
+              style: GoogleFonts.orbitron(
+                color: _kAmber,
+                fontSize: 11,
+                letterSpacing: 1.2,
+                fontWeight: FontWeight.w600,
+              ),
             ),
           ),
           const Divider(color: Colors.white12, height: 20),
@@ -1180,7 +1193,14 @@ class _SolveSelector<T> extends StatelessWidget {
             children: [
               for (final e in entries)
                 Expanded(
-                  child: GestureDetector(
+                  child: Semantics(
+                    container: true,
+                    button: true,
+                    inMutuallyExclusiveGroup: true,
+                    selected: e.key == value,
+                    label: 'Solve for ${e.value}',
+                    excludeSemantics: true,
+                    child: GestureDetector(
                     onTap: () => onChanged(e.key),
                     child: Container(
                       margin: const EdgeInsets.symmetric(horizontal: 2),
@@ -1204,6 +1224,7 @@ class _SolveSelector<T> extends StatelessWidget {
                         ),
                       ),
                     ),
+                  ),
                   ),
                 ),
             ],

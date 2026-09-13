@@ -304,27 +304,33 @@ class _FuelScreenState extends State<FuelScreen> {
         const SizedBox(height: 16),
 
         // Reserve compliance indicator
-        Container(
-          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-          decoration: BoxDecoration(
-            color: statusColor.withValues(alpha: 0.12),
-            borderRadius: BorderRadius.circular(12),
-            border: Border.all(color: statusColor.withValues(alpha: 0.5)),
-          ),
-          child: Row(
-            children: [
-              Icon(statusIcon, color: statusColor, size: 22),
-              const SizedBox(width: 12),
-              Text(
-                statusLabel,
-                style: GoogleFonts.orbitron(
-                  fontSize: 13,
-                  fontWeight: FontWeight.bold,
-                  color: statusColor,
-                  letterSpacing: 1.5,
+        Semantics(
+          container: true,
+          liveRegion: true,
+          label: 'Reserve status: $statusLabel',
+          excludeSemantics: true,
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+            decoration: BoxDecoration(
+              color: statusColor.withValues(alpha: 0.12),
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(color: statusColor.withValues(alpha: 0.5)),
+            ),
+            child: Row(
+              children: [
+                Icon(statusIcon, color: statusColor, size: 22),
+                const SizedBox(width: 12),
+                Text(
+                  statusLabel,
+                  style: GoogleFonts.orbitron(
+                    fontSize: 13,
+                    fontWeight: FontWeight.bold,
+                    color: statusColor,
+                    letterSpacing: 1.5,
+                  ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
         const SizedBox(height: 14),
@@ -368,7 +374,10 @@ class _FuelScreenState extends State<FuelScreen> {
         // Over-endurance warning
         if (overUsable) ...[
           const SizedBox(height: 12),
-          Container(
+          Semantics(
+            container: true,
+            liveRegion: true,
+            child: Container(
             width: double.infinity,
             padding: const EdgeInsets.all(12),
             decoration: BoxDecoration(
@@ -396,6 +405,7 @@ class _FuelScreenState extends State<FuelScreen> {
               ],
             ),
           ),
+          ),
         ],
       ],
     );
@@ -403,7 +413,13 @@ class _FuelScreenState extends State<FuelScreen> {
 
   Widget _reservePreset(String value, String label) {
     final selected = _reserveCtrl.text.trim() == value;
-    return GestureDetector(
+    return Semantics(
+      container: true,
+      button: true,
+      selected: selected,
+      label: '$label reserve, $value minutes',
+      excludeSemantics: true,
+      child: GestureDetector(
       onTap: () => setState(() => _reserveCtrl.text = value),
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 12),
@@ -421,6 +437,7 @@ class _FuelScreenState extends State<FuelScreen> {
             letterSpacing: 1,
           ),
         ),
+      ),
       ),
     );
   }
@@ -443,7 +460,13 @@ class _FuelScreenState extends State<FuelScreen> {
       children: [
         // SWITCH TANKS alert banner
         if (_alertActive)
-          Container(
+          Semantics(
+            container: true,
+            liveRegion: true,
+            label: 'Switch tanks. Interval reached on the '
+                '${_leftActive ? 'left' : 'right'} tank',
+            excludeSemantics: true,
+            child: Container(
             width: double.infinity,
             margin: const EdgeInsets.only(bottom: 14),
             padding: const EdgeInsets.symmetric(vertical: 16),
@@ -473,57 +496,70 @@ class _FuelScreenState extends State<FuelScreen> {
               ],
             ),
           ),
+          ),
 
         // Active tank + current elapsed
-        Center(
-          child: Column(
-            children: [
-              Text(
-                'ACTIVE TANK',
-                style: GoogleFonts.orbitron(
-                  fontSize: 10,
-                  color: Colors.white54,
-                  letterSpacing: 2,
+        Semantics(
+          container: true,
+          label: 'Active tank ${_leftActive ? 'left' : 'right'}, '
+              '${_speakClock(_currentTankSeconds)} elapsed, '
+              'switch every $_switchIntervalMinutes minutes',
+          excludeSemantics: true,
+          child: Center(
+            child: Column(
+              children: [
+                Text(
+                  'ACTIVE TANK',
+                  style: GoogleFonts.orbitron(
+                    fontSize: 10,
+                    color: Colors.white54,
+                    letterSpacing: 2,
+                  ),
                 ),
-              ),
-              const SizedBox(height: 6),
-              Text(
-                _leftActive ? 'LEFT' : 'RIGHT',
-                style: GoogleFonts.orbitron(
-                  fontSize: 22,
-                  fontWeight: FontWeight.bold,
-                  color: _amber,
-                  letterSpacing: 4,
+                const SizedBox(height: 6),
+                Text(
+                  _leftActive ? 'LEFT' : 'RIGHT',
+                  style: GoogleFonts.orbitron(
+                    fontSize: 22,
+                    fontWeight: FontWeight.bold,
+                    color: _amber,
+                    letterSpacing: 4,
+                  ),
                 ),
-              ),
-              const SizedBox(height: 12),
-              Text(
-                _fmtHMS(_currentTankSeconds),
-                style: GoogleFonts.orbitron(
-                  fontSize: 44,
-                  fontWeight: FontWeight.bold,
-                  color: timerColor,
-                  letterSpacing: 2,
+                const SizedBox(height: 12),
+                Text(
+                  _fmtHMS(_currentTankSeconds),
+                  style: GoogleFonts.orbitron(
+                    fontSize: 44,
+                    fontWeight: FontWeight.bold,
+                    color: timerColor,
+                    letterSpacing: 2,
+                  ),
                 ),
-              ),
-              const SizedBox(height: 4),
-              Text(
-                'switch every $_switchIntervalMinutes min',
-                style: GoogleFonts.inter(color: Colors.white54, fontSize: 12),
-              ),
-            ],
+                const SizedBox(height: 4),
+                Text(
+                  'switch every $_switchIntervalMinutes min',
+                  style: GoogleFonts.inter(color: Colors.white54, fontSize: 12),
+                ),
+              ],
+            ),
           ),
         ),
         const SizedBox(height: 14),
 
         // Progress toward switch interval
-        ClipRRect(
-          borderRadius: BorderRadius.circular(6),
-          child: LinearProgressIndicator(
-            value: progress,
-            minHeight: 8,
-            backgroundColor: Colors.white12,
-            valueColor: AlwaysStoppedAnimation<Color>(timerColor),
+        Semantics(
+          container: true,
+          label: 'Progress to next tank switch',
+          value: '${(progress * 100).round()} percent',
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(6),
+            child: LinearProgressIndicator(
+              value: progress,
+              minHeight: 8,
+              backgroundColor: Colors.white12,
+              valueColor: AlwaysStoppedAnimation<Color>(timerColor),
+            ),
           ),
         ),
         const SizedBox(height: 16),
@@ -601,24 +637,29 @@ class _FuelScreenState extends State<FuelScreen> {
                       GoogleFonts.inter(color: Colors.white70, fontSize: 13),
                 ),
               ),
-              _stepButton(Icons.remove, () {
+              _stepButton(Icons.remove, 'Decrease switch interval', () {
                 if (_switchIntervalMinutes > 5) {
                   setState(() => _switchIntervalMinutes -= 5);
                   _saveSwitchInterval();
                 }
               }),
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 12),
-                child: Text(
-                  '$_switchIntervalMinutes min',
-                  style: GoogleFonts.orbitron(
-                    color: _cyan,
-                    fontSize: 14,
-                    fontWeight: FontWeight.bold,
+              Semantics(
+                container: true,
+                label: 'Switch interval $_switchIntervalMinutes minutes',
+                excludeSemantics: true,
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 12),
+                  child: Text(
+                    '$_switchIntervalMinutes min',
+                    style: GoogleFonts.orbitron(
+                      color: _cyan,
+                      fontSize: 14,
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
                 ),
               ),
-              _stepButton(Icons.add, () {
+              _stepButton(Icons.add, 'Increase switch interval', () {
                 if (_switchIntervalMinutes < 120) {
                   setState(() => _switchIntervalMinutes += 5);
                   _saveSwitchInterval();
@@ -632,35 +673,50 @@ class _FuelScreenState extends State<FuelScreen> {
   }
 
   Widget _tankTotalTile(String label, int seconds, bool active) {
-    return Container(
-      padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 12),
-      decoration: BoxDecoration(
-        color: active ? _amber.withValues(alpha: 0.12) : _bg,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: active ? _amber : Colors.white12),
-      ),
-      child: Column(
-        children: [
-          Text(
-            '$label TOTAL',
-            style: GoogleFonts.orbitron(
-              fontSize: 9,
-              color: active ? _amber : Colors.white54,
-              letterSpacing: 1.5,
+    return Semantics(
+      container: true,
+      label: '${label.toLowerCase()} tank total, ${_speakClock(seconds)}'
+          '${active ? ', active' : ''}',
+      excludeSemantics: true,
+      child: Container(
+        padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 12),
+        decoration: BoxDecoration(
+          color: active ? _amber.withValues(alpha: 0.12) : _bg,
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: active ? _amber : Colors.white12),
+        ),
+        child: Column(
+          children: [
+            Text(
+              '$label TOTAL',
+              style: GoogleFonts.orbitron(
+                fontSize: 9,
+                color: active ? _amber : Colors.white54,
+                letterSpacing: 1.5,
+              ),
             ),
-          ),
-          const SizedBox(height: 6),
-          Text(
-            _fmtHMS(seconds),
-            style: GoogleFonts.orbitron(
-              fontSize: 16,
-              fontWeight: FontWeight.bold,
-              color: Colors.white,
+            const SizedBox(height: 6),
+            Text(
+              _fmtHMS(seconds),
+              style: GoogleFonts.orbitron(
+                fontSize: 16,
+                fontWeight: FontWeight.bold,
+                color: Colors.white,
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
+  }
+
+  /// Speak an elapsed-seconds count as hours/minutes/seconds.
+  static String _speakClock(int totalSeconds) {
+    if (totalSeconds < 0) totalSeconds = 0;
+    final h = totalSeconds ~/ 3600;
+    final m = (totalSeconds % 3600) ~/ 60;
+    final s = totalSeconds % 60;
+    return '$h hours $m minutes $s seconds';
   }
 
   Widget _timerButton(
@@ -689,17 +745,23 @@ class _FuelScreenState extends State<FuelScreen> {
     );
   }
 
-  Widget _stepButton(IconData icon, VoidCallback onTap) {
-    return InkWell(
-      onTap: onTap,
-      borderRadius: BorderRadius.circular(8),
-      child: Container(
-        padding: const EdgeInsets.all(6),
-        decoration: BoxDecoration(
-          color: _cyan.withValues(alpha: 0.15),
-          borderRadius: BorderRadius.circular(8),
+  Widget _stepButton(IconData icon, String label, VoidCallback onTap) {
+    return Semantics(
+      container: true,
+      button: true,
+      label: label,
+      excludeSemantics: true,
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(8),
+        child: Container(
+          padding: const EdgeInsets.all(6),
+          decoration: BoxDecoration(
+            color: _cyan.withValues(alpha: 0.15),
+            borderRadius: BorderRadius.circular(8),
+          ),
+          child: Icon(icon, color: _cyan, size: 18),
         ),
-        child: Icon(icon, color: _cyan, size: 18),
       ),
     );
   }
@@ -736,7 +798,12 @@ class _FuelScreenState extends State<FuelScreen> {
           ],
         ),
         const SizedBox(height: 16),
-        Container(
+        Semantics(
+          container: true,
+          label: 'Estimated total fuel cost, '
+              '${total != null ? '\$${total.toStringAsFixed(2)}' : 'not available'}',
+          excludeSemantics: true,
+          child: Container(
           width: double.infinity,
           padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
@@ -766,6 +833,7 @@ class _FuelScreenState extends State<FuelScreen> {
             ],
           ),
         ),
+        ),
       ],
     );
   }
@@ -793,20 +861,26 @@ class _FuelScreenState extends State<FuelScreen> {
               borderRadius:
                   const BorderRadius.vertical(top: Radius.circular(16)),
             ),
-            child: Row(
-              children: [
-                Icon(icon, color: accent, size: 22),
-                const SizedBox(width: 12),
-                Text(
-                  title,
-                  style: GoogleFonts.orbitron(
-                    fontSize: 13,
-                    fontWeight: FontWeight.bold,
-                    color: accent,
-                    letterSpacing: 1.5,
+            child: Semantics(
+              container: true,
+              header: true,
+              label: title,
+              excludeSemantics: true,
+              child: Row(
+                children: [
+                  Icon(icon, color: accent, size: 22),
+                  const SizedBox(width: 12),
+                  Text(
+                    title,
+                    style: GoogleFonts.orbitron(
+                      fontSize: 13,
+                      fontWeight: FontWeight.bold,
+                      color: accent,
+                      letterSpacing: 1.5,
+                    ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
           ),
           Padding(
@@ -854,27 +928,47 @@ class _FuelScreenState extends State<FuelScreen> {
   }
 
   Widget _resultRow(String label, String value, Color valueColor) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 5),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Expanded(
-            child: Text(
-              label,
-              style: GoogleFonts.inter(color: Colors.white70, fontSize: 13),
+    return Semantics(
+      container: true,
+      label: '$label: ${_speakValue(value)}',
+      excludeSemantics: true,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 5),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Expanded(
+              child: Text(
+                label,
+                style: GoogleFonts.inter(color: Colors.white70, fontSize: 13),
+              ),
             ),
-          ),
-          Text(
-            value,
-            style: GoogleFonts.orbitron(
-              color: valueColor,
-              fontSize: 15,
-              fontWeight: FontWeight.bold,
+            Text(
+              value,
+              style: GoogleFonts.orbitron(
+                color: valueColor,
+                fontSize: 15,
+                fontWeight: FontWeight.bold,
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
+  }
+
+  /// Turn a display value into something a screen reader can say.
+  ///
+  /// `--:--` / `--` are placeholders for "not computed yet", and an HH:MM
+  /// clock string is read as a duration rather than a time of day.
+  static String _speakValue(String value) {
+    if (value == '--:--' || value == '--') return 'not available';
+    final hm = RegExp(r'^(\d{2}):(\d{2})$').firstMatch(value);
+    if (hm != null) {
+      final h = int.parse(hm.group(1)!);
+      final m = int.parse(hm.group(2)!);
+      return '$h hours $m minutes';
+    }
+    return value;
   }
 }

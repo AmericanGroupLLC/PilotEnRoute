@@ -83,6 +83,7 @@ class _ProfileScreenState extends State<ProfileScreen>
     if (_bfrExpiry != null) {
       await prefs.setString('profile_bfr_expiry', _bfrExpiry!.toIso8601String());
     }
+    if (!mounted) return;
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text('Profile saved', style: GoogleFonts.inter()),

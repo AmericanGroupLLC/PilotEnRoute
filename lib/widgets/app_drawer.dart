@@ -179,7 +179,12 @@ class AppDrawer extends StatelessWidget {
     return Consumer<PremiumService>(
       builder: (context, premium, _) {
         if (premium.isPremium) return const SizedBox.shrink();
-        return GestureDetector(
+        return Semantics(
+          container: true,
+          button: true,
+          label: 'Upgrade to Premium, remove ads and unlock all features',
+          excludeSemantics: true,
+          child: GestureDetector(
           onTap: () {
             Navigator.pop(context);
             Navigator.pushNamed(context, '/premium');
@@ -229,6 +234,7 @@ class AppDrawer extends StatelessWidget {
               ],
             ),
           ),
+          ),
         );
       },
     );
@@ -270,15 +276,19 @@ class AppDrawer extends StatelessWidget {
   }
 
   Widget _buildSection(String title) {
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(16, 16, 16, 4),
-      child: Text(
-        title,
-        style: GoogleFonts.orbitron(
-          fontSize: 9,
-          fontWeight: FontWeight.bold,
-          color: const Color(0xFF00BCD4),
-          letterSpacing: 2,
+    return Semantics(
+      container: true,
+      header: true,
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(16, 16, 16, 4),
+        child: Text(
+          title,
+          style: GoogleFonts.orbitron(
+            fontSize: 9,
+            fontWeight: FontWeight.bold,
+            color: const Color(0xFF00BCD4),
+            letterSpacing: 2,
+          ),
         ),
       ),
     );

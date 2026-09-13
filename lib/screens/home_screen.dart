@@ -113,7 +113,12 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
         Consumer<PremiumService>(
           builder: (context, premium, _) => premium.isPremium
               ? const SizedBox.shrink()
-              : GestureDetector(
+              : Semantics(
+                  container: true,
+                  button: true,
+                  label: 'Upgrade to Pro',
+                  excludeSemantics: true,
+                  child: GestureDetector(
                   onTap: () => Navigator.pushNamed(context, '/premium'),
                   child: Container(
                     margin: const EdgeInsets.only(right: 4),
@@ -133,6 +138,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                       ],
                     ),
                   ),
+                ),
                 ),
         ),
         IconButton(
@@ -201,13 +207,19 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
             ],
           ),
           const SizedBox(height: 12),
-          Text(
-            'Your Complete\nPilot Training Hub',
-            style: GoogleFonts.orbitron(
-              fontSize: 24,
-              fontWeight: FontWeight.bold,
-              color: Colors.white,
-              height: 1.3,
+          Semantics(
+            container: true,
+            header: true,
+            label: 'Your complete pilot training hub',
+            excludeSemantics: true,
+            child: Text(
+              'Your Complete\nPilot Training Hub',
+              style: GoogleFonts.orbitron(
+                fontSize: 24,
+                fontWeight: FontWeight.bold,
+                color: Colors.white,
+                height: 1.3,
+              ),
             ),
           ),
           const SizedBox(height: 8),
@@ -235,30 +247,35 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   }
 
   Widget _buildStatBadge(String value, String label) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-      decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.1),
-        borderRadius: BorderRadius.circular(10),
-      ),
-      child: Column(
-        children: [
-          Text(
-            value,
-            style: GoogleFonts.orbitron(
-              fontSize: 16,
-              fontWeight: FontWeight.bold,
-              color: const Color(0xFFFFB300),
+    return Semantics(
+      container: true,
+      label: '$value $label',
+      excludeSemantics: true,
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+        decoration: BoxDecoration(
+          color: Colors.white.withValues(alpha: 0.1),
+          borderRadius: BorderRadius.circular(10),
+        ),
+        child: Column(
+          children: [
+            Text(
+              value,
+              style: GoogleFonts.orbitron(
+                fontSize: 16,
+                fontWeight: FontWeight.bold,
+                color: const Color(0xFFFFB300),
+              ),
             ),
-          ),
-          Text(
-            label,
-            style: GoogleFonts.inter(
-              fontSize: 10,
-              color: Colors.white60,
+            Text(
+              label,
+              style: GoogleFonts.inter(
+                fontSize: 10,
+                color: Colors.white60,
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
@@ -350,13 +367,17 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            'TRAINING MODULES',
-            style: GoogleFonts.orbitron(
-              fontSize: 12,
-              fontWeight: FontWeight.bold,
-              color: const Color(0xFF00BCD4),
-              letterSpacing: 2,
+          Semantics(
+            container: true,
+            header: true,
+            child: Text(
+              'TRAINING MODULES',
+              style: GoogleFonts.orbitron(
+                fontSize: 12,
+                fontWeight: FontWeight.bold,
+                color: const Color(0xFF00BCD4),
+                letterSpacing: 2,
+              ),
             ),
           ),
           const SizedBox(height: 12),
@@ -383,36 +404,42 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Row(
-            children: [
-              Text(
-                'LIVE DATA',
-                style: GoogleFonts.orbitron(
-                  fontSize: 12,
-                  fontWeight: FontWeight.bold,
-                  color: const Color(0xFF00BCD4),
-                  letterSpacing: 2,
+          Semantics(
+            container: true,
+            header: true,
+            label: 'Live data',
+            excludeSemantics: true,
+            child: Row(
+              children: [
+                Text(
+                  'LIVE DATA',
+                  style: GoogleFonts.orbitron(
+                    fontSize: 12,
+                    fontWeight: FontWeight.bold,
+                    color: const Color(0xFF00BCD4),
+                    letterSpacing: 2,
+                  ),
                 ),
-              ),
-              const SizedBox(width: 8),
-              Container(
-                width: 8,
-                height: 8,
-                decoration: const BoxDecoration(
-                  color: Color(0xFF4CAF50),
-                  shape: BoxShape.circle,
+                const SizedBox(width: 8),
+                Container(
+                  width: 8,
+                  height: 8,
+                  decoration: const BoxDecoration(
+                    color: Color(0xFF4CAF50),
+                    shape: BoxShape.circle,
+                  ),
                 ),
-              ),
-              const SizedBox(width: 4),
-              Text(
-                'LIVE',
-                style: GoogleFonts.orbitron(
-                  fontSize: 9,
-                  color: const Color(0xFF4CAF50),
-                  letterSpacing: 1,
+                const SizedBox(width: 4),
+                Text(
+                  'LIVE',
+                  style: GoogleFonts.orbitron(
+                    fontSize: 9,
+                    color: const Color(0xFF4CAF50),
+                    letterSpacing: 1,
+                  ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
           const SizedBox(height: 12),
           Row(
@@ -450,47 +477,54 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     required Color color,
     required VoidCallback onTap,
   }) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        padding: const EdgeInsets.all(16),
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            colors: [color, color.withValues(alpha: 0.6)],
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-          ),
-          borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: color.withValues(alpha: 0.5)),
-        ),
-        child: Row(
-          children: [
-            Icon(icon, color: Colors.white, size: 28),
-            const SizedBox(width: 10),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    title,
-                    style: GoogleFonts.orbitron(
-                      fontSize: 12,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.white,
-                    ),
-                  ),
-                  Text(
-                    subtitle,
-                    style: GoogleFonts.inter(
-                      fontSize: 10,
-                      color: Colors.white70,
-                    ),
-                  ),
-                ],
-              ),
+    return Semantics(
+      container: true,
+      button: true,
+      label: '$title, $subtitle',
+      excludeSemantics: true,
+      child: GestureDetector(
+        onTap: onTap,
+        child: Container(
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              colors: [color, color.withValues(alpha: 0.6)],
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
             ),
-            const Icon(Icons.arrow_forward_ios, color: Colors.white54, size: 14),
-          ],
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(color: color.withValues(alpha: 0.5)),
+          ),
+          child: Row(
+            children: [
+              Icon(icon, color: Colors.white, size: 28),
+              const SizedBox(width: 10),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      title,
+                      style: GoogleFonts.orbitron(
+                        fontSize: 12,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white,
+                      ),
+                    ),
+                    Text(
+                      subtitle,
+                      style: GoogleFonts.inter(
+                        fontSize: 10,
+                        color: Colors.white70,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const Icon(Icons.arrow_forward_ios,
+                  color: Colors.white54, size: 14),
+            ],
+          ),
         ),
       ),
     );
@@ -505,22 +539,32 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text(
-                'AVIATION NEWS',
-                style: GoogleFonts.orbitron(
-                  fontSize: 12,
-                  fontWeight: FontWeight.bold,
-                  color: const Color(0xFF00BCD4),
-                  letterSpacing: 2,
+              Semantics(
+                container: true,
+                header: true,
+                child: Text(
+                  'AVIATION NEWS',
+                  style: GoogleFonts.orbitron(
+                    fontSize: 12,
+                    fontWeight: FontWeight.bold,
+                    color: const Color(0xFF00BCD4),
+                    letterSpacing: 2,
+                  ),
                 ),
               ),
-              TextButton(
-                onPressed: () => Navigator.pushNamed(context, '/news'),
-                child: Text(
-                  'See All',
-                  style: GoogleFonts.inter(
-                    fontSize: 12,
-                    color: const Color(0xFF00BCD4),
+              Semantics(
+                container: true,
+                button: true,
+                label: 'See all aviation news',
+                excludeSemantics: true,
+                child: TextButton(
+                  onPressed: () => Navigator.pushNamed(context, '/news'),
+                  child: Text(
+                    'See All',
+                    style: GoogleFonts.inter(
+                      fontSize: 12,
+                      color: const Color(0xFF00BCD4),
+                    ),
                   ),
                 ),
               ),
@@ -534,7 +578,13 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   }
 
   Widget _buildStorePromo() {
-    return GestureDetector(
+    return Semantics(
+      container: true,
+      button: true,
+      label: 'Pilot Gear Store. Headsets, GPS, charts and more, curated by '
+          'pilots',
+      excludeSemantics: true,
+      child: GestureDetector(
       onTap: () => Navigator.pushNamed(context, '/store'),
       child: Container(
         margin: const EdgeInsets.fromLTRB(16, 24, 16, 0),
@@ -564,6 +614,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
             const Icon(Icons.arrow_forward_ios, color: Color(0xFFFFD700), size: 16),
           ],
         ),
+      ),
       ),
     );
   }

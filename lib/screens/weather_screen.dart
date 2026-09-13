@@ -120,13 +120,20 @@ class _WeatherScreenState extends State<WeatherScreen>
             ),
           ),
           const SizedBox(width: 12),
-          ElevatedButton(
-            onPressed: _fetchWeather,
-            style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFF00BCD4),
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+          Semantics(
+            container: true,
+            button: true,
+            label: 'Fetch weather for the entered airport',
+            excludeSemantics: true,
+            child: ElevatedButton(
+              onPressed: _fetchWeather,
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFF00BCD4),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+              ),
+              child: const Icon(Icons.search, color: Colors.black),
             ),
-            child: const Icon(Icons.search, color: Colors.black),
           ),
         ],
       ),
@@ -186,8 +193,22 @@ class _WeatherScreenState extends State<WeatherScreen>
       'LIFR': const Color(0xFF9C27B0),
     };
     final color = colors[metar.category] ?? Colors.grey;
+    const categoryNames = {
+      'VFR': 'visual flight rules',
+      'MVFR': 'marginal visual flight rules',
+      'IFR': 'instrument flight rules',
+      'LIFR': 'low instrument flight rules',
+    };
+    final spokenCategory =
+        categoryNames[metar.category] ?? metar.category.toLowerCase();
 
-    return Container(
+    return Semantics(
+      container: true,
+      liveRegion: true,
+      label: '${_spellIcao(metar.icao)}, flight category '
+          '${metar.category}, $spokenCategory',
+      excludeSemantics: true,
+      child: Container(
       width: double.infinity,
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
@@ -225,11 +246,19 @@ class _WeatherScreenState extends State<WeatherScreen>
           ),
         ],
       ),
+      ),
     );
   }
 
+  /// A four-letter ICAO identifier is read letter by letter, not as a word.
+  static String _spellIcao(String icao) => icao.trim().split('').join(' ');
+
   Widget _buildRawMetar(MetarData metar) {
-    return Container(
+    return Semantics(
+      container: true,
+      label: 'Raw METAR. ${metar.raw}',
+      excludeSemantics: true,
+      child: Container(
       width: double.infinity,
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
@@ -259,6 +288,7 @@ class _WeatherScreenState extends State<WeatherScreen>
           ),
         ],
       ),
+      ),
     );
   }
 
@@ -283,7 +313,11 @@ class _WeatherScreenState extends State<WeatherScreen>
   }
 
   Widget _buildWeatherTile(String label, String value, IconData icon) {
-    return Container(
+    return Semantics(
+      container: true,
+      label: '$label: ${value.replaceAll('--', 'not available')}',
+      excludeSemantics: true,
+      child: Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
       decoration: BoxDecoration(
         color: const Color(0xFF112240),
@@ -319,6 +353,7 @@ class _WeatherScreenState extends State<WeatherScreen>
             ),
           ),
         ],
+      ),
       ),
     );
   }

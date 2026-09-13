@@ -27,6 +27,15 @@ class NewsTicker extends StatelessWidget {
   }
 
   Widget _buildNewsItem(BuildContext context, NewsArticle article) {
+    return Semantics(
+      container: true,
+      label: 'Headline from ${article.source}. ${article.title}',
+      excludeSemantics: true,
+      child: _newsItemBody(article),
+    );
+  }
+
+  Widget _newsItemBody(NewsArticle article) {
     return Container(
       margin: const EdgeInsets.only(bottom: 8),
       padding: const EdgeInsets.all(12),
@@ -80,7 +89,10 @@ class NewsTicker extends StatelessWidget {
   }
 
   Widget _buildShimmer() {
-    return Column(
+    return Semantics(
+      container: true,
+      label: 'Loading aviation news',
+      child: Column(
       children: List.generate(
         3,
         (i) => Container(
@@ -91,6 +103,7 @@ class NewsTicker extends StatelessWidget {
             borderRadius: BorderRadius.circular(12),
           ),
         ),
+      ),
       ),
     );
   }

@@ -413,7 +413,7 @@ class _FlashcardScreenState extends State<FlashcardScreen>
                   label: 'Missed',
                   color: const Color(0xFFF44336),
                   onTap: () {
-                    service_markIncorrect(context, card.id);
+                    _markIncorrect(context, card.id);
                     _next();
                   },
                 ),
@@ -422,7 +422,7 @@ class _FlashcardScreenState extends State<FlashcardScreen>
                   label: 'Got It',
                   color: const Color(0xFF4CAF50),
                   onTap: () {
-                    service_markCorrect(context, card.id);
+                    _markCorrect(context, card.id);
                     _next();
                   },
                 ),
@@ -434,11 +434,11 @@ class _FlashcardScreenState extends State<FlashcardScreen>
     );
   }
 
-  void service_markCorrect(BuildContext ctx, String id) {
+  void _markCorrect(BuildContext ctx, String id) {
     ctx.read<FlashcardService>().markCorrect(id);
   }
 
-  void service_markIncorrect(BuildContext ctx, String id) {
+  void _markIncorrect(BuildContext ctx, String id) {
     ctx.read<FlashcardService>().markIncorrect(id);
   }
 

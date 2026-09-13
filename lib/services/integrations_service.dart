@@ -243,8 +243,8 @@ class ExportResult {
 /// performs REAL local export of on-device data so users always have a
 /// working, honest action.
 ///
-/// TODO(data): OAuth account linking + REST upload for live sync.
-/// TODO(data): import requires file_picker to read user-supplied files.
+/// TODO(data): OAuth account linking + REST upload for live sync, and
+/// file_picker so user-supplied files can be imported.
 class DataExchangeAdapter extends StubAdapter {
   DataExchangeAdapter()
       : super('Live account sync requires backend/OAuth — not configured');
@@ -645,7 +645,7 @@ class IntegrationsService extends ChangeNotifier {
         requirement:
             'Live account sync requires ForeFlight account linking (OAuth) and '
             'a backend. You can export your saved flight plans locally today; '
-            'file import requires the file_picker package (TODO).',
+            'importing files from the device is not supported yet.',
         vendorUrl: 'https://foreflight.com/',
       ),
       DataExchangeAdapter(),

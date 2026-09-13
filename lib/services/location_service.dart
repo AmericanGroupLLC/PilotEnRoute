@@ -34,7 +34,7 @@ class LocationService extends ChangeNotifier {
   /// Sensible default map center when no GPS fix exists (San Francisco Bay).
   static const LatLng fallbackCenter = LatLng(37.7749, -122.4194);
 
-  /// Begin location updates. No-op stub today; see TODO(gps) above.
+  /// Begin location updates. No-op stub today; see the library note above.
   Future<void> startTracking() async {
     _tracking = false; // flips to true once a real backend delivers fixes
     notifyListeners();

@@ -18,7 +18,7 @@ import '../services/location_service.dart';
 /// Fully functional today: base map (standard/terrain), live ADS-B traffic
 /// overlay (OpenSky), airport search + marker, range rings, and a tap-to-measure
 /// distance/bearing tool. Own-ship GPS position is wired through
-/// [LocationService] — see that file's TODO(gps) to enable a real fix.
+/// [LocationService] — see that file for what a real GPS fix would need.
 class MapScreen extends StatefulWidget {
   const MapScreen({super.key});
 
@@ -28,11 +28,28 @@ class MapScreen extends StatefulWidget {
 
 enum _BaseLayer { standard, terrain, satellite, sectional, ifrLow }
 
-// VFRMap publishes free demo aeronautical chart tiles keyed by the FAA chart
-// cycle date (YYYYMMDD). Charts are re-issued on the 28-day AIRAC-style cycle.
-// TODO(charts): VFRMap tiles rotate every 28-day cycle; update _vfrmapCycle or
-// swap for a licensed geo-referenced chart provider.
-const _vfrmapCycle = '20250116';
+/// First chart cycle whose VFRMap tile directory this app was built against.
+/// Every later cycle is this date plus a whole number of [kChartCycleDays].
+final DateTime kChartCycleAnchor = DateTime.utc(2025, 1, 16);
+
+/// FAA aeronautical charts are re-issued on a 28-day, AIRAC-style cycle.
+const int kChartCycleDays = 28;
+
+/// The VFRMap tile-set date (`YYYYMMDD`) that is current at [now].
+///
+/// VFRMap keys its free chart tiles by the FAA chart cycle date, so a
+/// hard-coded value silently rots into 404s the moment the cycle turns over.
+/// Rolling the anchor forward in whole cycles keeps a shipped build pointed at
+/// the current charts for as long as the tile host keeps publishing them.
+/// Dates before the anchor clamp to the anchor rather than going negative.
+String vfrmapCycleFor(DateTime now) {
+  final days = now.toUtc().difference(kChartCycleAnchor).inDays;
+  final cycles = days <= 0 ? 0 : days ~/ kChartCycleDays;
+  final date = kChartCycleAnchor.add(Duration(days: cycles * kChartCycleDays));
+  final m = date.month.toString().padLeft(2, '0');
+  final d = date.day.toString().padLeft(2, '0');
+  return '${date.year}$m$d';
+}
 
 class _MapScreenState extends State<MapScreen> {
   final MapController _map = MapController();
@@ -427,7 +444,8 @@ class _MapScreenState extends State<MapScreen> {
       case _BaseLayer.sectional:
         return TileLayer(
           urlTemplate:
-              'https://vfrmap.com/$_vfrmapCycle/tiles/vfrc/{z}/{y}/{x}.jpg',
+              'https://vfrmap.com/${vfrmapCycleFor(DateTime.now())}'
+              '/tiles/vfrc/{z}/{y}/{x}.jpg',
           userAgentPackageName: 'com.pilotenroute.app',
           tms: true,
           maxNativeZoom: 11,
@@ -435,7 +453,8 @@ class _MapScreenState extends State<MapScreen> {
       case _BaseLayer.ifrLow:
         return TileLayer(
           urlTemplate:
-              'https://vfrmap.com/$_vfrmapCycle/tiles/ifrlc/{z}/{y}/{x}.jpg',
+              'https://vfrmap.com/${vfrmapCycleFor(DateTime.now())}'
+              '/tiles/ifrlc/{z}/{y}/{x}.jpg',
           userAgentPackageName: 'com.pilotenroute.app',
           tms: true,
           maxNativeZoom: 11,

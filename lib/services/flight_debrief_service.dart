@@ -175,7 +175,7 @@ class FlightDebriefService extends ChangeNotifier {
   bool _loaded = false;
   bool get isLoaded => _loaded;
 
-  // Recording buffer (stub until GPS is wired — see TODO(gps) above).
+  // Recording buffer (stub until GPS is wired — see the class doc above).
   final List<TrackPoint> _recordingBuffer = [];
   bool _recording = false;
   bool get isRecording => _recording;
@@ -241,7 +241,7 @@ class FlightDebriefService extends ChangeNotifier {
     }
   }
 
-  // --- Recording stubs (TODO(gps): drive from LocationService stream) -------
+  // --- Recording stubs (to be driven from the LocationService stream) ------
 
   void beginRecording() {
     _recording = true;
@@ -249,8 +249,8 @@ class FlightDebriefService extends ChangeNotifier {
     notifyListeners();
   }
 
-  /// TODO(gps): real recording will consume LocationService position stream once
-  /// geolocator is wired. This models the per-fix append that stream will drive.
+  /// Models the per-fix append that the LocationService position stream will
+  /// drive once GPS is wired (see the class doc).
   void recordPosition(TrackPoint point) {
     if (!_recording) return;
     _recordingBuffer.add(point);

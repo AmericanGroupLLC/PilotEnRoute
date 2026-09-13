@@ -49,7 +49,7 @@ class BackendConfig {
   static const String aiChatPath = '/ai/chat';
 
   /// Test Firebase ID token from the guide, for SIM-less phone-auth testing.
-  /// Real SMS delivery needs the Firebase client SDK (see TODO in AuthService).
+  /// Real SMS delivery needs the Firebase client SDK (see AuthService).
   static const String phoneTestFirebaseToken =
       'Ae0iMNcflbdaWGFTYtXcHH_2YCDEBQTa1HMB4t0X-IWiXXAHuQuX7qF984TzuLq7Od0D40hEhKab6CsGyxHZe9tRxUTZlKVTS15PZrk1htEsnCIG2SQkfvmHQ6Tp484IP2j6zoCnsxNKsH_QBl2hau';
 }

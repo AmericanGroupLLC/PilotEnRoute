@@ -37,6 +37,7 @@ import 'package:pilot_enroute/screens/logbook_screen.dart';
 import 'package:pilot_enroute/screens/flight_plan_screen.dart';
 import 'package:pilot_enroute/screens/flight_tracker_screen.dart';
 import 'package:pilot_enroute/screens/garmin_screen.dart';
+import 'package:pilot_enroute/screens/alerts_screen.dart';
 
 Widget buildProviders(Widget child) {
   return MultiProvider(
@@ -118,5 +119,8 @@ void main() {
     testWidgets('FlightPlanScreen renders', (t) async => smokeTest(t, const FlightPlanScreen()));
     testWidgets('FlightTrackerScreen renders', (t) async => smokeTest(t, const FlightTrackerScreen()));
     testWidgets('GarminScreen renders', (t) async => smokeTest(t, const GarminScreen()));
+    // AlertsScreen reads WeatherService from the tree to grade the weather
+    // category against a real METAR, so it must not build without one.
+    testWidgets('AlertsScreen renders', (t) async => smokeTest(t, const AlertsScreen()));
   });
 }

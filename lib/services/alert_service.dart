@@ -325,6 +325,70 @@ class AlertService extends ChangeNotifier {
     return item;
   }
 
+  /// Ceiling / visibility against the FAA flight-category thresholds.
+  ///
+  /// Driven by a real METAR (see [MetarData] on WeatherService); the caller
+  /// passes the decoded values so this service stays free of HTTP. A null
+  /// ceiling means "no ceiling reported", which is the unlimited case, and a
+  /// null visibility is simply left out of the grading.
+  ///
+  /// Severity follows the categories a pilot already flies by:
+  ///   LIFR / IFR -> warning, MVFR -> caution, VFR -> info.
+  Future<AlertItem?> evaluateWeather({
+    required String station,
+    int? ceilingFt,
+    double? visibilitySm,
+  }) async {
+    final rule = ruleFor(AlertCategory.weather);
+    if (rule == null || !rule.enabled) return null;
+
+    final category = flightCategoryFor(
+      ceilingFt: ceilingFt,
+      visibilitySm: visibilitySm,
+    );
+
+    final AlertSeverity severity;
+    switch (category) {
+      case 'LIFR':
+      case 'IFR':
+        severity = AlertSeverity.warning;
+      case 'MVFR':
+        severity = AlertSeverity.caution;
+      default:
+        severity = AlertSeverity.info;
+    }
+
+    final ceilingText =
+        ceilingFt == null ? 'ceiling unlimited' : 'ceiling $ceilingFt ft';
+    final visText = visibilitySm == null
+        ? 'visibility not reported'
+        : 'visibility ${_trimNum(visibilitySm)} sm';
+
+    final item = _mkItem(
+      category: AlertCategory.weather,
+      severity: severity,
+      title: '$station $category',
+      message: '$ceilingText, $visText.',
+    );
+    await addAlert(item);
+    return item;
+  }
+
+  /// FAA flight category from a ceiling (ft AGL) and visibility (statute
+  /// miles). Either may be missing; a missing value cannot push the category
+  /// down, so it is treated as unrestricted.
+  static String flightCategoryFor({int? ceilingFt, double? visibilitySm}) {
+    final c = ceilingFt ?? 1 << 20;
+    final v = visibilitySm ?? double.infinity;
+    if (c < 500 || v < 1) return 'LIFR';
+    if (c < 1000 || v < 3) return 'IFR';
+    if (c <= 3000 || v <= 5) return 'MVFR';
+    return 'VFR';
+  }
+
+  static String _trimNum(double v) =>
+      v == v.roundToDouble() ? v.round().toString() : v.toStringAsFixed(1);
+
   /// Fuel endurance vs required reserve.
   Future<AlertItem?> evaluateFuel({
     required int enduranceMinutes,
@@ -446,12 +510,13 @@ class AlertService extends ChangeNotifier {
 
     switch (category) {
       case AlertCategory.weather:
-        // TODO: wire to weather_service (METAR/TAF) for real ceiling/vis trends.
+        // Only reached when no METAR was supplied to [runChecksNow]; with one
+        // in hand [evaluateWeather] grades the real ceiling and visibility.
         severity = AlertSeverity.caution;
         title = 'SAMPLE — Deteriorating weather';
         message =
             'Ceiling forecast to drop below 1000 ft within 2 hrs at destination. '
-            '[sample data — connect weather_service]';
+            '[sample data — no METAR loaded]';
       case AlertCategory.notam:
         // TODO: wire to notam_service for the active route/aerodrome NOTAMs.
         severity = AlertSeverity.warning;
@@ -505,22 +570,43 @@ class AlertService extends ChangeNotifier {
   /// Runs every runnable evaluator against sample inputs and generates sample
   /// alerts for the not-yet-wired categories. Returns the number of alerts
   /// pushed to the feed.
-  Future<int> runChecksNow() async {
+  ///
+  /// When the caller has a decoded METAR to hand ([metarStation] plus its
+  /// ceiling/visibility), the weather category is graded for real instead of
+  /// falling back to the labelled sample. The crosswind check is likewise
+  /// driven by the reported wind when one is supplied.
+  Future<int> runChecksNow({
+    String? metarStation,
+    int? ceilingFt,
+    double? visibilitySm,
+    int? windDirDeg,
+    int? windSpeedKts,
+  }) async {
     final before = _feed.length;
 
     // Runnable evaluators (sample inputs — replace with live data when wired).
     await evaluateCrosswind(
       runwayHeadingDeg: 90,
-      windDirDeg: 150,
-      windSpeedKts: 22,
+      windDirDeg: (windDirDeg ?? 150).toDouble(),
+      windSpeedKts: (windSpeedKts ?? 22).toDouble(),
       runwayLabel: 'RWY 09',
     );
     await evaluateFuel(enduranceMinutes: 50);
     await evaluateExpiry(category: AlertCategory.medical);
     await evaluateExpiry(category: AlertCategory.currency);
 
+    // Weather is real whenever a METAR was supplied.
+    if (metarStation != null && metarStation.isNotEmpty) {
+      await evaluateWeather(
+        station: metarStation,
+        ceilingFt: ceilingFt,
+        visibilitySm: visibilitySm,
+      );
+    } else {
+      await generateSample(AlertCategory.weather);
+    }
+
     // Sample generators for categories awaiting real data sources.
-    await generateSample(AlertCategory.weather);
     await generateSample(AlertCategory.notam);
     await generateSample(AlertCategory.terrain);
     await generateSample(AlertCategory.traffic);

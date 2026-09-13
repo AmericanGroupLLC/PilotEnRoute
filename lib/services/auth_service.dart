@@ -1013,8 +1013,8 @@ class AuthService extends ChangeNotifier {
 
   // ── Token storage ──────────────────────────────────────────────────────────────
   //
-  // TODO(secure-storage): move JWTs to flutter_secure_storage / Keychain /
-  // Keystore per the integration guide.
+  // Tokens live in shared_preferences today — see the secure-storage note
+  // at the top of this file.
 
   Future<void> _storeTokens({
     required String accessToken,

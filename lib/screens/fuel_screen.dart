@@ -770,9 +770,7 @@ class _FuelScreenState extends State<FuelScreen> {
   // 3. Fuel cost estimate (manual entry)
   // ═══════════════════════════════════════════════════════════════════════════
   Widget _buildCostCard() {
-    // TODO: A live fuel-price API (e.g. 100LL/Jet-A FBO price feeds) could be
-    // integrated here to auto-populate the price field. For now this is a
-    // manual-entry estimate only.
+    // Manual entry only: no fuel-price feed is wired, and the card says so.
     final price = _parse(_priceCtrl);
     final gallons = _parse(_costGallonsCtrl);
     double? total;

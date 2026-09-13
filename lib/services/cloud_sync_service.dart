@@ -34,8 +34,8 @@ abstract class BackendClient {
 
 /// Default backend: stores a single snapshot in shared_preferences.
 ///
-/// This is intentionally same-device only. It is NOT a real cloud backend.
-/// TODO(sync): replace with a networked BackendClient for multi-device sync.
+/// This is intentionally same-device only. It is NOT a real cloud backend;
+/// see the multi-device sync note in this file's header.
 class LocalSnapshotBackendClient implements BackendClient {
   static const String _kSnapshotKey = 'cloud_snapshot';
 

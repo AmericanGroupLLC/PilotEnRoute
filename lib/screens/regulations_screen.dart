@@ -495,8 +495,9 @@ class _RegulationsScreenState extends State<RegulationsScreen> {
           const SizedBox(width: 10),
           Expanded(
             child: Text(
-              'Live from eCFR.gov / FAA.gov (free, official) — requires internet. '
-              'Offline caching TODO.',
+              'Live from eCFR.gov / FAA.gov (free, official). An internet '
+              'connection is required — regulation text is not stored on '
+              'the device for offline study.',
               style: GoogleFonts.inter(
                 fontSize: 11,
                 color: Colors.white70,

@@ -654,7 +654,8 @@ class _DocumentsScreenState extends State<DocumentsScreen> {
                 _generateSamplePdf(save: true);
               },
             ),
-            // TODO(docs): add file_picker option here to import arbitrary PDFs.
+            // Importing arbitrary PDFs would need file_picker — see
+            // DocumentService for why it is not a dependency yet.
             const SizedBox(height: 8),
           ],
         ),

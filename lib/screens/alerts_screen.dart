@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
+import 'package:provider/provider.dart';
 
 import '../services/alert_service.dart';
+import '../services/weather_service.dart';
 
 /// PilotEnRoute — Alerts Center screen.
 ///
@@ -618,7 +620,16 @@ class _AlertsScreenState extends State<AlertsScreen>
 
   // ── Actions ──────────────────────────────────────────────────────────────────
   Future<void> _runChecks() async {
-    final count = await _service.runChecksNow();
+    // Grade the weather category against a real METAR when the user has one
+    // loaded; otherwise runChecksNow falls back to its labelled sample.
+    final metar = context.read<WeatherService>().currentMetar;
+    final count = await _service.runChecksNow(
+      metarStation: metar?.icao,
+      ceilingFt: metar?.ceilingFt,
+      visibilitySm: metar?.visibilitySm,
+      windDirDeg: metar?.windDir,
+      windSpeedKts: metar?.windSpeedKt,
+    );
     if (!mounted) return;
     _snack(count == 0
         ? 'No alerts raised (all categories disabled?)'

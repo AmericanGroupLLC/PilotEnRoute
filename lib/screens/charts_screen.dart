@@ -7,8 +7,8 @@ import '../services/chart_service.dart';
 
 // Charts & Plates browser — free FAA plates via aviationapi.com (US only).
 //
-// TODO(charts): geo-referenced overlay on the moving map requires a licensed
-// chart provider; this is the free PDF/plate viewer.
+// This is the free PDF/plate viewer; a geo-referenced moving-map overlay
+// would need a licensed chart provider (see chart_service.dart).
 
 const _kBg = Color(0xFF0A1628);
 const _kCard = Color(0xFF112240);

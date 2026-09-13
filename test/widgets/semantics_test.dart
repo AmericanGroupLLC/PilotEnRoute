@@ -6,10 +6,9 @@
 /// screens so a refactor cannot silently drop them again.
 library;
 
-import 'package:flutter/material.dart';
 import 'dart:ui' show CheckedState;
 
-import 'package:flutter/semantics.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';

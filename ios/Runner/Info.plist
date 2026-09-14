@@ -32,18 +32,11 @@
 				<string>pilotenroute</string>
 			</array>
 		</dict>
-		<!-- REQUIRED for Google Sign-In: replace REVERSED_CLIENT_ID below with the
-		     value of the REVERSED_CLIENT_ID key from the app's GoogleService-Info.plist
-		     (it looks like com.googleusercontent.apps.NNNNNNNN-xxxx). Without the real
-		     value the Google sign-in callback will not return to the app. -->
-		<dict>
-			<key>CFBundleTypeRole</key>
-			<string>Editor</string>
-			<key>CFBundleURLSchemes</key>
-			<array>
-				<string>com.googleusercontent.apps.REVERSED_CLIENT_ID</string>
-			</array>
-		</dict>
+		<!-- Google Sign-In needs a CFBundleURLTypes entry whose scheme is the
+	     REVERSED_CLIENT_ID from GoogleService-Info.plist. That file does not
+	     exist yet (agl-manifest docs/MANUAL_ACTIONS.md MA-006), and App Store
+	     Connect rejects a placeholder scheme, so the entry is deliberately
+	     absent until the real value is available. -->
 	</array>
 	<key>CFBundleVersion</key>
 	<string>$(FLUTTER_BUILD_NUMBER)</string>

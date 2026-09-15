@@ -40,5 +40,12 @@ end
 post_install do |installer|
   installer.pods_project.targets.each do |target|
     flutter_additional_ios_build_settings(target)
+    # Several pods declare a minimum below the 15.0 these apps target, and Xcode 26
+    # rejects any target under 15.0 outright rather than warning, which fails the
+    # build on the Pods project instead of on our code.
+    target.build_configurations.each do |config|
+      current = config.build_settings['IPHONEOS_DEPLOYMENT_TARGET'].to_f
+      config.build_settings['IPHONEOS_DEPLOYMENT_TARGET'] = '15.0' if current < 15.0
+    end
   end
 end

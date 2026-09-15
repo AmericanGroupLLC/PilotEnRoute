@@ -5,6 +5,7 @@ import '../services/aviation_api_service.dart';
 import '../services/news_service.dart';
 import '../services/premium_service.dart';
 import '../widgets/ad_banner_widget.dart';
+import '../widgets/adaptive_grid.dart';
 import '../widgets/app_drawer.dart';
 import '../widgets/news_ticker.dart';
 import '../widgets/module_card.dart';
@@ -186,25 +187,27 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Row(
-            children: [
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                decoration: BoxDecoration(
-                  color: const Color(0xFF00BCD4).withValues(alpha: 0.2),
-                  borderRadius: BorderRadius.circular(20),
-                  border: Border.all(color: const Color(0xFF00BCD4), width: 1),
-                ),
-                child: Text(
-                  'AVIATION TRAINING PLATFORM',
-                  style: GoogleFonts.orbitron(
-                    fontSize: 9,
-                    color: const Color(0xFF00BCD4),
-                    letterSpacing: 1.5,
-                  ),
+          // The pill hugs its text, so it has to be allowed to shrink: on a
+          // folded cover display at a large text scale the caption is wider
+          // than the hero card.
+          Align(
+            alignment: Alignment.centerLeft,
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+              decoration: BoxDecoration(
+                color: const Color(0xFF00BCD4).withValues(alpha: 0.2),
+                borderRadius: BorderRadius.circular(20),
+                border: Border.all(color: const Color(0xFF00BCD4), width: 1),
+              ),
+              child: Text(
+                'AVIATION TRAINING PLATFORM',
+                style: GoogleFonts.orbitron(
+                  fontSize: 9,
+                  color: const Color(0xFF00BCD4),
+                  letterSpacing: 1.5,
                 ),
               ),
-            ],
+            ),
           ),
           const SizedBox(height: 12),
           Semantics(
@@ -232,12 +235,15 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
             ),
           ),
           const SizedBox(height: 16),
-          Row(
+          // Wrap, not Row: three badges do not fit across a folded cover
+          // display once the text scale goes up, and they should stack rather
+          // than run off the card.
+          Wrap(
+            spacing: 12,
+            runSpacing: 8,
             children: [
               _buildStatBadge('Live', 'FAA Q-Bank'),
-              const SizedBox(width: 12),
               _buildStatBadge('500+', 'Airports'),
-              const SizedBox(width: 12),
               _buildStatBadge('13', 'Subjects'),
             ],
           ),
@@ -381,17 +387,22 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
             ),
           ),
           const SizedBox(height: 12),
-          GridView.builder(
-            shrinkWrap: true,
-            physics: const NeverScrollableScrollPhysics(),
-            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-              crossAxisCount: 3,
-              childAspectRatio: 0.9,
-              crossAxisSpacing: 10,
-              mainAxisSpacing: 10,
+          // The column count comes from the live constraints, so unfolding the
+          // device widens the grid instead of stretching three tiles across a
+          // near-square window.
+          LayoutBuilder(
+            builder: (context, constraints) => GridView.builder(
+              shrinkWrap: true,
+              physics: const NeverScrollableScrollPhysics(),
+              gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                crossAxisCount: adaptiveTileColumns(constraints.maxWidth),
+                childAspectRatio: 0.9,
+                crossAxisSpacing: 10,
+                mainAxisSpacing: 10,
+              ),
+              itemCount: modules.length,
+              itemBuilder: (context, index) => ModuleCard(data: modules[index]),
             ),
-            itemCount: modules.length,
-            itemBuilder: (context, index) => ModuleCard(data: modules[index]),
           ),
         ],
       ),

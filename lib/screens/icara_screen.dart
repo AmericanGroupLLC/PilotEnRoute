@@ -34,13 +34,15 @@ class IcaraScreen extends StatelessWidget {
                     children: [
                       const Icon(Icons.public, color: Color(0xFF00BCD4), size: 28),
                       const SizedBox(width: 12),
-                      Text(
-                        'ICARA & TSA REQUIREMENTS',
-                        style: GoogleFonts.orbitron(
-                          fontSize: 12,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.white,
-                          letterSpacing: 1,
+                      Expanded(
+                        child: Text(
+                          'ICARA & TSA REQUIREMENTS',
+                          style: GoogleFonts.orbitron(
+                            fontSize: 12,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.white,
+                            letterSpacing: 1,
+                          ),
                         ),
                       ),
                     ],
@@ -206,12 +208,14 @@ class IcaraScreen extends StatelessWidget {
             children: [
               Icon(icon, color: color, size: 18),
               const SizedBox(width: 8),
-              Text(
-                title,
-                style: GoogleFonts.inter(
-                  fontSize: 13,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.white,
+              Expanded(
+                child: Text(
+                  title,
+                  style: GoogleFonts.inter(
+                    fontSize: 13,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.white,
+                  ),
                 ),
               ),
             ],

@@ -320,13 +320,15 @@ class _FuelScreenState extends State<FuelScreen> {
               children: [
                 Icon(statusIcon, color: statusColor, size: 22),
                 const SizedBox(width: 12),
-                Text(
-                  statusLabel,
-                  style: GoogleFonts.orbitron(
-                    fontSize: 13,
-                    fontWeight: FontWeight.bold,
-                    color: statusColor,
-                    letterSpacing: 1.5,
+                Expanded(
+                  child: Text(
+                    statusLabel,
+                    style: GoogleFonts.orbitron(
+                      fontSize: 13,
+                      fontWeight: FontWeight.bold,
+                      color: statusColor,
+                      letterSpacing: 1.5,
+                    ),
                   ),
                 ),
               ],

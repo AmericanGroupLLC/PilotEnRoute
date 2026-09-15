@@ -89,26 +89,28 @@ class _GarminScreenState extends State<GarminScreen>
             children: [
               const Icon(Icons.watch, color: Colors.white, size: 36),
               const SizedBox(width: 12),
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'GARMIN AVIATION',
-                    style: GoogleFonts.orbitron(
-                      fontSize: 14,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.white,
-                      letterSpacing: 1.5,
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'GARMIN AVIATION',
+                      style: GoogleFonts.orbitron(
+                        fontSize: 14,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white,
+                        letterSpacing: 1.5,
+                      ),
                     ),
-                  ),
-                  Text(
-                    'Connect IQ • Pilot • avionics',
-                    style: GoogleFonts.inter(
-                      fontSize: 11,
-                      color: Colors.white70,
+                    Text(
+                      'Connect IQ • Pilot • avionics',
+                      style: GoogleFonts.inter(
+                        fontSize: 11,
+                        color: Colors.white70,
+                      ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
             ],
           ),
@@ -224,12 +226,14 @@ class _GarminScreenState extends State<GarminScreen>
                         children: [
                           Row(
                             children: [
-                              Text(
-                                p['name'] as String,
-                                style: GoogleFonts.inter(
-                                  fontSize: 13,
-                                  fontWeight: FontWeight.bold,
-                                  color: Colors.white,
+                              Flexible(
+                                child: Text(
+                                  p['name'] as String,
+                                  style: GoogleFonts.inter(
+                                    fontSize: 13,
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.white,
+                                  ),
                                 ),
                               ),
                               const SizedBox(width: 8),
@@ -341,11 +345,13 @@ class _GarminScreenState extends State<GarminScreen>
             size: 16,
           ),
           const SizedBox(width: 8),
-          Text(
-            text,
-            style: GoogleFonts.inter(
-              fontSize: 12,
-              color: available ? Colors.white : Colors.white38,
+          Expanded(
+            child: Text(
+              text,
+              style: GoogleFonts.inter(
+                fontSize: 12,
+                color: available ? Colors.white : Colors.white38,
+              ),
             ),
           ),
         ],
@@ -368,12 +374,14 @@ class _GarminScreenState extends State<GarminScreen>
             children: [
               const Icon(Icons.flight, color: Color(0xFFFFB300), size: 20),
               const SizedBox(width: 8),
-              Text(
-                'GARMIN PILOT INTEGRATION',
-                style: GoogleFonts.orbitron(
-                  fontSize: 10,
-                  color: const Color(0xFFFFB300),
-                  letterSpacing: 1.5,
+              Expanded(
+                child: Text(
+                  'GARMIN PILOT INTEGRATION',
+                  style: GoogleFonts.orbitron(
+                    fontSize: 10,
+                    color: const Color(0xFFFFB300),
+                    letterSpacing: 1.5,
+                  ),
                 ),
               ),
             ],

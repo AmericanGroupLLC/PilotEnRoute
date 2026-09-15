@@ -161,10 +161,14 @@ class CareerScreen extends StatelessWidget {
             style: GoogleFonts.inter(fontSize: 12, color: Colors.white70, height: 1.5),
           ),
           const SizedBox(height: 12),
-          Row(
+          // Wrap, not Row: on a folded cover display (and at a large text
+          // scale) the salary and hours badges no longer fit side by side, so
+          // they stack instead of overflowing.
+          Wrap(
+            spacing: 10,
+            runSpacing: 8,
             children: [
               _badge(Icons.attach_money, salary, const Color(0xFF4CAF50)),
-              const SizedBox(width: 10),
               _badge(Icons.access_time, hours, const Color(0xFFFFB300)),
             ],
           ),
@@ -186,9 +190,11 @@ class CareerScreen extends StatelessWidget {
         children: [
           Icon(icon, color: color, size: 12),
           const SizedBox(width: 4),
-          Text(
-            text,
-            style: GoogleFonts.inter(fontSize: 11, color: color, fontWeight: FontWeight.w600),
+          Flexible(
+            child: Text(
+              text,
+              style: GoogleFonts.inter(fontSize: 11, color: color, fontWeight: FontWeight.w600),
+            ),
           ),
         ],
       ),

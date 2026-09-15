@@ -100,13 +100,15 @@ class _EmergencyScreenState extends State<EmergencyScreen> {
                     children: [
                       const Icon(Icons.warning, color: Colors.white, size: 24),
                       const SizedBox(width: 10),
-                      Text(
-                        'EMERGENCY SIMULATOR',
-                        style: GoogleFonts.orbitron(
-                          fontSize: 13,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.white,
-                          letterSpacing: 1,
+                      Expanded(
+                        child: Text(
+                          'EMERGENCY SIMULATOR',
+                          style: GoogleFonts.orbitron(
+                            fontSize: 13,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.white,
+                            letterSpacing: 1,
+                          ),
                         ),
                       ),
                     ],

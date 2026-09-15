@@ -265,11 +265,8 @@ class _FlashcardScreenState extends State<FlashcardScreen>
           ),
         ],
       ),
-      child: Padding(
-        padding: const EdgeInsets.all(28),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
+      child: _cardBody(
+        children: [
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
               decoration: BoxDecoration(
@@ -304,11 +301,13 @@ class _FlashcardScreenState extends State<FlashcardScreen>
               children: [
                 const Icon(Icons.touch_app, color: Colors.white38, size: 16),
                 const SizedBox(width: 6),
-                Text(
-                  'Tap to reveal answer',
-                  style: GoogleFonts.inter(
-                    fontSize: 12,
-                    color: Colors.white38,
+                Flexible(
+                  child: Text(
+                    'Tap to reveal answer',
+                    style: GoogleFonts.inter(
+                      fontSize: 12,
+                      color: Colors.white38,
+                    ),
                   ),
                 ),
               ],
@@ -324,9 +323,35 @@ class _FlashcardScreenState extends State<FlashcardScreen>
                 ),
               ),
             ],
-          ],
-        ),
+        ],
       ),
+    );
+  }
+
+  /// The face of a flashcard.
+  ///
+  /// Centred while the content fits, scrollable when it does not. A folded
+  /// phone held in landscape gives the card a very short box, and a long
+  /// question plus a large text scale will not fit in it — scrolling the card
+  /// face is the right answer there, clipping the question is not.
+  Widget _cardBody({required List<Widget> children}) {
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        const padding = EdgeInsets.all(28);
+        final minHeight = constraints.hasBoundedHeight
+            ? math.max(0.0, constraints.maxHeight - padding.vertical)
+            : 0.0;
+        return SingleChildScrollView(
+          padding: padding,
+          child: ConstrainedBox(
+            constraints: BoxConstraints(minHeight: minHeight),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: children,
+            ),
+          ),
+        );
+      },
     );
   }
 
@@ -352,11 +377,8 @@ class _FlashcardScreenState extends State<FlashcardScreen>
           ),
         ],
       ),
-      child: Padding(
-        padding: const EdgeInsets.all(28),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
+      child: _cardBody(
+        children: [
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
               decoration: BoxDecoration(
@@ -428,8 +450,7 @@ class _FlashcardScreenState extends State<FlashcardScreen>
                 ),
               ],
             ),
-          ],
-        ),
+        ],
       ),
     );
   }

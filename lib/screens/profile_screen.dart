@@ -175,6 +175,9 @@ class _ProfileScreenState extends State<ProfileScreen>
           const SizedBox(height: 8),
           DropdownButtonFormField<String>(
             initialValue: _pilotLevel,
+            // Without isExpanded the button sizes to the widest certificate
+            // name, which is wider than a folded cover display.
+            isExpanded: true,
             dropdownColor: const Color(0xFF112240),
             style: GoogleFonts.inter(color: Colors.white, fontSize: 14),
             decoration: const InputDecoration(),

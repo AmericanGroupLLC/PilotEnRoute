@@ -116,13 +116,15 @@ class _PremiumScreenState extends State<PremiumScreen>
               children: [
                 const Icon(Icons.workspace_premium, color: Colors.black, size: 16),
                 const SizedBox(width: 6),
-                Text(
-                  'UPGRADE TO PREMIUM',
-                  style: GoogleFonts.orbitron(
-                    color: Colors.black,
-                    fontSize: 11,
-                    fontWeight: FontWeight.bold,
-                    letterSpacing: 1.2,
+                Flexible(
+                  child: Text(
+                    'UPGRADE TO PREMIUM',
+                    style: GoogleFonts.orbitron(
+                      color: Colors.black,
+                      fontSize: 11,
+                      fontWeight: FontWeight.bold,
+                      letterSpacing: 1.2,
+                    ),
                   ),
                 ),
               ],
@@ -434,7 +436,12 @@ class _PremiumScreenState extends State<PremiumScreen>
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Row(
+                  // Wrap so the "BEST VALUE" badge drops under the plan title
+                  // on a folded window instead of pushing it off the edge.
+                  Wrap(
+                    crossAxisAlignment: WrapCrossAlignment.center,
+                    spacing: 8,
+                    runSpacing: 4,
                     children: [
                       Text(
                         plan.title,
@@ -444,8 +451,7 @@ class _PremiumScreenState extends State<PremiumScreen>
                           fontWeight: FontWeight.bold,
                         ),
                       ),
-                      if (plan.badge.isNotEmpty) ...[
-                        const SizedBox(width: 8),
+                      if (plan.badge.isNotEmpty)
                         Container(
                           padding: const EdgeInsets.symmetric(
                               horizontal: 8, vertical: 2),
@@ -464,7 +470,6 @@ class _PremiumScreenState extends State<PremiumScreen>
                             ),
                           ),
                         ),
-                      ],
                     ],
                   ),
                   Text(
@@ -566,8 +571,11 @@ class _PremiumScreenState extends State<PremiumScreen>
   Widget _buildRestoreButton(PremiumService premium) {
     return Padding(
       padding: const EdgeInsets.fromLTRB(16, 12, 16, 0),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.center,
+      // Wrap, not Row: the two links plus the separator are wider than a
+      // folded cover display, and wider still at a large text scale.
+      child: Wrap(
+        alignment: WrapAlignment.center,
+        crossAxisAlignment: WrapCrossAlignment.center,
         children: [
           TextButton(
             onPressed: () => premium.restorePurchases(),

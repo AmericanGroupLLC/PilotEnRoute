@@ -50,22 +50,31 @@ class ModuleCard extends StatelessWidget {
             children: [
               Padding(
                 padding: const EdgeInsets.all(12),
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Icon(data.icon, color: Colors.white, size: 28),
-                    const SizedBox(height: 8),
-                    Text(
-                      data.title,
-                      textAlign: TextAlign.center,
-                      style: GoogleFonts.inter(
-                        fontSize: 11,
-                        fontWeight: FontWeight.w600,
-                        color: Colors.white,
-                        height: 1.3,
+                // The grid cell is sized by the window, which on a folding
+                // phone changes while the app runs — and the label grows with
+                // the user's text scale. scaleDown keeps the tile intact at
+                // its natural size and only shrinks it when it genuinely
+                // cannot fit, instead of overflowing the cell.
+                child: FittedBox(
+                  fit: BoxFit.scaleDown,
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(data.icon, color: Colors.white, size: 28),
+                      const SizedBox(height: 8),
+                      Text(
+                        data.title,
+                        textAlign: TextAlign.center,
+                        style: GoogleFonts.inter(
+                          fontSize: 11,
+                          fontWeight: FontWeight.w600,
+                          color: Colors.white,
+                          height: 1.3,
+                        ),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
               ),
               if (data.badge != null)

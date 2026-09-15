@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:url_launcher/url_launcher.dart';
 
+import '../widgets/adaptive_grid.dart';
+
 class DroneScreen extends StatefulWidget {
   const DroneScreen({super.key});
 
@@ -223,48 +225,60 @@ class _DroneScreenState extends State<DroneScreen>
       {'icon': Icons.wifi, 'title': 'RF & Links', 'subtitle': 'Signal management'},
     ];
 
-    return GridView.builder(
-      shrinkWrap: true,
-      physics: const NeverScrollableScrollPhysics(),
-      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-        crossAxisCount: 3,
-        childAspectRatio: 1.0,
-        crossAxisSpacing: 10,
-        mainAxisSpacing: 10,
+    // The column count is read from the live constraints so the grid widens
+    // when the device is unfolded instead of keeping three phone-width tiles.
+    return LayoutBuilder(
+      builder: (context, constraints) => GridView.builder(
+        shrinkWrap: true,
+        physics: const NeverScrollableScrollPhysics(),
+        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+          crossAxisCount: adaptiveTileColumns(constraints.maxWidth),
+          childAspectRatio: 1.0,
+          crossAxisSpacing: 10,
+          mainAxisSpacing: 10,
+        ),
+        itemCount: categories.length,
+        itemBuilder: (context, i) {
+          final cat = categories[i];
+          return Container(
+            decoration: BoxDecoration(
+              color: const Color(0xFF112240),
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(color: const Color(0xFF00838F).withValues(alpha: 0.3)),
+            ),
+            padding: const EdgeInsets.all(6),
+            // scaleDown keeps the tile at its natural size and only shrinks it
+            // when the cell is genuinely too small — a narrow cover display,
+            // or a large text scale — rather than overflowing the cell.
+            child: FittedBox(
+              fit: BoxFit.scaleDown,
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(cat['icon'] as IconData, color: const Color(0xFF00BCD4), size: 28),
+                  const SizedBox(height: 6),
+                  Text(
+                    cat['title'] as String,
+                    style: GoogleFonts.inter(
+                      fontSize: 11,
+                      fontWeight: FontWeight.w600,
+                      color: Colors.white,
+                    ),
+                  ),
+                  Text(
+                    cat['subtitle'] as String,
+                    style: GoogleFonts.inter(
+                      fontSize: 9,
+                      color: Colors.white54,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          );
+        },
       ),
-      itemCount: categories.length,
-      itemBuilder: (context, i) {
-        final cat = categories[i];
-        return Container(
-          decoration: BoxDecoration(
-            color: const Color(0xFF112240),
-            borderRadius: BorderRadius.circular(12),
-            border: Border.all(color: const Color(0xFF00838F).withValues(alpha: 0.3)),
-          ),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Icon(cat['icon'] as IconData, color: const Color(0xFF00BCD4), size: 28),
-              const SizedBox(height: 6),
-              Text(
-                cat['title'] as String,
-                style: GoogleFonts.inter(
-                  fontSize: 11,
-                  fontWeight: FontWeight.w600,
-                  color: Colors.white,
-                ),
-              ),
-              Text(
-                cat['subtitle'] as String,
-                style: GoogleFonts.inter(
-                  fontSize: 9,
-                  color: Colors.white54,
-                ),
-              ),
-            ],
-          ),
-        );
-      },
     );
   }
 

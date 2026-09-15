@@ -32,11 +32,6 @@
 				<string>pilotenroute</string>
 			</array>
 		</dict>
-		<!-- Google Sign-In needs a CFBundleURLTypes entry whose scheme is the
-	     REVERSED_CLIENT_ID from GoogleService-Info.plist. That file does not
-	     exist yet (agl-manifest docs/MANUAL_ACTIONS.md MA-006), and App Store
-	     Connect rejects a placeholder scheme, so the entry is deliberately
-	     absent until the real value is available. -->
 	</array>
 	<key>CFBundleVersion</key>
 	<string>$(FLUTTER_BUILD_NUMBER)</string>
@@ -90,9 +85,6 @@
 	</array>
 	<key>UIViewControllerBasedStatusBarAppearance</key>
 	<false/>
-	<!-- The languages this binary can actually serve. iOS shows only
-	     these on the App Store page, so it has to match the ARB files
-	     and android/app resConfigs. -->
 	<key>CFBundleLocalizations</key>
 	<array>
 		<string>en</string>
@@ -108,5 +100,7 @@
 		<string>it</string>
 		<string>ru</string>
 	</array>
+	<key>NSMicrophoneUsageDescription</key>
+	<string>Lets you dictate flight notes hands-free while in the cockpit.</string>
 </dict>
 </plist>

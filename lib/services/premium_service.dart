@@ -248,6 +248,6 @@ class PremiumService extends ChangeNotifier {
     if (defaultTargetPlatform == TargetPlatform.iOS) {
       return 'https://apps.apple.com/account/subscriptions';
     }
-    return 'https://play.google.com/store/account/subscriptions?sku=$kMonthlyProductId&package=com.americangroup.pilotenroute';
+    return 'https://play.google.com/store/account/subscriptions?sku=$kMonthlyProductId&package=com.americangroupllc.pilotenroute';
   }
 }

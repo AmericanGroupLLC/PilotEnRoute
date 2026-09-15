@@ -7,7 +7,7 @@ runtime, so a shipped binary contains exactly the values it was built with.
 | | dev | staging | prod |
 |---|---|---|---|
 | `APP_ENV` | `dev` | `staging` | `prod` |
-| applicationId | `com.americangroup.pilotenroute.dev` | `….bodyquest.staging` | `com.americangroup.pilotenroute` |
+| applicationId | `com.americangroupllc.pilotenroute.dev` | `….bodyquest.staging` | `com.americangroupllc.pilotenroute` |
 | Launcher name | PilotEnRoute Dev | PilotEnRoute Staging | PilotEnRoute |
 | versionName suffix | `-dev` | `-staging` | *(none)* |
 

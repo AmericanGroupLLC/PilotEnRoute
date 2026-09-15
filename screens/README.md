@@ -18,7 +18,7 @@ screens/
 ```sh
 flutter build ios --simulator --debug
 xcrun simctl install <UDID> build/ios/iphonesimulator/Runner.app
-xcrun simctl launch <UDID> com.americangroup.pilotenroute
+xcrun simctl launch <UDID> com.americangroupllc.pilotenroute
 xcrun simctl io <UDID> screenshot screens/iphone-6.7/01-home.png
 ```
 

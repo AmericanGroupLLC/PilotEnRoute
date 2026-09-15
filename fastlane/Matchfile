@@ -13,5 +13,5 @@ git_url(ENV.fetch("MATCH_GIT_URL",
 git_branch(ENV.fetch("MATCH_GIT_BRANCH", "match-certificates"))
 storage_mode("git")
 type("appstore")
-app_identifier(["com.americangroup.pilotenroute"])
+app_identifier(["com.americangroupllc.pilotenroute"])
 team_id("TLH7Z3G27A")

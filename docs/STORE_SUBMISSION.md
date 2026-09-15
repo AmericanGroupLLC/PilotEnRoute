@@ -11,7 +11,7 @@ edit the facts file and regenerate, do not hand-edit the metadata.
 | On-device name | `PilotEnRoute` | `ios/Runner/Info.plist`, `android/app/src/main/AndroidManifest.xml` |
 | App Store name | `PilotEnRoute: Pilot Training` | `fastlane/metadata/en-US/name.txt` |
 | Play title | `PilotEnRoute — Pilot Training` | `fastlane/metadata/android/en-US/title.txt` |
-| Bundle / package ID | `com.americangroup.pilotenroute` | `ios/Runner.xcodeproj`, `android/app/build.gradle` |
+| Bundle / package ID | `com.americangroupllc.pilotenroute` | `ios/Runner.xcodeproj`, `android/app/build.gradle` |
 | Version name | `1.0.0` | `pubspec.yaml` `version:` |
 | Build number | `1` | `pubspec.yaml` after the `+` |
 | Primary category | Education (Apple) / Education (Play) | this file |

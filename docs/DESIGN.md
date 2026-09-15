@@ -99,7 +99,7 @@ See the "Key services" table in `AGENTS.md` for the full list. Configuration sur
   Kotlin `MainActivity` under `com/americangroupllc/pilot_enroute`; adaptive launcher icons in
   `res/mipmap-*`; permissions for internet, notifications/exact-alarms, location, legacy storage.
   Release build currently signs with the debug keystore (TODO).
-- **iOS** (`ios/`): `PRODUCT_BUNDLE_IDENTIFIER` `com.americangroup.pilotenroute` (no underscore —
+- **iOS** (`ios/`): `PRODUCT_BUNDLE_IDENTIFIER` `com.americangroupllc.pilotenroute` (no underscore —
   matches IAP product IDs and appleClientId); `CFBundleDisplayName` "PilotEnRoute"; custom URL scheme
   `pilotenroute` for OAuth redirect; `AppIcon.appiconset` with a full opaque icon set.
 - **Web** (`web/`): PWA build. Separately, `web_marketing/` is a standalone static marketing site.

@@ -1,4 +1,4 @@
-# Fastlane - PilotEnRoute (com.americangroup.pilotenroute)
+# Fastlane - PilotEnRoute (com.americangroupllc.pilotenroute)
 #
 # Auth is entirely env-driven so the same lanes run locally and in CI with no
 # secrets in the repo.
@@ -10,7 +10,7 @@
 
 default_platform(:ios)
 
-APP_ID = "com.americangroup.pilotenroute".freeze
+APP_ID = "com.americangroupllc.pilotenroute".freeze
 AAB_PATH = File.expand_path(
   "../build/app/outputs/bundle/release/app-release.aab", __dir__
 ).freeze
@@ -127,7 +127,7 @@ platform :android do
   desc "Upload the Play listing metadata only (no binary)"
   lane :metadata do
     upload_to_play_store(
-      package_name: "com.americangroup.pilotenroute",
+      package_name: "com.americangroupllc.pilotenroute",
       json_key: ENV.fetch("PLAY_JSON_KEY_FILE", "fastlane/play-service-account.json"),
       skip_upload_aab: true,
       skip_upload_apk: true,
@@ -141,7 +141,7 @@ platform :android do
   lane :beta do
     build
     upload_to_play_store(
-      package_name: "com.americangroup.pilotenroute",
+      package_name: "com.americangroupllc.pilotenroute",
       json_key: ENV.fetch("PLAY_JSON_KEY_FILE", "fastlane/play-service-account.json"),
       aab: AAB_PATH,
       mapping_paths: Dir[File.expand_path("../build/app/outputs/mapping/release/mapping.txt", __dir__)],
@@ -154,7 +154,7 @@ platform :android do
   lane :release do
     build
     upload_to_play_store(
-      package_name: "com.americangroup.pilotenroute",
+      package_name: "com.americangroupllc.pilotenroute",
       json_key: ENV.fetch("PLAY_JSON_KEY_FILE", "fastlane/play-service-account.json"),
       aab: AAB_PATH,
       mapping_paths: Dir[File.expand_path("../build/app/outputs/mapping/release/mapping.txt", __dir__)],

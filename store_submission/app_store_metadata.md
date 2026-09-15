@@ -204,9 +204,9 @@ https://americangroupllc.github.io/PilotEnRoute/privacy-policy.html
 ### Apple App Store Connect
 | Product | ID | Price |
 |---------|-----|-------|
-| Monthly Premium | `com.americangroupllc.pilotenroute.premium_monthly` | $4.99/mo |
-| Annual Premium | `com.americangroupllc.pilotenroute.premium_annual` | $34.99/yr |
-| Lifetime Premium | `com.americangroupllc.pilotenroute.premium_lifetime` | $79.99 |
+| Monthly Premium | `com.americangroup.pilotenroute.premium_monthly` | $4.99/mo |
+| Annual Premium | `com.americangroup.pilotenroute.premium_annual` | $34.99/yr |
+| Lifetime Premium | `com.americangroup.pilotenroute.premium_lifetime` | $79.99 |
 
 ### Google Play Console
 | Product | ID | Price |
@@ -261,7 +261,7 @@ Thank you for reviewing PilotEnRoute.
 - [ ] Age rating questionnaire completed (4+)
 - [ ] In-App Purchase products created in App Store Connect
 - [ ] AdMob App ID replaced with real production ID
-- [ ] Bundle ID: `com.americangroupllc.pilotenroute`
+- [ ] Bundle ID: `com.americangroup.pilotenroute`
 - [ ] Signing certificate and provisioning profile configured
 - [ ] Export Compliance: No encryption used (set to No)
 - [ ] App Review Notes filled
@@ -275,7 +275,7 @@ Thank you for reviewing PilotEnRoute.
 - [ ] Content rating questionnaire completed
 - [ ] In-App Products created in Play Console
 - [ ] AdMob App ID replaced with real production ID
-- [ ] Application ID: `com.americangroupllc.pilotenroute`
+- [ ] Application ID: `com.americangroup.pilotenroute`
 - [ ] Release keystore generated and configured in key.properties
 - [ ] App signed with release keystore
 - [ ] Target API level: 34 (Android 14)

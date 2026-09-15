@@ -77,7 +77,7 @@ App launch → `main()` inits Hive/tz/notifications/AdMob/auth → `MultiProvide
 ## Gotchas
 - **`flutter pub get` first.** A stale `.dart_tool/package_config.json` makes `flutter analyze` report ~12k phantom "uri_does_not_exist" errors (every file). After pub get: 0 errors.
 - **`go_router` is a dependency but UNUSED** — routing is `MaterialApp.routes` (Navigator 1.0 named routes). Don't assume declarative routing.
-- **Bundle IDs differ per platform:** Android `com.americangroupllc.pilot_enroute`, iOS `com.americangroupllc.pilotenroute` (no underscore — matches IAP product IDs / appleClientId). Keep them as-is; changing iOS would break IAP/OAuth.
+- **Bundle IDs differ per platform:** Android `com.americangroupllc.pilot_enroute`, iOS `com.americangroup.pilotenroute` (no underscore — matches IAP product IDs / appleClientId). Keep them as-is; changing iOS would break IAP/OAuth.
 - `backend_config.dart` intentionally ships client-public values (anon key, OAuth client IDs, Firebase project id) — no server secrets. Don't add service-role secrets here.
 - `ai_service` runs an honest "offline reference" mode when no API key is supplied; it never fakes a live AI.
 - `cloud_sync_service` is a same-device stub, not real multi-device sync.

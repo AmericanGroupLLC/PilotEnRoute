@@ -1,4 +1,4 @@
-package com.americangroupllc.pilotenroute
+package com.americangroup.pilotenroute
 
 import io.flutter.embedding.android.FlutterActivity
 

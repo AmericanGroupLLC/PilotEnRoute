@@ -264,9 +264,9 @@ manifestPlaceholders += [admobAppId: "ca-app-pub-XXXXXXXX~XXXXXXXXXX"]
 ### In-App Purchases (Set Real Product IDs)
 ```dart
 // lib/services/premium_service.dart
-static const String monthlyProductId = 'com.americangroupllc.pilotenroute.premium_monthly';
-static const String annualProductId  = 'com.americangroupllc.pilotenroute.premium_annual';
-static const String lifetimeProductId = 'com.americangroupllc.pilotenroute.premium_lifetime';
+static const String monthlyProductId = 'com.americangroup.pilotenroute.premium_monthly';
+static const String annualProductId  = 'com.americangroup.pilotenroute.premium_annual';
+static const String lifetimeProductId = 'com.americangroup.pilotenroute.premium_lifetime';
 ```
 
 ---
@@ -295,7 +295,7 @@ open ios/Runner.xcworkspace
 
 # 2. In Xcode: Runner target → Signing & Capabilities
 #    Set Team to your Apple Developer account
-#    Bundle ID: com.americangroupllc.pilotenroute
+#    Bundle ID: com.americangroup.pilotenroute
 
 # 3. Build for release
 flutter build ios --release

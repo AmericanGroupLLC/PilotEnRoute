@@ -39,7 +39,7 @@ def admobAppId = (project.findProperty("admobAppId")
         ?: "ca-app-pub-3940256099942544~3347511713").toString()
 
 android {
-    namespace "com.americangroupllc.pilotenroute"
+    namespace "com.americangroup.pilotenroute"
     compileSdk flutter.compileSdkVersion
     ndkVersion flutter.ndkVersion
 
@@ -63,7 +63,7 @@ android {
         // Ships only the languages this app has strings for; every
         // other locale bundled by a dependency is stripped.
         resConfigs "en", "es", "zh", "hi", "fr", "ar", "de", "ja", "pt", "ko", "it", "ru"
-        applicationId "com.americangroupllc.pilotenroute"
+        applicationId "com.americangroup.pilotenroute"
         minSdkVersion flutter.minSdkVersion
         targetSdkVersion flutter.targetSdkVersion
         versionCode flutterVersionCode.toInteger()

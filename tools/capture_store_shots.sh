@@ -49,8 +49,8 @@ i=1
 for entry in "${SHOTS[@]}"; do
   route="${entry%%|*}"; label="${entry##*|}"
   echo "  [$i] $label  ($route)"
-  xcrun simctl terminate "$UDID" "com.americangroupllc.pilotenroute" 2>/dev/null || true
-  xcrun simctl launch "$UDID" "com.americangroupllc.pilotenroute" -route "$route" >/dev/null
+  xcrun simctl terminate "$UDID" "com.americangroup.pilotenroute" 2>/dev/null || true
+  xcrun simctl launch "$UDID" "com.americangroup.pilotenroute" -route "$route" >/dev/null
   sleep 4
   out="$IOS_SHOTS/${i}_${label}.png"
   xcrun simctl io "$UDID" screenshot --type=png "$out"

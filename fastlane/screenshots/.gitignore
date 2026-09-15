@@ -1,0 +1,3 @@
+# Store screenshots are delivery inputs and are versioned here, overriding the
+# machine-wide ~/.gitignore_global rule that hides fastlane/screenshots/**/*.png.
+!**/*.png

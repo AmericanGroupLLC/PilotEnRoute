@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "209455037382",
+    "project_id": "americangroupllc-agl3",
+    "storage_bucket": "americangroupllc-agl3.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:209455037382:android:3f86fcde801b0bd819d0c7",
+        "android_client_info": {
+          "package_name": "com.americangroupllc.pilotenroute"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDpoCgOX49d0IPcbuF2i4OTpfT8-jflRpo"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

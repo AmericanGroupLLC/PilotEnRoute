@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:agl_i18n/agl_i18n.dart';
 import 'package:agl_observability/agl_observability.dart';
 import 'package:flutter/material.dart';
@@ -113,8 +115,13 @@ void main() async {
   // Initialize notifications
   await NotificationService.initialize();
 
-  // Initialize AdMob SDK
-  await AdService().initialize();
+  // Initialize AdMob SDK. Not awaited: it gathers UMP consent, which on a
+  // clean install presents Google's native tracking explainer, and it is the
+  // only call here with neither a timeout nor a try/catch — so awaiting it
+  // means the user reads that dialog against a black screen, and an AdMob
+  // failure takes the whole launch with it. Ad call sites already decline to
+  // request an ad until consent has resolved.
+  unawaited(AdService().initialize());
 
   // Restore any existing AmericanGroupLLC backend session.
   await AuthService.instance.init();

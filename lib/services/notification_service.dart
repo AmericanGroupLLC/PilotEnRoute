@@ -102,12 +102,26 @@ class NotificationService extends ChangeNotifier {
   int get unreadCount => _unreadCount;
 
   // ─── Static Initialization ─────────────────────────────────────────────────
+  /// Sets the plugin up. Deliberately does **not** ask for permission.
+  ///
+  /// This is awaited by `main()` before `runApp()`. With the three
+  /// `request*Permission` flags set, `_plugin.initialize` calls iOS's
+  /// `requestAuthorization` and does not return until the user answers the
+  /// system alert — so on a clean install the app painted nothing at all, and
+  /// an unanswered alert meant it never launched. Verified on a freshly
+  /// erased iPhone 17 Pro Max simulator: "PilotEnRoute Would Like to Send You
+  /// Notifications" over a black screen, and `runApp()` never reached.
+  ///
+  /// Asking at cold start is also the wrong moment on its own terms: the user
+  /// has not seen the app yet, so the one prompt iOS ever gives is spent with
+  /// no context. Call [requestPermissions] from the place that actually needs
+  /// alerts instead.
   static Future<void> initialize() async {
     const androidSettings = AndroidInitializationSettings('@mipmap/ic_launcher');
     const iosSettings = DarwinInitializationSettings(
-      requestAlertPermission: true,
-      requestBadgePermission: true,
-      requestSoundPermission: true,
+      requestAlertPermission: false,
+      requestBadgePermission: false,
+      requestSoundPermission: false,
     );
     const initSettings = InitializationSettings(
       android: androidSettings,
@@ -121,6 +135,27 @@ class NotificationService extends ChangeNotifier {
 
     // Create notification channels (Android)
     await _createNotificationChannels();
+  }
+
+  /// Asks for notification permission, at a moment the user is expecting it.
+  ///
+  /// Returns whether alerts may now be posted. Safe to call more than once:
+  /// iOS shows the system alert only for the first request and afterwards
+  /// answers from the stored decision.
+  static Future<bool> requestPermissions() async {
+    final ios = _plugin.resolvePlatformSpecificImplementation<
+        IOSFlutterLocalNotificationsPlugin>();
+    if (ios != null) {
+      return await ios.requestPermissions(
+            alert: true,
+            badge: true,
+            sound: true,
+          ) ??
+          false;
+    }
+    final android = _plugin.resolvePlatformSpecificImplementation<
+        AndroidFlutterLocalNotificationsPlugin>();
+    return await android?.requestNotificationsPermission() ?? false;
   }
 
   static Future<void> _createNotificationChannels() async {

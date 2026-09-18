@@ -6,6 +6,16 @@ import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
 
+// Firebase caps apps per project, so the 43 apps are split across three
+// AGL projects. The guard that matters is that the config belongs to one of
+// OURS - a config from an unrelated project means no crash ever arrives.
+const aglFirebaseProjects = <String>{
+  'americangroupllc-5bdfc',
+  'americangroupllc-agl2',
+  'americangroupllc-agl3',
+};
+
+
 /// Release configuration that has to be right before anything is delivered.
 ///
 /// These read files rather than pumping widgets, because the failures they
@@ -93,7 +103,7 @@ void main() {
       final config = jsonDecode(file.readAsStringSync()) as Map<String, dynamic>;
       final info = config['project_info'] as Map<String, dynamic>;
 
-      expect(info['project_id'], 'americangroupllc-5bdfc',
+      expect(aglFirebaseProjects, contains(info['project_id']),
           reason: 'this google-services.json is for a different Firebase '
               'project, so no crash would ever arrive');
       expect(info['project_number'], isNot(matches(r'^0+$')),

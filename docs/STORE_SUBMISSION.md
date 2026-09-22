@@ -42,7 +42,7 @@ edit the facts file and regenerate, do not hand-edit the metadata.
 | App icon 512x512+ | `.../images/icon.png` | generated |
 | Feature graphic 1024x500 | `.../images/featureGraphic.png` | generated |
 | Phone screenshots (min 2) | `.../images/phoneScreenshots/` | **needs `./tools/capture_store_shots.sh`** |
-| Privacy policy URL | https://americangroupllc.github.io/policy/pilotenroute/ | generated; resolves once the Pages repo is pushed |
+| Privacy policy URL | https://www.safecodeg.com/policy/pilotenroute/ | generated; resolves once the Pages repo is pushed |
 | Data safety form | answers in the Privacy section below | enter in the dashboard |
 | Upload | `fastlane android release` | needs `PLAY_JSON_KEY_FILE` |
 

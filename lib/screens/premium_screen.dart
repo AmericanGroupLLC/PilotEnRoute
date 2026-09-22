@@ -595,7 +595,7 @@ class _PremiumScreenState extends State<PremiumScreen>
           ),
           TextButton(
             onPressed: () => launchUrl(
-              Uri.parse('https://americangroupllc.github.io/policy/pilotenroute/'),
+              Uri.parse('https://www.safecodeg.com/policy/pilotenroute/'),
             ),
             child: Text(
               'Privacy Policy',

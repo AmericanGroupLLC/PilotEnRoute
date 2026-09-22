@@ -5,6 +5,7 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
+import 'package:pilot_enroute/services/ad_service.dart';
 
 // Firebase caps apps per project, so the 43 apps are split across three
 // AGL projects. The guard that matters is that the config belongs to one of
@@ -180,6 +181,27 @@ void main() {
           .any((f) => f.readAsStringSync().contains('Consent'));
       expect(gated, isTrue,
           reason: 'this app serves ads but nothing references consent');
+    });
+
+    test('a non-debug build cannot request an ad with test unit ids', () {
+      // PilotEnRoute has no real AdMob units yet, so serving an ad at all would
+      // mean serving Google's demo units to real users: no revenue, and an
+      // AdMob policy breach that puts the whole publisher account at risk.
+      expect(AdUnitIds.adUnitsAreReal, isFalse,
+          reason: 'real ad units have landed — update this expectation');
+      expect(AdUnitIds.adsAllowedForThisBuild, isTrue,
+          reason: 'debug builds must keep serving the test units');
+
+      // kDebugMode cannot be flipped from a test, so this checks that the two
+      // places that would otherwise reach the SDK still consult the gate.
+      expect(read('lib/services/ad_service.dart'),
+          contains('adsAllowedForThisBuild'),
+          reason: 'the ad service no longer checks whether the unit ids '
+              'are real before requesting an ad');
+      expect(read('lib/widgets/ad_banner_widget.dart'),
+          contains('adsAllowedForThisBuild'),
+          reason: 'the banner slot would reserve 52px for an ad that is '
+              'never requested');
     });
   });
 }

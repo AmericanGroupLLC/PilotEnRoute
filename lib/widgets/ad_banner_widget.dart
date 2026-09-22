@@ -53,6 +53,11 @@ class _AdBannerWidgetState extends State<AdBannerWidget> {
         // Premium users see nothing
         if (premium.isPremium) return const SizedBox.shrink();
 
+        // No ad will ever be requested while the unit IDs are still Google's
+        // test units, so the slot must take up no space at all — the loading
+        // placeholder below would otherwise sit there as a permanent grey bar.
+        if (!AdUnitIds.adsAllowedForThisBuild) return const SizedBox.shrink();
+
         // Web: show styled placeholder
         if (kIsWeb) return _buildWebPlaceholder(context);
 

@@ -38,6 +38,38 @@ class AdUnitIds {
       Platform.isIOS ? iosRewarded : androidRewarded;
   static String get native =>
       Platform.isIOS ? iosNative : androidNative;
+
+  // ── Are these real units? ────────────────────────────────────────────────
+  /// AGL's real AdMob publisher. A unit from any other publisher — Google's
+  /// public test publisher above, or an uppercase `YOUR_…` placeholder — is not
+  /// a real unit and must never be requested outside debug.
+  ///
+  /// THIS IS THE ONE PLACE TO DROP THE REAL IDS: replace the eight constants
+  /// above with the units from AdMob console → Apps → PilotEnRoute → Ad units
+  /// and ads switch on automatically, with no other code change, as soon as
+  /// they are real `ca-app-pub-8528784688453695/...` ids.
+  static const String _realAdPublisher = 'ca-app-pub-8528784688453695';
+
+  static bool _isRealUnit(String id) =>
+      id.startsWith('$_realAdPublisher/') && !id.contains('YOUR_');
+
+  /// True only when every unit this app actually requests is a real one.
+  /// `native` is deliberately excluded: it is declared but never loaded, so
+  /// requiring it would keep ads switched off forever. Add it back here if a
+  /// native placement is ever wired up.
+  static bool get adUnitsAreReal => const [
+        androidBanner,
+        iosBanner,
+        androidInterstitial,
+        iosInterstitial,
+        androidRewarded,
+        iosRewarded,
+      ].every(_isRealUnit);
+
+  /// Whether this build may request an ad at all. Debug builds keep serving the
+  /// test units so the integration stays testable; every other build refuses
+  /// until [adUnitsAreReal], so a test ad cannot reach a real user.
+  static bool get adsAllowedForThisBuild => kDebugMode || adUnitsAreReal;
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -86,6 +118,9 @@ class AdService extends ChangeNotifier {
   // ── Check if ads should show (premium users see no ads) ──────────────────
   bool shouldShowAds() {
     if (kIsWeb) return false;
+    // Serving Google's test units to a real user is an AdMob policy breach and
+    // earns nothing, so a non-debug build declines until real units are in.
+    if (!AdUnitIds.adsAllowedForThisBuild) return false;
     // No ad may be requested until UMP says consent allows it. This is the
     // predicate every caller already checks before createBannerAd(), which
     // returns a non-nullable BannerAd and so cannot decline on its own.
@@ -113,6 +148,7 @@ class AdService extends ChangeNotifier {
     // No ad may be requested until UMP says consent allows it.
     if (!AglConsent.adsAllowed) return;
     if (kIsWeb) return;
+    if (!AdUnitIds.adsAllowedForThisBuild) return;
     InterstitialAd.load(
       adUnitId: AdUnitIds.interstitial,
       request: const AdRequest(),
@@ -161,6 +197,7 @@ class AdService extends ChangeNotifier {
     // No ad may be requested until UMP says consent allows it.
     if (!AglConsent.adsAllowed) return;
     if (kIsWeb) return;
+    if (!AdUnitIds.adsAllowedForThisBuild) return;
     RewardedAd.load(
       adUnitId: AdUnitIds.rewarded,
       request: const AdRequest(),

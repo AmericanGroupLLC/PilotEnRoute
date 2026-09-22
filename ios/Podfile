@@ -48,4 +48,13 @@ post_install do |installer|
       config.build_settings['IPHONEOS_DEPLOYMENT_TARGET'] = '15.0' if current < 15.0
     end
   end
+
+  # The Pods *project* carries its own deployment target (CocoaPods writes 9.0
+  # there); Xcode 27 rejects it before it ever looks at the targets above, so the
+  # simulator build fails on Pods.xcodeproj rather than on our code.
+  installer.pods_project.build_configurations.each do |config|
+    current = config.build_settings['IPHONEOS_DEPLOYMENT_TARGET'].to_f
+    config.build_settings['IPHONEOS_DEPLOYMENT_TARGET'] = '15.0' if current < 15.0
+  end
+
 end

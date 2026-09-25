@@ -30,7 +30,7 @@ void main() {
     final start = DateTime.now();
     while (DateTime.now().difference(start) < timeout) {
       if (f.evaluate().isNotEmpty) {
-        debugPrint('[shots] found ${f.description} after '
+        debugPrint('[shots] found ${f.describeMatch(Plurality.many)} after '
             '${DateTime.now().difference(start).inMilliseconds}ms');
         return true;
       }
@@ -38,7 +38,7 @@ void main() {
       await tester.runAsync(
           () => Future<void>.delayed(const Duration(milliseconds: 200)));
     }
-    debugPrint('[shots] TIMED OUT waiting for ${f.description}');
+    debugPrint('[shots] TIMED OUT waiting for ${f.describeMatch(Plurality.many)}');
     return false;
   }
 

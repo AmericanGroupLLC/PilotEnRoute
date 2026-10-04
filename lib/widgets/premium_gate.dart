@@ -3,6 +3,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import '../services/premium_service.dart';
 import '../screens/premium_screen.dart';
+import 'package:agl_i18n/agl_i18n.dart';
 
 // ─────────────────────────────────────────────────────────────────────────────
 // PremiumGate — wraps any widget; shows upgrade pop-up when tapped by free user
@@ -139,7 +140,7 @@ class _PremiumAdBannerState extends State<PremiumAdBanner> {
                   'Upgrade to Premium for an ad-free experience.',
                 ),
                 child: Text(
-                  'Remove',
+                  AglL10n.of(context)!.actionRemove,
                   style: GoogleFonts.inter(
                     color: const Color(0xFFFFD700),
                     fontSize: 11,

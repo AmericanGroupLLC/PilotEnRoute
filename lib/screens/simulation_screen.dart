@@ -4,6 +4,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:flame/game.dart';
 import 'package:flame/components.dart';
 import 'package:flame/events.dart';
+import 'package:agl_i18n/agl_i18n.dart';
 
 // ─── Lightweight AI Flight Simulation ─────────────────────────────────────────
 // Uses the Flame game engine for 2D top-down flight simulation.
@@ -50,7 +51,7 @@ class _SimulationScreenState extends State<SimulationScreen> {
         actions: [
           if (_gameStarted)
             IconButton(
-              tooltip: 'Stop',
+              tooltip: AglL10n.of(context)!.actionStop,
               icon: const Icon(Icons.stop_circle_outlined),
               onPressed: () => setState(() => _gameStarted = false),
             ),

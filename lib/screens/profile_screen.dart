@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:agl_i18n/agl_i18n.dart';
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
@@ -100,7 +101,7 @@ class _ProfileScreenState extends State<ProfileScreen>
         title: const Text('PILOT PROFILE'),
         actions: [
           IconButton(
-            tooltip: 'Save',
+            tooltip: AglL10n.of(context)!.actionSave,
             icon: const Icon(Icons.save),
             onPressed: _saveProfile,
           ),

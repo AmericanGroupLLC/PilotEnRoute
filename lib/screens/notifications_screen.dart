@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:agl_i18n/agl_i18n.dart';
 
 class NotificationsScreen extends StatefulWidget {
   const NotificationsScreen({super.key});
@@ -106,7 +107,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
     return Scaffold(
       backgroundColor: const Color(0xFF0A1628),
       appBar: AppBar(
-        title: const Text('NOTIFICATIONS'),
+        title: Text(AglL10n.of(context)!.navNotifications),
         actions: [
           TextButton(
             onPressed: () async {

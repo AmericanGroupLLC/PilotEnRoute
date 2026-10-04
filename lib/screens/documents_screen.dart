@@ -8,6 +8,7 @@ import 'package:intl/intl.dart';
 import 'package:printing/printing.dart';
 
 import '../services/document_service.dart';
+import 'package:agl_i18n/agl_i18n.dart';
 
 const Color _bg = Color(0xFF0A1628);
 const Color _card = Color(0xFF112240);
@@ -114,7 +115,7 @@ class _DocumentsScreenState extends State<DocumentsScreen> {
         onPressed: _busy ? null : _showAddSheet,
         icon: const Icon(Icons.add),
         label: Text(
-          'ADD',
+          AglL10n.of(context)!.actionAdd,
           style: GoogleFonts.orbitron(
             fontSize: 12,
             fontWeight: FontWeight.bold,
@@ -917,7 +918,7 @@ class _MetadataDialogState extends State<_MetadataDialog> {
         TextButton(
           onPressed: () => Navigator.pop(context),
           child:
-              Text('Cancel', style: GoogleFonts.inter(color: Colors.white54)),
+              Text(AglL10n.of(context)!.actionCancel, style: GoogleFonts.inter(color: Colors.white54)),
         ),
         TextButton(
           onPressed: () {

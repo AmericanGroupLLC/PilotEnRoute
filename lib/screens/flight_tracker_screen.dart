@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../services/flight_tracker_service.dart';
+import 'package:agl_i18n/agl_i18n.dart';
 
 class FlightTrackerScreen extends StatefulWidget {
   const FlightTrackerScreen({super.key});
@@ -51,7 +52,7 @@ class _FlightTrackerScreenState extends State<FlightTrackerScreen>
             title: const Text('FLIGHT TRACKER'),
             actions: [
               IconButton(
-                tooltip: 'Refresh',
+                tooltip: AglL10n.of(context)!.actionRefresh,
                 icon: const Icon(Icons.refresh),
                 onPressed: () => service.fetchNearbyFlights(),
               ),

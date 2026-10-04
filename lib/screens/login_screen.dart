@@ -5,6 +5,7 @@ import 'package:provider/provider.dart';
 import '../services/auth_service.dart';
 import '../services/supabase_config.dart';
 import 'home_screen.dart';
+import 'package:agl_i18n/agl_i18n.dart';
 
 // ─────────────────────────────────────────────────────────────────────────────
 // AuthGate — the app's root. Shows a brief splash while the persisted session
@@ -165,8 +166,8 @@ class _LoginScreenState extends State<LoginScreen> {
                       textInputAction: TextInputAction.next,
                       autocorrect: false,
                       style: const TextStyle(color: Colors.white),
-                      decoration: const InputDecoration(
-                        labelText: 'Email',
+                      decoration: InputDecoration(
+                        labelText: AglL10n.of(context)!.authEmail,
                         prefixIcon: Icon(Icons.email_outlined),
                       ),
                       validator: _auth.validateEmailField,
@@ -179,7 +180,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       style: const TextStyle(color: Colors.white),
                       onFieldSubmitted: (_) => _signIn(),
                       decoration: InputDecoration(
-                        labelText: 'Password',
+                        labelText: AglL10n.of(context)!.authPassword,
                         prefixIcon: const Icon(Icons.lock_outline),
                         suffixIcon: IconButton(
                           tooltip: 'Show',
@@ -213,7 +214,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                 color: Colors.black,
                               ),
                             )
-                          : const Text('SIGN IN'),
+                          : Text(AglL10n.of(context)!.authSignIn),
                     ),
                     const SizedBox(height: 12),
                     OutlinedButton.icon(
@@ -239,7 +240,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     ),
                     const SizedBox(height: 12),
                     _buildSocialButton(
-                      label: 'Continue with Google',
+                      label: AglL10n.of(context)!.authContinueWithGoogle,
                       icon: Icons.g_mobiledata,
                       onPressed: () => _runSocial(_auth.signInWithGoogle),
                     ),

@@ -6,6 +6,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart' hide TextDirection;
 
 import '../services/weight_balance_service.dart';
+import 'package:agl_i18n/agl_i18n.dart';
 
 // App palette.
 const _kBg = Color(0xFF0A1628);
@@ -1090,13 +1091,13 @@ class _ProfileEditorDialogState extends State<_ProfileEditorDialog> {
       actions: [
         TextButton(
           onPressed: () => Navigator.pop(context),
-          child: Text('CANCEL',
+          child: Text(AglL10n.of(context)!.actionCancel,
               style:
                   GoogleFonts.orbitron(fontSize: 11, color: Colors.white54)),
         ),
         TextButton(
           onPressed: _save,
-          child: Text('SAVE',
+          child: Text(AglL10n.of(context)!.actionSave,
               style: GoogleFonts.orbitron(fontSize: 11, color: _kCyan)),
         ),
       ],

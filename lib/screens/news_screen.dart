@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../services/news_service.dart';
+import 'package:agl_i18n/agl_i18n.dart';
 
 class NewsScreen extends StatefulWidget {
   const NewsScreen({super.key});
@@ -31,7 +32,7 @@ class _NewsScreenState extends State<NewsScreen> {
         title: const Text('AVIATION NEWS'),
         actions: [
           IconButton(
-            tooltip: 'Refresh',
+            tooltip: AglL10n.of(context)!.actionRefresh,
             icon: const Icon(Icons.refresh),
             onPressed: () => context.read<NewsService>().fetchAllNews(),
           ),

@@ -32,7 +32,7 @@ class _FlightPlanScreenState extends State<FlightPlanScreen> {
             title: const Text('FLIGHT PLANS'),
             actions: [
               IconButton(
-                tooltip: 'ADD',
+                tooltip: 'Add',
                 icon: const Icon(Icons.add),
                 onPressed: () => setState(() => _creating = true),
               ),

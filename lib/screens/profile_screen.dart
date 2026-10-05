@@ -100,7 +100,7 @@ class _ProfileScreenState extends State<ProfileScreen>
         title: const Text('PILOT PROFILE'),
         actions: [
           IconButton(
-            tooltip: 'SAVE',
+            tooltip: 'Save',
             icon: const Icon(Icons.save),
             onPressed: _saveProfile,
           ),

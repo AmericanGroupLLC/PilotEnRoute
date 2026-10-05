@@ -917,7 +917,7 @@ class _MetadataDialogState extends State<_MetadataDialog> {
         TextButton(
           onPressed: () => Navigator.pop(context),
           child:
-              Text('CANCEL', style: GoogleFonts.inter(color: Colors.white54)),
+              Text('Cancel', style: GoogleFonts.inter(color: Colors.white54)),
         ),
         TextButton(
           onPressed: () {

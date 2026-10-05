@@ -101,7 +101,7 @@ class _ProfileScreenState extends State<ProfileScreen>
         title: const Text('PILOT PROFILE'),
         actions: [
           IconButton(
-            tooltip: AglL10n.of(context)!.actionSave,
+            tooltip: (AglL10n.of(context)?.actionSave ?? 'Save'),
             icon: const Icon(Icons.save),
             onPressed: _saveProfile,
           ),

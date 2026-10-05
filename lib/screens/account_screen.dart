@@ -262,7 +262,7 @@ class _AccountScreenState extends State<AccountScreen> {
     return Scaffold(
       backgroundColor: _kBg,
       appBar: AppBar(
-        title: Text(AglL10n.of(context)!.navAccount),
+        title: Text((AglL10n.of(context)?.navAccount ?? 'Account')),
         backgroundColor: _kBg,
         elevation: 0,
       ),

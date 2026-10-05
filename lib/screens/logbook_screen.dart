@@ -78,7 +78,7 @@ class _LogbookScreenState extends State<LogbookScreen>
                 onPressed: _isExporting ? null : () => _exportPdf(service),
               ),
               IconButton(
-                tooltip: AglL10n.of(context)!.actionAdd,
+                tooltip: (AglL10n.of(context)?.actionAdd ?? 'Add'),
                 icon: const Icon(Icons.add),
                 onPressed: () => _showAddEntryDialog(context, service),
               ),

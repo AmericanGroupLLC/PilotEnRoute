@@ -140,7 +140,7 @@ class _PremiumAdBannerState extends State<PremiumAdBanner> {
                   'Upgrade to Premium for an ad-free experience.',
                 ),
                 child: Text(
-                  AglL10n.of(context)!.actionRemove,
+                  (AglL10n.of(context)?.actionRemove ?? 'Remove'),
                   style: GoogleFonts.inter(
                     color: const Color(0xFFFFD700),
                     fontSize: 11,

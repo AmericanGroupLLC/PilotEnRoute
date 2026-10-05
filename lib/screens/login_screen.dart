@@ -167,7 +167,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       autocorrect: false,
                       style: const TextStyle(color: Colors.white),
                       decoration: InputDecoration(
-                        labelText: AglL10n.of(context)!.authEmail,
+                        labelText: (AglL10n.of(context)?.authEmail ?? 'Email'),
                         prefixIcon: Icon(Icons.email_outlined),
                       ),
                       validator: _auth.validateEmailField,
@@ -180,7 +180,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       style: const TextStyle(color: Colors.white),
                       onFieldSubmitted: (_) => _signIn(),
                       decoration: InputDecoration(
-                        labelText: AglL10n.of(context)!.authPassword,
+                        labelText: (AglL10n.of(context)?.authPassword ?? 'Password'),
                         prefixIcon: const Icon(Icons.lock_outline),
                         suffixIcon: IconButton(
                           tooltip: 'Show',
@@ -214,7 +214,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                 color: Colors.black,
                               ),
                             )
-                          : Text(AglL10n.of(context)!.authSignIn),
+                          : Text((AglL10n.of(context)?.authSignIn ?? 'Sign in')),
                     ),
                     const SizedBox(height: 12),
                     OutlinedButton.icon(
@@ -240,7 +240,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     ),
                     const SizedBox(height: 12),
                     _buildSocialButton(
-                      label: AglL10n.of(context)!.authContinueWithGoogle,
+                      label: (AglL10n.of(context)?.authContinueWithGoogle ?? 'Continue with Google'),
                       icon: Icons.g_mobiledata,
                       onPressed: () => _runSocial(_auth.signInWithGoogle),
                     ),

@@ -6,7 +6,6 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart' hide TextDirection;
 
 import '../services/weight_balance_service.dart';
-import 'package:agl_i18n/agl_i18n.dart';
 
 // App palette.
 const _kBg = Color(0xFF0A1628);

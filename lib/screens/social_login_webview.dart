@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:webview_flutter/webview_flutter.dart';
-import 'package:agl_i18n/agl_i18n.dart';
 
 // ─────────────────────────────────────────────────────────────────────────────
 // SocialLoginWebView — hosts the backend-brokered OAuth flow.

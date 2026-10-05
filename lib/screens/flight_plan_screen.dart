@@ -3,7 +3,6 @@ import 'package:provider/provider.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 import '../services/flight_plan_service.dart';
-import 'package:agl_i18n/agl_i18n.dart';
 
 class FlightPlanScreen extends StatefulWidget {
   const FlightPlanScreen({super.key});

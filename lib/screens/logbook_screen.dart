@@ -4,7 +4,6 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 import 'package:printing/printing.dart';
 import '../services/logbook_service.dart';
-import 'package:agl_i18n/agl_i18n.dart';
 
 class LogbookScreen extends StatefulWidget {
   const LogbookScreen({super.key});

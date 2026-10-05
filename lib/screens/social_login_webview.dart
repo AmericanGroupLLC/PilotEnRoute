@@ -119,7 +119,7 @@ class _SocialLoginWebViewState extends State<SocialLoginWebView> {
       backgroundColor: _kBg,
       appBar: AppBar(
         title: Text(
-          (AglL10n.of(context)?.authSignIn ?? 'Sign in'),
+          'SIGN IN',
           style: GoogleFonts.orbitron(fontWeight: FontWeight.w600),
         ),
         backgroundColor: _kBg,

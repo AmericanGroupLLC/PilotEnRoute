@@ -214,7 +214,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                 color: Colors.black,
                               ),
                             )
-                          : Text((AglL10n.of(context)?.authSignIn ?? 'Sign in')),
+                          : Text('SIGN IN'),
                     ),
                     const SizedBox(height: 12),
                     OutlinedButton.icon(

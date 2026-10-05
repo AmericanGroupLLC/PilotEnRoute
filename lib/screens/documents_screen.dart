@@ -115,7 +115,7 @@ class _DocumentsScreenState extends State<DocumentsScreen> {
         onPressed: _busy ? null : _showAddSheet,
         icon: const Icon(Icons.add),
         label: Text(
-          (AglL10n.of(context)?.actionAdd ?? 'Add'),
+          'ADD',
           style: GoogleFonts.orbitron(
             fontSize: 12,
             fontWeight: FontWeight.bold,
@@ -918,7 +918,7 @@ class _MetadataDialogState extends State<_MetadataDialog> {
         TextButton(
           onPressed: () => Navigator.pop(context),
           child:
-              Text((AglL10n.of(context)?.actionCancel ?? 'Cancel'), style: GoogleFonts.inter(color: Colors.white54)),
+              Text('CANCEL', style: GoogleFonts.inter(color: Colors.white54)),
         ),
         TextButton(
           onPressed: () {

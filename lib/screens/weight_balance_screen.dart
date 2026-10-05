@@ -1091,13 +1091,13 @@ class _ProfileEditorDialogState extends State<_ProfileEditorDialog> {
       actions: [
         TextButton(
           onPressed: () => Navigator.pop(context),
-          child: Text((AglL10n.of(context)?.actionCancel ?? 'Cancel'),
+          child: Text('CANCEL',
               style:
                   GoogleFonts.orbitron(fontSize: 11, color: Colors.white54)),
         ),
         TextButton(
           onPressed: _save,
-          child: Text((AglL10n.of(context)?.actionSave ?? 'Save'),
+          child: Text('SAVE',
               style: GoogleFonts.orbitron(fontSize: 11, color: _kCyan)),
         ),
       ],

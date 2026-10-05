@@ -168,7 +168,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       style: const TextStyle(color: Colors.white),
                       decoration: InputDecoration(
                         labelText: (AglL10n.of(context)?.authEmail ?? 'Email'),
-                        prefixIcon: Icon(Icons.email_outlined),
+                        prefixIcon: const Icon(Icons.email_outlined),
                       ),
                       validator: _auth.validateEmailField,
                     ),
@@ -214,7 +214,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                 color: Colors.black,
                               ),
                             )
-                          : Text('SIGN IN'),
+                          : const Text('SIGN IN'),
                     ),
                     const SizedBox(height: 12),
                     OutlinedButton.icon(

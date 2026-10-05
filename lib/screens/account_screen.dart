@@ -261,7 +261,7 @@ class _AccountScreenState extends State<AccountScreen> {
     return Scaffold(
       backgroundColor: _kBg,
       appBar: AppBar(
-        title: Text('ACCOUNT'),
+        title: const Text('ACCOUNT'),
         backgroundColor: _kBg,
         elevation: 0,
       ),

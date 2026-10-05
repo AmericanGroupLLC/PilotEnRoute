@@ -106,7 +106,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
     return Scaffold(
       backgroundColor: const Color(0xFF0A1628),
       appBar: AppBar(
-        title: Text('NOTIFICATIONS'),
+        title: const Text('NOTIFICATIONS'),
         actions: [
           TextButton(
             onPressed: () async {

@@ -208,8 +208,6 @@ class AuthService extends ChangeNotifier {
   /// The gate should show the main app when authenticated OR browsing as guest.
   bool get canEnterApp => isAuthenticated || _guest;
 
-  /// Test Firebase ID token for SIM-less phone-auth testing.
-  static String get phoneTestToken => BackendConfig.phoneTestFirebaseToken;
 
   // ── Lifecycle ────────────────────────────────────────────────────────────────
 
@@ -298,21 +296,49 @@ class AuthService extends ChangeNotifier {
 
   // ── Email / password ──────────────────────────────────────────────────────────
 
+  /// Email/password sign-up via the org's Supabase Auth backend.
+  ///
+  /// This used to POST to `BackendConfig.registerPath` on
+  /// api.americangroupllc.com, a host with no DNS record, so sign-up could
+  /// never succeed while sign-in (already Supabase) worked. The project
+  /// requires email confirmation, so a new account normally comes back with
+  /// no session: the user is told to confirm, then sign in.
   Future<AuthResult> registerEmail(
     String email,
     String password, {
     String? name,
   }) async {
     final normalizedEmail = email.trim();
-    final body = <String, dynamic>{
-      'email': normalizedEmail,
-      'password': password,
-    };
-    if (name != null && name.trim().isNotEmpty) {
-      body['name'] = name.trim();
-      body['full_name'] = name.trim();
+    final trimmedName = name?.trim() ?? '';
+    _setBusy(true);
+    try {
+      final response = await Supabase.instance.client.auth.signUp(
+        email: normalizedEmail,
+        password: password,
+        data: trimmedName.isEmpty
+            ? null
+            : {'name': trimmedName, 'full_name': trimmedName},
+      );
+      final sUser = response.user;
+      final sSession = response.session;
+      if (sUser == null) {
+        return const AuthResult.failure('Could not create the account.');
+      }
+      if (sSession == null) {
+        return const AuthResult.failure(
+          'Check your email to confirm your account, then sign in.',
+        );
+      }
+      return await _adoptSupabaseSession(response);
+    } on AuthRetryableFetchException {
+      return _networkFallback();
+    } on AuthException catch (e) {
+      return AuthResult.failure(e.message);
+    } catch (_) {
+      return _networkFallback();
+    } finally {
+      _setBusy(false);
     }
-    return _authWithTokens(BackendConfig.registerPath, body);
   }
 
   /// Email/password sign-in via the org's Supabase Auth backend.
@@ -334,18 +360,7 @@ class AuthService extends ChangeNotifier {
       if (sUser == null || sSession == null) {
         return const AuthResult.failure('Invalid credentials.');
       }
-      // Real Supabase session — supersedes any stale local demo session.
-      await _clearLocalDemoSession();
-      _supabaseSession = true;
-      _isLocal = false;
-      _guest = false;
-      _accessToken = sSession.accessToken;
-      _refreshToken = sSession.refreshToken;
-      _userId = sUser.id;
-      final user = _userFromSupabase(sUser);
-      _currentUser = user;
-      notifyListeners();
-      return AuthResult.success(user);
+      return await _adoptSupabaseSession(response);
     } on AuthRetryableFetchException {
       // Retryable transport failure (couldn't reach Supabase). Treat as an
       // offline/network error.
@@ -640,56 +655,6 @@ class AuthService extends ChangeNotifier {
     }
   }
 
-  // ── Social login ──────────────────────────────────────────────────────────────
-
-  /// Backend OAuth start URL for `provider` ('google'|'apple'|'facebook'...).
-  String socialStartUrl(String provider) =>
-      BackendConfig.socialStartUrl(provider);
-
-  /// Completes a social login after the WebView returns tokens. Stores them and
-  /// fetches the profile.
-  Future<AuthResult> completeSocialLogin({
-    required String accessToken,
-    required String refreshToken,
-  }) async {
-    if (accessToken.isEmpty) {
-      return const AuthResult.failure('Social login did not return a token.');
-    }
-    _setBusy(true);
-    try {
-      await _storeTokens(
-        accessToken: accessToken,
-        refreshToken: refreshToken,
-        userId: _userId,
-      );
-      final user = await fetchMe();
-      if (user != null) return AuthResult.success(user);
-      // Tokens are valid enough to be stored; profile fetch is best-effort.
-      return const AuthResult(true);
-    } catch (_) {
-      return const AuthResult.failure('Could not complete social login.');
-    } finally {
-      _setBusy(false);
-    }
-  }
-
-  // ── Phone OTP (Firebase) ──────────────────────────────────────────────────────
-
-  /// Verifies a Firebase phone ID token with the backend and stores the
-  /// returned JWTs.
-  ///
-  /// TODO(firebase): integrate firebase_auth signInWithPhoneNumber to obtain a
-  /// real id_token; google-services.json / GoogleService-Info.plist required
-  /// (Firebase project americangroupllc-5bdfc).
-  Future<AuthResult> verifyFirebasePhone(String firebaseIdToken) async {
-    if (firebaseIdToken.trim().isEmpty) {
-      return const AuthResult.failure('Missing Firebase ID token.');
-    }
-    return _authWithTokens(BackendConfig.firebaseVerifyPath, {
-      'id_token': firebaseIdToken,
-    });
-  }
-
   // ── Token / session ───────────────────────────────────────────────────────────
 
   /// Refresh the access token using the stored refresh token. Returns true on
@@ -820,78 +785,7 @@ class AuthService extends ChangeNotifier {
 
   // ── Internal request helpers ───────────────────────────────────────────────────
 
-  /// Shared flow for register / login / firebase-verify: POST [path] with
-  /// [body], expect {access_token, refresh_token, user_id}, store them, then
-  /// fetch the profile.
-  Future<AuthResult> _authWithTokens(
-    String path,
-    Map<String, dynamic> body,
-  ) async {
-    _setBusy(true);
-    try {
-      final resp = await http
-          .post(
-            _uri(path),
-            headers: const {'Content-Type': 'application/json'},
-            body: jsonEncode(body),
-          )
-          .timeout(_timeout);
 
-      final map = _decode(resp.body);
-
-      if (resp.statusCode < 200 || resp.statusCode >= 300) {
-        return AuthResult.failure(_errorFrom(map, resp.statusCode));
-      }
-      if (map == null) {
-        return const AuthResult.failure('Unexpected response from server.');
-      }
-
-      final access = _str(map, ['access_token']);
-      final refreshTok = _str(map, ['refresh_token']);
-      if (access == null || access.isEmpty) {
-        return AuthResult.failure(_errorFrom(map, resp.statusCode));
-      }
-
-      await _storeTokens(
-        accessToken: access,
-        refreshToken: refreshTok,
-        userId: _str(map, ['user_id']),
-      );
-
-      // Prefer a fresh profile; fall back to any inline user object.
-      final user = await fetchMe() ?? _inlineUser(map);
-      if (user != null) {
-        _currentUser = user;
-        notifyListeners();
-        return AuthResult.success(user);
-      }
-      return const AuthResult(true);
-    } on TimeoutException {
-      return const AuthResult.failure(
-        'The request timed out. Please try again.',
-      );
-    } catch (_) {
-      return const AuthResult.failure(
-        'Network error. Check your connection and try again.',
-      );
-    } finally {
-      _setBusy(false);
-    }
-  }
-
-  AuthUser? _inlineUser(Map<String, dynamic> map) {
-    final inner = map['user'] ?? map['data'];
-    if (inner is Map<String, dynamic>) return AuthUser.fromJson(inner);
-    if (_userId != null && _userId!.isNotEmpty) {
-      return AuthUser(
-        id: _userId!,
-        email: '',
-        name: null,
-        role: UserRole.student,
-      );
-    }
-    return null;
-  }
 
   Uri _uri(String path) => Uri.parse('${BackendConfig.apiBaseUrl}$path');
 
@@ -922,22 +816,6 @@ class AuthService extends ChangeNotifier {
     return null;
   }
 
-  /// Extract the standard {"error":"..."} envelope, with sensible fallbacks.
-  String _errorFrom(Map<String, dynamic>? map, int status) {
-    if (map != null) {
-      final err = _str(map, [
-        'error',
-        'message',
-        'detail',
-        'error_description',
-      ]);
-      if (err != null && err.isNotEmpty) return err;
-    }
-    if (status == 401 || status == 403) {
-      return 'Invalid credentials.';
-    }
-    return 'Request failed (HTTP $status).';
-  }
 
   // ── Token storage ──────────────────────────────────────────────────────────────
   //

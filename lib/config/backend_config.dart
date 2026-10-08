@@ -39,17 +39,8 @@ class BackendConfig {
   static const String mePath = '/auth/me';
   static const String firebaseVerifyPath = '/auth/auth/firebase/verify';
 
-  /// Social OAuth start URL. Open this in a browser/WebView; the backend
-  /// handles the whole OAuth 2.0 flow and redirects back with tokens in the
-  /// URL (e.g. `pilotenroute://login?access_token=...&refresh_token=...`).
-  static String socialStartUrl(String provider) =>
-      '$apiBaseUrl/auth/auth/social/$provider/start';
 
   /// Backend AI assistant chat endpoint (requires Authorization).
   static const String aiChatPath = '/ai/chat';
 
-  /// Test Firebase ID token from the guide, for SIM-less phone-auth testing.
-  /// Real SMS delivery needs the Firebase client SDK (see AuthService).
-  static const String phoneTestFirebaseToken =
-      'Ae0iMNcflbdaWGFTYtXcHH_2YCDEBQTa1HMB4t0X-IWiXXAHuQuX7qF984TzuLq7Od0D40hEhKab6CsGyxHZe9tRxUTZlKVTS15PZrk1htEsnCIG2SQkfvmHQ6Tp484IP2j6zoCnsxNKsH_QBl2hau';
 }

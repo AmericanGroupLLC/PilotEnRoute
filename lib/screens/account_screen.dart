@@ -6,12 +6,11 @@ import 'package:url_launcher/url_launcher.dart';
 import '../config/backend_config.dart';
 import '../services/auth_service.dart';
 import '../services/cloud_sync_service.dart';
-import 'social_login_webview.dart';
 
 // ─────────────────────────────────────────────────────────────────────────────
 // AccountScreen — REAL AmericanGroupLLC accounts + local backup/restore.
 //
-// Auth (email/password, social, phone-OTP) is handled by the singleton
+// Auth (email/password, Google, Apple) is handled by the singleton
 // AuthService.instance, talking to the AmericanGroupLLC backend. Backup/Restore
 // still uses a local CloudSyncService instance, exactly as before.
 // ─────────────────────────────────────────────────────────────────────────────
@@ -20,7 +19,6 @@ import 'social_login_webview.dart';
 const _kBg = Color(0xFF0A1628);
 const _kCard = Color(0xFF112240);
 const _kCyan = Color(0xFF00BCD4);
-const _kAmber = Color(0xFFFFB300);
 const _kRed = Color(0xFFF44336);
 const _kGreen = Color(0xFF4CAF50);
 
@@ -31,7 +29,7 @@ class AccountScreen extends StatefulWidget {
   State<AccountScreen> createState() => _AccountScreenState();
 }
 
-enum _AuthTab { email, social, phone }
+enum _AuthTab { email, social }
 
 class _AccountScreenState extends State<AccountScreen> {
   // Singleton — do NOT dispose it here (shared app-wide).
@@ -43,8 +41,6 @@ class _AccountScreenState extends State<AccountScreen> {
   final _emailCtrl = TextEditingController();
   final _passwordCtrl = TextEditingController();
   final _nameCtrl = TextEditingController();
-  final _phoneCtrl = TextEditingController();
-  final _otpCtrl = TextEditingController();
 
   _AuthTab _tab = _AuthTab.email;
   bool _isSignUp = false;
@@ -63,8 +59,6 @@ class _AccountScreenState extends State<AccountScreen> {
     _emailCtrl.dispose();
     _passwordCtrl.dispose();
     _nameCtrl.dispose();
-    _phoneCtrl.dispose();
-    _otpCtrl.dispose();
     // NOTE: _auth is the app-wide singleton; do not dispose it.
     _sync.dispose();
     super.dispose();
@@ -96,108 +90,22 @@ class _AccountScreenState extends State<AccountScreen> {
     }
   }
 
+  /// Google and Apple via the Supabase-native ID-token flow — the same path
+  /// the main sign-in screen uses. This used to open a web view on
+  /// api.americangroupllc.com's /auth/auth/social/<provider>/start, a host
+  /// with no DNS record, so it could never have signed anyone in.
   Future<void> _social(String provider) async {
-    final startUrl = _auth.socialStartUrl(provider);
-    final result = await Navigator.of(context).push<Map<String, String>>(
-      MaterialPageRoute(
-        builder: (_) => SocialLoginWebView(
-          provider: provider,
-          startUrl: startUrl,
-        ),
-      ),
-    );
-
-    if (!mounted) return;
-    if (result == null) {
-      // User cancelled / backed out.
-      return;
-    }
-    if (result['error'] != null) {
-      _showSnack(result['error']!, _kRed);
-      return;
-    }
-    final access = result['access_token'] ?? '';
-    final refreshTok = result['refresh_token'] ?? '';
-
     setState(() => _submitting = true);
-    final res = await _auth.completeSocialLogin(
-      accessToken: access,
-      refreshToken: refreshTok,
-    );
+    final res = provider == 'apple'
+        ? await _auth.signInWithApple()
+        : await _auth.signInWithGoogle();
     if (!mounted) return;
     setState(() => _submitting = false);
-
+    if (res.cancelled) return;
     if (res.ok) {
       _showSnack('Signed in', _kGreen);
     } else {
       _showSnack(res.error ?? 'Social sign-in failed', _kRed);
-    }
-  }
-
-  Future<void> _sendPhoneCode() async {
-    // Real SMS delivery needs the Firebase client SDK (firebase_auth), which is
-    // not a dependency here. Explain honestly, and offer the working test token.
-    await showDialog<void>(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        backgroundColor: _kCard,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(16),
-        ),
-        title: Text(
-          'SMS setup required',
-          style: GoogleFonts.orbitron(color: Colors.white, fontSize: 16),
-        ),
-        content: Text(
-          'Sending a real verification code by SMS requires the Firebase SDK, '
-          'which is not bundled in this build yet.\n\n'
-          'You can still sign in against the live backend using the built-in '
-          'test token (simulator mode).',
-          style: GoogleFonts.inter(color: Colors.white70, fontSize: 13),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(ctx).pop(),
-            child: Text('Close', style: GoogleFonts.inter(color: Colors.white54)),
-          ),
-          TextButton(
-            onPressed: () {
-              Navigator.of(ctx).pop();
-              _usePhoneTestToken();
-            },
-            child: Text(
-              'Use test token',
-              style: GoogleFonts.inter(
-                color: _kCyan,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Future<void> _verifyOtp() async {
-    // TODO(firebase): once firebase_auth is integrated, exchange the SMS code
-    // entered in _otpCtrl for a Firebase id_token, then call
-    // _auth.verifyFirebasePhone(idToken). For now, only the test token flow is
-    // wired to the backend.
-    _showSnack(
-      'Real OTP verification needs the Firebase SDK. Use the test token for now.',
-      _kAmber,
-    );
-  }
-
-  Future<void> _usePhoneTestToken() async {
-    setState(() => _submitting = true);
-    final res = await _auth.verifyFirebasePhone(AuthService.phoneTestToken);
-    if (!mounted) return;
-    setState(() => _submitting = false);
-    if (res.ok) {
-      _showSnack('Signed in (phone test token)', _kGreen);
-    } else {
-      _showSnack(res.error ?? 'Phone sign-in failed', _kRed);
     }
   }
 
@@ -296,7 +204,6 @@ class _AccountScreenState extends State<AccountScreen> {
         const SizedBox(height: 16),
         if (_tab == _AuthTab.email) _emailCard(),
         if (_tab == _AuthTab.social) _socialCard(),
-        if (_tab == _AuthTab.phone) _phoneCard(),
         const SizedBox(height: 16),
         _supportRow(),
       ],
@@ -310,7 +217,6 @@ class _AccountScreenState extends State<AccountScreen> {
         children: [
           _tabButton('Email', _AuthTab.email),
           _tabButton('Social', _AuthTab.social),
-          _tabButton('Phone', _AuthTab.phone),
         ],
       ),
     );
@@ -467,8 +373,6 @@ class _AccountScreenState extends State<AccountScreen> {
           const SizedBox(height: 10),
           _socialButton('Continue with Apple', Icons.apple, 'apple'),
           const SizedBox(height: 10),
-          _socialButton('Continue with Facebook', Icons.facebook, 'facebook'),
-          const SizedBox(height: 10),
           Text(
             'Opens a secure AmericanGroupLLC sign-in page.',
             style: GoogleFonts.inter(color: Colors.white54, fontSize: 12),
@@ -489,84 +393,6 @@ class _AccountScreenState extends State<AccountScreen> {
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(12),
         ),
-      ),
-    );
-  }
-
-  // ── Phone tab ────────────────────────────────────────────────────────────────
-
-  Widget _phoneCard() {
-    return _card(
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          Text(
-            'Phone sign-in',
-            style: GoogleFonts.orbitron(
-              color: Colors.white,
-              fontSize: 16,
-              fontWeight: FontWeight.w600,
-            ),
-          ),
-          const SizedBox(height: 6),
-          Text(
-            'SMS is in test mode. Real codes require the Firebase SDK.',
-            style: GoogleFonts.inter(color: _kAmber, fontSize: 12),
-          ),
-          const SizedBox(height: 14),
-          _textField(
-            controller: _phoneCtrl,
-            label: 'Phone number (+E.164, e.g. +14155551234)',
-            icon: Icons.phone_outlined,
-            keyboardType: TextInputType.phone,
-            textInputAction: TextInputAction.next,
-          ),
-          const SizedBox(height: 10),
-          OutlinedButton.icon(
-            onPressed: _submitting ? null : _sendPhoneCode,
-            icon: const Icon(Icons.sms_outlined, color: _kCyan),
-            label: Text('Send code', style: GoogleFonts.inter(color: _kCyan)),
-            style: OutlinedButton.styleFrom(
-              padding: const EdgeInsets.symmetric(vertical: 14),
-              side: const BorderSide(color: _kCyan),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12),
-              ),
-            ),
-          ),
-          const SizedBox(height: 12),
-          _textField(
-            controller: _otpCtrl,
-            label: '6-digit code',
-            icon: Icons.pin_outlined,
-            keyboardType: TextInputType.number,
-            textInputAction: TextInputAction.done,
-            onSubmitted: (_) => _verifyOtp(),
-          ),
-          const SizedBox(height: 10),
-          OutlinedButton(
-            onPressed: _submitting ? null : _verifyOtp,
-            style: OutlinedButton.styleFrom(
-              padding: const EdgeInsets.symmetric(vertical: 14),
-              side: const BorderSide(color: Colors.white24),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12),
-              ),
-            ),
-            child: Text(
-              'Verify code',
-              style: GoogleFonts.inter(color: Colors.white70),
-            ),
-          ),
-          const SizedBox(height: 16),
-          const Divider(color: Colors.white12),
-          const SizedBox(height: 8),
-          _primaryButton(
-            label: 'Use test token (simulator)',
-            onPressed: _submitting ? null : _usePhoneTestToken,
-            loading: _submitting,
-          ),
-        ],
       ),
     );
   }
@@ -785,7 +611,7 @@ class _AccountScreenState extends State<AccountScreen> {
           const SizedBox(width: 10),
           Expanded(
             child: Text(
-              'Secured by AmericanGroupLLC backend. Phone SMS is in test mode.',
+              'Accounts are secured by Supabase Auth.',
               style: GoogleFonts.inter(color: _kGreen, fontSize: 13),
             ),
           ),

@@ -145,7 +145,6 @@ void main() {
       () => AppEnv.validate(
         supabaseUrl: 'http://insecure.example',
         supabaseAnonKey: 'k',
-        testAccountEnabled: false,
       ),
       throwsStateError,
     );
@@ -153,7 +152,6 @@ void main() {
       () => AppEnv.validate(
         supabaseUrl: '',
         supabaseAnonKey: 'k',
-        testAccountEnabled: false,
       ),
       throwsStateError,
     );
@@ -164,7 +162,6 @@ void main() {
       AppEnv.validate(
         supabaseUrl: 'https://ok.supabase.co',
         supabaseAnonKey: 'k',
-        testAccountEnabled: false,
       ),
       isEmpty,
     );

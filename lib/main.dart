@@ -90,7 +90,6 @@ void main() async {
   AppEnv.validate(
     supabaseUrl: SupabaseConfig.url,
     supabaseAnonKey: SupabaseConfig.anonKey,
-    testAccountEnabled: SupabaseConfig.testAccountEnabled,
   );
 
   // Initialize the org's Supabase backend before anything reads the client.

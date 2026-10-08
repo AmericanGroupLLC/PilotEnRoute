@@ -3,7 +3,6 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 
 import '../services/auth_service.dart';
-import '../services/supabase_config.dart';
 import 'home_screen.dart';
 import 'package:agl_i18n/agl_i18n.dart';
 
@@ -42,8 +41,7 @@ class _SplashScaffold extends StatelessWidget {
 
 // ─────────────────────────────────────────────────────────────────────────────
 // LoginScreen — email/password sign-in against the org's Supabase backend,
-// plus a one-tap "Use test account" button (shared QA account) and a
-// "Continue as guest" option.
+// plus a "Continue as guest" option.
 // ─────────────────────────────────────────────────────────────────────────────
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -65,7 +63,6 @@ class _LoginScreenState extends State<LoginScreen> {
   static const Color _navy = Color(0xFF0A1628);
   static const Color _surface = Color(0xFF112240);
   static const Color _cyan = Color(0xFF00BCD4);
-  static const Color _amber = Color(0xFFFFB300);
 
   @override
   void dispose() {
@@ -77,15 +74,6 @@ class _LoginScreenState extends State<LoginScreen> {
   Future<void> _signIn() async {
     if (!(_formKey.currentState?.validate() ?? false)) return;
     await _run(() => _auth.loginEmail(_emailCtrl.text, _passwordCtrl.text));
-  }
-
-  Future<void> _useTestAccount() async {
-    // One-tap sign-in with the shared QA account from SupabaseConfig.
-    // Inert unless this build was given credentials.
-    if (!SupabaseConfig.testAccountEnabled) return;
-    _emailCtrl.text = SupabaseConfig.qaEmail;
-    _passwordCtrl.text = SupabaseConfig.qaPassword;
-    await _run(() => _auth.signInWithTestAccount());
   }
 
   Future<void> _run(Future<AuthResult> Function() action) async {
@@ -215,20 +203,6 @@ class _LoginScreenState extends State<LoginScreen> {
                               ),
                             )
                           : const Text('SIGN IN'),
-                    ),
-                    const SizedBox(height: 12),
-                    OutlinedButton.icon(
-                      onPressed: _submitting ? null : _useTestAccount,
-                      icon: const Icon(Icons.badge_outlined, color: _amber),
-                      label: const Text('Use test account'),
-                      style: OutlinedButton.styleFrom(
-                        foregroundColor: _amber,
-                        side: const BorderSide(color: _amber),
-                        padding: const EdgeInsets.symmetric(vertical: 16),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                      ),
                     ),
                     const SizedBox(height: 20),
                     _buildDivider(),

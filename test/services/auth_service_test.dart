@@ -254,12 +254,6 @@ void main() {
       expect(auth.currentUser, isNull);
     });
 
-    test('the test-account button refuses to run in a build without '
-        'credentials', () {
-      // Otherwise it silently attempts a sign-in with two empty strings.
-      expect(() => auth.signInWithTestAccount(), throwsStateError);
-    });
-
     test('a failed sign-in leaves the button enabled again', () async {
       await auth.loginEmail('pilot@example.com', 'hunter22');
       expect(auth.isBusy, isFalse,

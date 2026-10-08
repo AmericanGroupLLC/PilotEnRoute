@@ -36,11 +36,8 @@ import 'supabase_config.dart';
 // WebView) and Firebase Phone OTP verification still go through the
 // AmericanGroupLLC API gateway (see BackendConfig) and are unchanged.
 //
-// Offline fallback: when the device cannot reach Supabase (network/socket
-// error) AND the entered credentials match a shared SupabaseConfig QA/Dev test
-// account, we fall back to a persisted local demo session so the app stays
-// testable without connectivity. A genuine Supabase AuthException (bad
-// credentials, etc.) NEVER falls back. See [loginEmail].
+// Offline: when the device cannot reach Supabase (network/socket error),
+// email/password sign-in fails with a network error. See [loginEmail].
 //
 // This service never throws to the UI: every operation returns an AuthResult
 // or a safe fallback.
@@ -201,7 +198,8 @@ class AuthService extends ChangeNotifier {
   bool get isBusy => _isBusy;
   bool get isInitialized => _initialized;
 
-  /// True when signed in with the built-in offline test account.
+  /// True for a session restored from an older build's offline sign-in.
+  /// Nothing creates one any more; existing ones are still honoured.
   bool get isLocalSession => _isLocal;
 
   /// True when the user chose to browse without signing in.
@@ -231,13 +229,9 @@ class AuthService extends ChangeNotifier {
         _userId = prefs.getString(_kUserIdKey);
         _currentUser = AuthUser(
           id: _userId ?? _kLocalDemoUserId,
-          // qaEmail is empty in a shipped build, so fall back to a neutral
-          // placeholder rather than rendering an empty address.
-          email:
-              prefs.getString(_kLocalEmailKey) ??
-              (SupabaseConfig.qaEmail.isNotEmpty
-                  ? SupabaseConfig.qaEmail
-                  : 'demo@local'),
+          // Fall back to a neutral placeholder rather than rendering an empty
+          // address.
+          email: prefs.getString(_kLocalEmailKey) ?? 'demo@local',
           name: prefs.getString(_kLocalNameKey) ?? 'Test Pilot',
           role: UserRole.student,
         );
@@ -323,12 +317,10 @@ class AuthService extends ChangeNotifier {
 
   /// Email/password sign-in via the org's Supabase Auth backend.
   ///
-  /// A networked device always authenticates against Supabase. Only when the
-  /// device cannot reach Supabase (network/socket error) AND the credentials
-  /// match a shared SupabaseConfig QA/Dev test account do we fall back to a
-  /// persisted local demo session. A genuine Supabase [AuthException] (bad
-  /// credentials, unconfirmed email, etc.) is returned as-is and NEVER falls
-  /// back.
+  /// A networked device always authenticates against Supabase. When the device
+  /// cannot reach Supabase (network/socket error) sign-in fails with a network
+  /// error. A genuine Supabase [AuthException] (bad credentials, unconfirmed
+  /// email, etc.) is returned as-is.
   Future<AuthResult> loginEmail(String email, String password) async {
     final normalizedEmail = email.trim();
     _setBusy(true);
@@ -356,58 +348,26 @@ class AuthService extends ChangeNotifier {
       return AuthResult.success(user);
     } on AuthRetryableFetchException {
       // Retryable transport failure (couldn't reach Supabase). Treat as an
-      // offline/network error — eligible for the local demo fallback.
-      return _networkFallback(normalizedEmail, password);
+      // offline/network error.
+      return _networkFallback();
     } on AuthException catch (e) {
-      // Definitive rejection from Supabase (bad credentials, etc.). Never fall
-      // back to the local demo session, even for a test account.
+      // Definitive rejection from Supabase (bad credentials, etc.).
       return AuthResult.failure(e.message);
     } catch (_) {
       // SocketException / http ClientException / TimeoutException / any other
-      // transport failure — same offline fallback rules as above.
-      return _networkFallback(normalizedEmail, password);
+      // transport failure — same offline handling as above.
+      return _networkFallback();
     } finally {
       _setBusy(false);
     }
   }
 
-  /// Convenience entry point for the one-tap "Use test account" button — signs
-  /// in with the shared QA account from SupabaseConfig.
-  ///
-  /// Fails fast in a build with no QA credentials rather than attempting a
-  /// sign-in with two empty strings.
-  Future<AuthResult> signInWithTestAccount() {
-    if (!SupabaseConfig.testAccountEnabled) {
-      throw StateError(
-        'No QA credentials in this build. Supply QA_EMAIL / QA_PASSWORD via '
-        '--dart-define for an internal build.',
-      );
-    }
-    return loginEmail(SupabaseConfig.qaEmail, SupabaseConfig.qaPassword);
-  }
-
-  /// Offline fallback path: only shared SupabaseConfig test accounts may drop to
-  /// a local demo session when Supabase is unreachable; everyone else gets a
-  /// normal network error.
-  Future<AuthResult> _networkFallback(String email, String password) async {
-    if (_isSupabaseTestAccount(email, password)) {
-      return _signInLocalDemo(email);
-    }
+  /// Offline path: Supabase is unreachable, so sign-in fails with a normal
+  /// network error.
+  AuthResult _networkFallback() {
     return const AuthResult.failure(
       'Network error. Check your connection and try again.',
     );
-  }
-
-  /// True when [email]/[password] match a shared SupabaseConfig QA or Dev
-  /// account (case-insensitive on the email).
-  bool _isSupabaseTestAccount(String email, String password) {
-    final e = email.trim().toLowerCase();
-    return (SupabaseConfig.testAccountEnabled &&
-            e == SupabaseConfig.qaEmail.toLowerCase() &&
-            password == SupabaseConfig.qaPassword) ||
-        (SupabaseConfig.devAccountEnabled &&
-            e == SupabaseConfig.devEmail.toLowerCase() &&
-            password == SupabaseConfig.devPassword);
   }
 
   /// Map a Supabase [User] onto the app's [AuthUser], reading name/role from
@@ -664,38 +624,6 @@ class AuthService extends ChangeNotifier {
     if (_guest) return;
     _guest = true;
     notifyListeners();
-  }
-
-  /// Create/restore a persisted OFFLINE demo session for a shared SupabaseConfig
-  /// test account. Only reached from the network fallback in [loginEmail] when
-  /// Supabase is unreachable — a networked device always uses the real backend.
-  /// Busy state is managed by the caller.
-  Future<AuthResult> _signInLocalDemo(String email) async {
-    final user = AuthUser(
-      id: _kLocalDemoUserId,
-      email: email,
-      name: 'Test Pilot',
-      role: UserRole.student,
-    );
-    _accessToken = _kLocalDemoToken;
-    _refreshToken = null;
-    _userId = user.id;
-    _currentUser = user;
-    _isLocal = true;
-    _supabaseSession = false;
-    _guest = false;
-    try {
-      final prefs = await SharedPreferences.getInstance();
-      await prefs.setString(_kAccessTokenKey, _accessToken!);
-      await prefs.setString(_kUserIdKey, _userId!);
-      await prefs.setBool(_kIsLocalKey, true);
-      await prefs.setString(_kLocalEmailKey, user.email);
-      await prefs.setString(_kLocalNameKey, user.name!);
-    } catch (_) {
-      // In-memory session still works for this run.
-    }
-    notifyListeners();
-    return AuthResult.success(user);
   }
 
   /// Remove only the persisted local demo session keys (used when a real

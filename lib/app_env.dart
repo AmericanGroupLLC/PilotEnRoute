@@ -45,7 +45,6 @@ class AppEnv {
   static List<String> validate({
     required String supabaseUrl,
     required String supabaseAnonKey,
-    required bool testAccountEnabled,
   }) {
     final problems = <String>[];
 
@@ -55,11 +54,6 @@ class AppEnv {
       problems.add('SUPABASE_URL must be https (got "$supabaseUrl")');
     }
     if (supabaseAnonKey.isEmpty) problems.add('SUPABASE_ANON_KEY is empty');
-
-    // A production release must never carry QA credentials.
-    if (isProd && kReleaseMode && testAccountEnabled) {
-      problems.add('QA credentials are present in a production release');
-    }
 
     if (problems.isNotEmpty) {
       final message =

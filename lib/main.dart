@@ -66,7 +66,6 @@ import 'screens/icara_screen.dart';
 import 'screens/checklist_screen.dart';
 import 'screens/emergency_screen.dart';
 import 'screens/profile_screen.dart';
-import 'screens/store_screen.dart';
 import 'services/error_reporter.dart';
 
 void main() async {
@@ -228,8 +227,6 @@ class PilotEnRouteApp extends StatelessWidget {
           '/checklist': (ctx) => const ChecklistScreen(),
           '/emergency': (ctx) => const EmergencyScreen(),
           '/profile': (ctx) => const ProfileScreen(),
-          // ── Monetization Screens ───────────────────────────────────────
-          '/store': (ctx) => const StoreScreen(),
         },
       ),
     );

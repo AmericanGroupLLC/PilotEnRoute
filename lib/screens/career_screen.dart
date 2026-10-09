@@ -1,8 +1,76 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:http/http.dart' as http;
+import 'package:intl/intl.dart';
 
-class CareerScreen extends StatelessWidget {
+/// A national annual median wage published by the U.S. Bureau of Labor
+/// Statistics (Occupational Employment and Wage Statistics).
+class BlsMedianPay {
+  final String occupation;
+  final int annualUsd;
+  final String year;
+
+  const BlsMedianPay({
+    required this.occupation,
+    required this.annualUsd,
+    required this.year,
+  });
+}
+
+/// OEWS series: national, all industries, annual median wage (datatype 13).
+const Map<String, String> _blsSeries = {
+  'OEUN000000000000053201113': 'Airline pilots, copilots & flight engineers',
+  'OEUN000000000000053201213': 'Commercial pilots',
+  'OEUN000000000000053202113': 'Air traffic controllers',
+};
+
+/// Fetches the latest median pay from the free, keyless BLS Public Data API.
+/// Throws on any failure; the caller shows an error rather than a number.
+Future<List<BlsMedianPay>> fetchBlsMedianPay() async {
+  final response = await http
+      .post(
+        Uri.parse('https://api.bls.gov/publicAPI/v2/timeseries/data/'),
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({'seriesid': _blsSeries.keys.toList()}),
+      )
+      .timeout(const Duration(seconds: 15));
+  if (response.statusCode != 200) {
+    throw http.ClientException('BLS ${response.statusCode}');
+  }
+  final decoded = jsonDecode(response.body);
+  final series = (decoded is Map && decoded['Results'] is Map)
+      ? (decoded['Results'] as Map)['series']
+      : null;
+  if (series is! List) throw const FormatException('BLS: no series');
+
+  final out = <BlsMedianPay>[];
+  for (final s in series) {
+    if (s is! Map) continue;
+    final label = _blsSeries[s['seriesID']];
+    final data = s['data'];
+    if (label == null || data is! List || data.isEmpty) continue;
+    final latest = data.first;
+    if (latest is! Map) continue;
+    final value = int.tryParse('${latest['value']}');
+    final year = latest['year'];
+    if (value == null || year is! String) continue;
+    out.add(BlsMedianPay(occupation: label, annualUsd: value, year: year));
+  }
+  if (out.isEmpty) throw const FormatException('BLS: no data');
+  return out;
+}
+
+class CareerScreen extends StatefulWidget {
   const CareerScreen({super.key});
+
+  @override
+  State<CareerScreen> createState() => _CareerScreenState();
+}
+
+class _CareerScreenState extends State<CareerScreen> {
+  late Future<List<BlsMedianPay>> _pay = fetchBlsMedianPay();
 
   @override
   Widget build(BuildContext context) {
@@ -19,7 +87,6 @@ class CareerScreen extends StatelessWidget {
             _careerCard(
               title: 'Airline Pilot',
               subtitle: 'Regional → Major Carrier',
-              salary: '\$80K–\$350K+',
               hours: '1,500h ATP minimum',
               icon: Icons.flight,
               color: const Color(0xFF00BCD4),
@@ -29,7 +96,6 @@ class CareerScreen extends StatelessWidget {
             _careerCard(
               title: 'Corporate / Charter Pilot',
               subtitle: 'Part 91 / 135 Operations',
-              salary: '\$60K–\$200K+',
               hours: '500–1,000h typical',
               icon: Icons.business,
               color: const Color(0xFFFFB300),
@@ -39,7 +105,6 @@ class CareerScreen extends StatelessWidget {
             _careerCard(
               title: 'Flight Instructor (CFI)',
               subtitle: 'Build Hours & Teach',
-              salary: '\$40K–\$80K',
               hours: '250h CPL minimum',
               icon: Icons.school,
               color: const Color(0xFF4CAF50),
@@ -49,7 +114,6 @@ class CareerScreen extends StatelessWidget {
             _careerCard(
               title: 'Military Pilot',
               subtitle: 'Air Force, Navy, Army, Marines',
-              salary: '\$50K–\$130K + benefits',
               hours: 'Military training pathway',
               icon: Icons.military_tech,
               color: const Color(0xFFF44336),
@@ -59,7 +123,6 @@ class CareerScreen extends StatelessWidget {
             _careerCard(
               title: 'UAS / Drone Pilot',
               subtitle: 'Part 107 Commercial',
-              salary: '\$45K–\$120K',
               hours: 'Part 107 certificate only',
               icon: Icons.flight_takeoff,
               color: const Color(0xFF9C27B0),
@@ -69,7 +132,6 @@ class CareerScreen extends StatelessWidget {
             _careerCard(
               title: 'Air Traffic Controller',
               subtitle: 'FAA / TRACON / ARTCC',
-              salary: '\$70K–\$180K',
               hours: 'No flight hours required',
               icon: Icons.radar,
               color: const Color(0xFFFF9800),
@@ -77,9 +139,9 @@ class CareerScreen extends StatelessWidget {
                   'training and passing medical/aptitude tests.',
             ),
             const SizedBox(height: 20),
-            _sectionHeader('SALARY COMPARISON'),
+            _sectionHeader('MEDIAN PAY (U.S. BLS)'),
             const SizedBox(height: 12),
-            _salaryChart(),
+            _medianPay(),
             const SizedBox(height: 20),
             _sectionHeader('TOP AVIATION EMPLOYERS'),
             const SizedBox(height: 12),
@@ -105,7 +167,6 @@ class CareerScreen extends StatelessWidget {
   Widget _careerCard({
     required String title,
     required String subtitle,
-    required String salary,
     required String hours,
     required IconData icon,
     required Color color,
@@ -162,13 +223,11 @@ class CareerScreen extends StatelessWidget {
           ),
           const SizedBox(height: 12),
           // Wrap, not Row: on a folded cover display (and at a large text
-          // scale) the salary and hours badges no longer fit side by side, so
-          // they stack instead of overflowing.
+          // scale) a badge may not fit, so it wraps instead of overflowing.
           Wrap(
             spacing: 10,
             runSpacing: 8,
             children: [
-              _badge(Icons.attach_money, salary, const Color(0xFF4CAF50)),
               _badge(Icons.access_time, hours, const Color(0xFFFFB300)),
             ],
           ),
@@ -201,52 +260,78 @@ class CareerScreen extends StatelessWidget {
     );
   }
 
-  Widget _salaryChart() {
-    final data = [
-      ('Major Airline Capt.', 0.95, const Color(0xFF00BCD4)),
-      ('Major Airline FO', 0.7, const Color(0xFF2196F3)),
-      ('Corporate Capt.', 0.55, const Color(0xFFFFB300)),
-      ('Regional Capt.', 0.45, const Color(0xFF4CAF50)),
-      ('ATC', 0.4, const Color(0xFFFF9800)),
-      ('Regional FO', 0.3, const Color(0xFF9C27B0)),
-      ('CFI', 0.2, const Color(0xFF607D8B)),
-    ];
-
+  Widget _medianPay() {
+    final money = NumberFormat.currency(
+        locale: 'en_US', symbol: '\$', decimalDigits: 0);
     return Container(
+      width: double.infinity,
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: const Color(0xFF112240),
         borderRadius: BorderRadius.circular(16),
         border: Border.all(color: Colors.white12),
       ),
-      child: Column(
-        children: data.map((d) {
-          return Padding(
-            padding: const EdgeInsets.only(bottom: 10),
-            child: Row(
+      child: FutureBuilder<List<BlsMedianPay>>(
+        future: _pay,
+        builder: (context, snap) {
+          if (snap.connectionState != ConnectionState.done) {
+            return const Center(
+              child: CircularProgressIndicator(color: Color(0xFF00BCD4)),
+            );
+          }
+          if (snap.hasError || !snap.hasData) {
+            return Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                SizedBox(
-                  width: 130,
-                  child: Text(
-                    d.$1,
-                    style: GoogleFonts.inter(fontSize: 11, color: Colors.white70),
-                  ),
+                Text(
+                  'Pay data unavailable right now (BLS).',
+                  style: GoogleFonts.inter(fontSize: 12, color: Colors.white70),
                 ),
-                Expanded(
-                  child: ClipRRect(
-                    borderRadius: BorderRadius.circular(4),
-                    child: LinearProgressIndicator(
-                      value: d.$2,
-                      backgroundColor: Colors.white12,
-                      valueColor: AlwaysStoppedAnimation(d.$3),
-                      minHeight: 8,
-                    ),
-                  ),
+                TextButton(
+                  onPressed: () =>
+                      setState(() => _pay = fetchBlsMedianPay()),
+                  child: const Text('Retry'),
                 ),
               ],
-            ),
+            );
+          }
+          final rows = snap.data!;
+          return Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              for (final r in rows)
+                Padding(
+                  padding: const EdgeInsets.only(bottom: 10),
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child: Text(
+                          r.occupation,
+                          style: GoogleFonts.inter(
+                              fontSize: 12, color: Colors.white70),
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      Text(
+                        '${money.format(r.annualUsd)}/yr',
+                        style: GoogleFonts.inter(
+                          fontSize: 13,
+                          fontWeight: FontWeight.w600,
+                          color: const Color(0xFF4CAF50),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              Text(
+                'National annual median wage, U.S. Bureau of Labor '
+                'Statistics OEWS, ${rows.first.year}. Pay varies widely by '
+                'employer, seniority and region.',
+                style: GoogleFonts.inter(fontSize: 10, color: Colors.white38),
+              ),
+            ],
           );
-        }).toList(),
+        },
       ),
     );
   }

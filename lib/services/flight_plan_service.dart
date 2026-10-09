@@ -150,22 +150,40 @@ class NavLogLeg {
 class FlightPlanService extends ChangeNotifier {
   List<FlightPlan> _plans = [];
   bool _isLoading = false;
+  String? _loadError;
 
   List<FlightPlan> get plans => _plans;
   bool get isLoading => _isLoading;
 
+  /// Set when some or all saved plans could not be read. Never replaced by
+  /// invented plans: the list only ever holds what the user saved.
+  String? get loadError => _loadError;
+
   Future<void> loadPlans() async {
     _isLoading = true;
+    _loadError = null;
     notifyListeners();
     try {
       final prefs = await SharedPreferences.getInstance();
       final saved = prefs.getStringList('flight_plans') ?? [];
-      _plans = saved
-          .map((s) => FlightPlan.fromJson(jsonDecode(s)))
-          .toList()
-        ..sort((a, b) => b.createdAt.compareTo(a.createdAt));
+      final loaded = <FlightPlan>[];
+      var unreadable = 0;
+      for (final row in saved) {
+        try {
+          loaded.add(FlightPlan.fromJson(jsonDecode(row)));
+        } catch (_) {
+          unreadable++;
+        }
+      }
+      _plans = loaded..sort((a, b) => b.createdAt.compareTo(a.createdAt));
+      if (unreadable > 0) {
+        _loadError = unreadable == saved.length
+            ? 'Couldn\'t read your saved plans.'
+            : 'Couldn\'t read $unreadable of your saved plans.';
+      }
     } catch (e) {
-      _plans = _getDemoPlans();
+      _plans = [];
+      _loadError = 'Couldn\'t read your saved plans.';
     }
     _isLoading = false;
     notifyListeners();
@@ -290,42 +308,5 @@ REMARKS: ${plan.remarks}
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 File via 1800wxbrief.com or call 1-800-WX-BRIEF
 ''';
-  }
-
-  List<FlightPlan> _getDemoPlans() {
-    return [
-      FlightPlan(
-        id: 'demo_001',
-        name: 'Palo Alto → Monterey',
-        departure: 'KPAO',
-        destination: 'KMRY',
-        alternate: 'KSNS',
-        aircraftType: 'C172',
-        tailNumber: 'N12345',
-        cruiseAltitude: 4500,
-        cruiseSpeed: 110,
-        flightRules: 'VFR',
-        estimatedTime: 1.8,
-        route: 'KPAO V25 SALINAS KMRY',
-        remarks: 'Coastal VFR. Request flight following.',
-        createdAt: DateTime.now().subtract(const Duration(days: 3)),
-      ),
-      FlightPlan(
-        id: 'demo_002',
-        name: 'San Jose → Los Angeles',
-        departure: 'KSJC',
-        destination: 'KLAX',
-        alternate: 'KBUR',
-        aircraftType: 'C172',
-        tailNumber: 'N12345',
-        cruiseAltitude: 8500,
-        cruiseSpeed: 115,
-        flightRules: 'VFR',
-        estimatedTime: 3.2,
-        route: 'KSJC LOSHN V25 GORMAN KLAX',
-        remarks: 'Bravo transition required. File IFR recommended.',
-        createdAt: DateTime.now().subtract(const Duration(days: 10)),
-      ),
-    ];
   }
 }

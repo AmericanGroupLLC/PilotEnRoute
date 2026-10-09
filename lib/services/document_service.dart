@@ -403,11 +403,12 @@ class DocumentService extends ChangeNotifier {
     }
   }
 
-  /// Build a sample "Aircraft Document Cover Sheet" PDF, demonstrating the
-  /// pdf+printing pipeline. Returns the encoded PDF bytes.
+  /// Build an "Aircraft Document Cover Sheet" PDF. Tail number and type are
+  /// left as blank fill-in lines unless supplied — never a guessed aircraft.
+  /// Returns the encoded PDF bytes.
   Future<Uint8List> buildCoverSheetPdf({
-    String tailNumber = 'N-REGISTRATION',
-    String aircraftType = 'Cessna 172S',
+    String tailNumber = '________________',
+    String aircraftType = '________________',
     String operator = 'PilotEnRoute',
   }) async {
     final doc = pw.Document();

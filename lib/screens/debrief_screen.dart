@@ -17,7 +17,7 @@ const _kAmber = Color(0xFFFFB300);
 const _kRed = Color(0xFFF44336);
 const _kGreen = Color(0xFF4CAF50);
 
-/// Flight Debrief — list of recorded/sample tracks; tapping one opens a
+/// Flight Debrief — list of recorded tracks; tapping one opens a
 /// CloudAhoy-lite replay view with a moving-map, timeline scrub and profiles.
 class DebriefScreen extends StatefulWidget {
   const DebriefScreen({super.key});
@@ -84,7 +84,7 @@ class _DebriefScreenState extends State<DebriefScreen> {
             ),
             const SizedBox(height: 8),
             Text(
-              'Recorded tracks will appear here for replay and debrief.',
+              'Flight recording needs GPS, which isn\'t available in this version.',
               textAlign: TextAlign.center,
               style: GoogleFonts.inter(color: Colors.white54, fontSize: 12, height: 1.5),
             ),
@@ -144,28 +144,11 @@ class _DebriefScreenState extends State<DebriefScreen> {
                         ],
                       ),
                     ),
-                    if (track.isSample)
-                      Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                        decoration: BoxDecoration(
-                          color: _kAmber.withValues(alpha: 0.15),
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                        child: Text(
-                          'SAMPLE',
-                          style: GoogleFonts.orbitron(
-                            fontSize: 8,
-                            color: _kAmber,
-                            letterSpacing: 1,
-                          ),
-                        ),
-                      )
-                    else
-                      IconButton(
-                        tooltip: 'Delete',
-                        icon: const Icon(Icons.delete_outline, color: Colors.white38, size: 20),
-                        onPressed: () => _confirmDelete(track),
-                      ),
+                    IconButton(
+                      tooltip: 'Delete',
+                      icon: const Icon(Icons.delete_outline, color: Colors.white38, size: 20),
+                      onPressed: () => _confirmDelete(track),
+                    ),
                   ],
                 ),
                 const SizedBox(height: 14),

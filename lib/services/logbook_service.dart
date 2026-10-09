@@ -154,8 +154,9 @@ class LogbookService extends ChangeNotifier {
 
   Future<void> init() async {
     if (kIsWeb) {
-      // Web: use in-memory demo data
-      _entries = _getDemoEntries();
+      // Web: in-memory logbook that starts empty — only the user's own
+      // entries are ever shown, totalled or exported.
+      _entries = [];
       _calculateTotals();
       notifyListeners();
       return;
@@ -202,8 +203,6 @@ class LogbookService extends ChangeNotifier {
     if (_db != null) {
       final maps = await _db!.query('logbook_entries', orderBy: 'date DESC');
       _entries = maps.map((m) => LogbookEntry.fromMap(m)).toList();
-    } else {
-      _entries = _getDemoEntries();
     }
     _calculateTotals();
     _isLoading = false;
@@ -589,64 +588,5 @@ class LogbookService extends ChangeNotifier {
     );
 
     return doc.save();
-  }
-
-  List<LogbookEntry> _getDemoEntries() {
-    return [
-      LogbookEntry(
-        id: 1,
-        date: DateTime.now().subtract(const Duration(days: 5)),
-        aircraftType: 'C172',
-        tailNumber: 'N12345',
-        from: 'KPAO',
-        to: 'KSQL',
-        totalTime: 1.2,
-        picTime: 1.2,
-        crossCountry: 1.2,
-        dayTakeoffs: 1,
-        dayLandings: 1,
-        remarks: 'Night currency flight. Smooth conditions.',
-      ),
-      LogbookEntry(
-        id: 2,
-        date: DateTime.now().subtract(const Duration(days: 12)),
-        aircraftType: 'C172',
-        tailNumber: 'N12345',
-        from: 'KPAO',
-        to: 'KSJC',
-        totalTime: 0.8,
-        picTime: 0.8,
-        dayTakeoffs: 3,
-        dayLandings: 3,
-        remarks: 'Pattern work, touch and goes.',
-      ),
-      LogbookEntry(
-        id: 3,
-        date: DateTime.now().subtract(const Duration(days: 20)),
-        aircraftType: 'PA28',
-        tailNumber: 'N67890',
-        from: 'KPAO',
-        to: 'KMRY',
-        totalTime: 2.5,
-        picTime: 2.5,
-        crossCountry: 2.5,
-        dayTakeoffs: 1,
-        dayLandings: 1,
-        remarks: 'Cross country to Monterey. Coastal VFR.',
-      ),
-      LogbookEntry(
-        id: 4,
-        date: DateTime.now().subtract(const Duration(days: 35)),
-        aircraftType: 'C172',
-        tailNumber: 'N12345',
-        from: 'KPAO',
-        to: 'KPAO',
-        totalTime: 1.5,
-        dualReceived: 1.5,
-        actualInstrument: 0.8,
-        approaches: 3,
-        remarks: 'IFR training with CFII. ILS 28L, VOR 30, RNAV 28R.',
-      ),
-    ];
   }
 }

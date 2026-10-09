@@ -67,9 +67,6 @@ class AppDrawer extends StatelessWidget {
                 _buildItem(context, Icons.menu_book, 'Aviation Glossary', '/glossary'),
                 _buildItem(context, Icons.watch, 'Garmin Connect', '/garmin',
                     badge: 'GPS'),
-                // ── Store ───────────────────────────────────────────────
-                _buildSection('PILOT STORE'),
-                _buildStoreItem(context),
                 const Divider(color: Colors.white12),
                 // ── Account ─────────────────────────────────────────────
                 _buildItem(context, Icons.account_circle, 'Account', '/account'),
@@ -134,41 +131,6 @@ class AppDrawer extends StatelessWidget {
           ),
         ],
       ),
-    );
-  }
-
-  Widget _buildStoreItem(BuildContext context) {
-    return ListTile(
-      dense: true,
-      leading: const Icon(Icons.storefront,
-          color: Color(0xFFFFD700), size: 20),
-      title: Text(
-        'Pilot Gear Store',
-        style: GoogleFonts.inter(
-          fontSize: 13,
-          color: const Color(0xFFFFD700),
-          fontWeight: FontWeight.w600,
-        ),
-      ),
-      trailing: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-        decoration: BoxDecoration(
-          color: const Color(0xFFFFD700),
-          borderRadius: BorderRadius.circular(6),
-        ),
-        child: Text(
-          'SHOP',
-          style: GoogleFonts.orbitron(
-            fontSize: 7,
-            fontWeight: FontWeight.bold,
-            color: Colors.black,
-          ),
-        ),
-      ),
-      onTap: () {
-        Navigator.pop(context);
-        Navigator.pushNamed(context, '/store');
-      },
     );
   }
 

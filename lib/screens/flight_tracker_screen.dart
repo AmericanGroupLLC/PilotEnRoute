@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:url_launcher/url_launcher.dart';
 import '../services/flight_tracker_service.dart';
 import 'package:agl_i18n/agl_i18n.dart';
 
@@ -135,7 +136,20 @@ class _FlightTrackerScreenState extends State<FlightTrackerScreen>
           ),
         ),
         Expanded(
-          child: ListView.builder(
+          child: service.nearbyFlights.isEmpty
+              ? Center(
+                  child: Padding(
+                    padding: const EdgeInsets.all(24),
+                    child: Text(
+                      service.error != null
+                          ? 'No live traffic to show.'
+                          : 'No airborne aircraft reported in range.',
+                      textAlign: TextAlign.center,
+                      style: GoogleFonts.inter(color: Colors.white54, fontSize: 13),
+                    ),
+                  ),
+                )
+              : ListView.builder(
             padding: const EdgeInsets.symmetric(horizontal: 12),
             itemCount: service.nearbyFlights.length,
             itemBuilder: (context, i) {
@@ -345,6 +359,8 @@ class _FlightTrackerScreenState extends State<FlightTrackerScreen>
             const CircularProgressIndicator(color: Color(0xFF00BCD4))
           else if (service.tailNumberInfo != null)
             _buildTailCard(service.tailNumberInfo!)
+          else if (service.tailError != null)
+            _buildTailError(service.tailError!)
           else
             Container(
               padding: const EdgeInsets.all(20),
@@ -357,7 +373,7 @@ class _FlightTrackerScreenState extends State<FlightTrackerScreen>
                   const Icon(Icons.airplane_ticket, color: Colors.white24, size: 48),
                   const SizedBox(height: 12),
                   Text(
-                    'Enter an FAA N-Number to look up aircraft registration details.',
+                    'Enter a registration (e.g. N21108) to look up the aircraft in the public adsbdb.com database.',
                     textAlign: TextAlign.center,
                     style: GoogleFonts.inter(color: Colors.white54, fontSize: 13, height: 1.5),
                   ),
@@ -391,6 +407,7 @@ class _FlightTrackerScreenState extends State<FlightTrackerScreen>
           ),
           const SizedBox(height: 16),
           if (info.model != null) _detailRow('Model', info.model!),
+          if (info.aircraftType != null) _detailRow('ICAO Type', info.aircraftType!),
           if (info.manufacturer != null) _detailRow('Manufacturer', info.manufacturer!),
           if (info.owner != null) _detailRow('Owner', info.owner!),
           if (info.status != null) _detailRow('Status', info.status!),
@@ -398,8 +415,49 @@ class _FlightTrackerScreenState extends State<FlightTrackerScreen>
           if (info.engineType != null) _detailRow('Engine', info.engineType!),
           if (info.seats != null) _detailRow('Seats', info.seats!),
           if (info.weight != null) _detailRow('Weight Class', info.weight!),
+          const SizedBox(height: 12),
+          Text(
+            'Source: adsbdb.com public database. Not an official FAA registration check.',
+            textAlign: TextAlign.center,
+            style: GoogleFonts.inter(fontSize: 11, color: Colors.white38),
+          ),
+          _faaRegistryButton(info.tailNumber),
         ],
       ),
+    );
+  }
+
+  Widget _buildTailError(String message) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: const Color(0xFF112240),
+        borderRadius: BorderRadius.circular(16),
+      ),
+      child: Column(
+        children: [
+          Text(
+            message,
+            textAlign: TextAlign.center,
+            style: GoogleFonts.inter(color: Colors.white54, fontSize: 13, height: 1.5),
+          ),
+          _faaRegistryButton(_tailCtrl.text),
+        ],
+      ),
+    );
+  }
+
+  Widget _faaRegistryButton(String tail) {
+    return TextButton.icon(
+      icon: const Icon(Icons.open_in_new, size: 16),
+      label: const Text('Open the FAA Registry'),
+      onPressed: () async {
+        await launchUrl(
+          FlightTrackerService.faaRegistryUri(tail),
+          mode: LaunchMode.externalApplication,
+        );
+      },
     );
   }
 

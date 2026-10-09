@@ -94,6 +94,7 @@ class FlightTrackerService extends ChangeNotifier {
   TailNumberInfo? _tailNumberInfo;
   bool _isLoading = false;
   String? _error;
+  String? _tailError;
   String _searchQuery = '';
 
   List<AircraftState> get nearbyFlights => _nearbyFlights;
@@ -101,10 +102,28 @@ class FlightTrackerService extends ChangeNotifier {
   TailNumberInfo? get tailNumberInfo => _tailNumberInfo;
   bool get isLoading => _isLoading;
   String? get error => _error;
+  String? get tailError => _tailError;
   String get searchQuery => _searchQuery;
 
   // OpenSky Network API — free, no auth required
   static const _openSkyBase = 'https://opensky-network.org/api';
+
+  // adsbdb.com — free, keyless public aircraft database. Accepts a
+  // registration (e.g. N21108) and returns type, manufacturer and owner.
+  static const _adsbdbBase = 'https://api.adsbdb.com/v0/aircraft';
+
+  static const liveTrafficUnavailableMessage =
+      'Live traffic unavailable right now (OpenSky). Tap refresh to retry.';
+
+  /// Official FAA N-Number inquiry page for [tail], for the user to check
+  /// registration status themselves (the app does not verify registration).
+  static Uri faaRegistryUri(String tail) {
+    final n = tail.toUpperCase().replaceAll(' ', '');
+    final digits = n.startsWith('N') ? n.substring(1) : n;
+    return Uri.parse(
+      'https://registry.faa.gov/aircraftinquiry/Search/NNumberResult?nNumberTxt=$digits',
+    );
+  }
 
   // Fetch flights in a bounding box (around a location)
   Future<void> fetchNearbyFlights({
@@ -138,12 +157,14 @@ class FlightTrackerService extends ChangeNotifier {
           return altB.compareTo(altA);
         });
       } else {
-        _error = 'Unable to fetch live flights. Try again later.';
-        _nearbyFlights = _getDemoFlights();
+        // Never substitute invented aircraft: an empty list plus an honest
+        // error is the only safe answer when live traffic is unavailable.
+        _error = liveTrafficUnavailableMessage;
+        _nearbyFlights = [];
       }
     } catch (e) {
-      _error = 'Network error. Showing demo data.';
-      _nearbyFlights = _getDemoFlights();
+      _error = liveTrafficUnavailableMessage;
+      _nearbyFlights = [];
     }
 
     _isLoading = false;
@@ -190,53 +211,64 @@ class FlightTrackerService extends ChangeNotifier {
     notifyListeners();
   }
 
-  // FAA N-Number lookup via FAA registry
+  // Aircraft lookup by registration via adsbdb.com. This shows only what
+  // the public database returns; it is not an FAA registration check.
   Future<void> lookupTailNumber(String tailNumber) async {
     _isLoading = true;
-    _error = null;
+    _tailError = null;
     _tailNumberInfo = null;
     notifyListeners();
 
-    // Normalize: remove N prefix for some lookups
     final normalized = tailNumber.toUpperCase().replaceAll(' ', '');
+    if (normalized.isEmpty) {
+      _isLoading = false;
+      notifyListeners();
+      return;
+    }
 
     try {
-      // Use FAA registry API (public)
-      final url = Uri.parse(
-        'https://registry.faa.gov/aircraftinquiry/Search/NNumberInquiry?NNumberTxt=$normalized',
-      );
-      // Make the request to verify the tail number is reachable
-      await http.get(url,
-          headers: {'Accept': 'application/json'}).timeout(const Duration(seconds: 10));
+      final url = Uri.parse('$_adsbdbBase/${Uri.encodeComponent(normalized)}');
+      final response =
+          await http.get(url).timeout(const Duration(seconds: 10));
 
-      // FAA registry returns HTML, so we parse what we can
-      // For production, use a proper FAA API key or aviation data provider
-      _tailNumberInfo = TailNumberInfo(
-        tailNumber: normalized,
-        status: 'Valid Registration',
-        manufacturer: _getManufacturerFromTail(normalized),
-        model: 'See FAA Registry',
-        owner: 'See FAA Registry',
-        registrationDate: 'See FAA Registry',
-      );
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        final aircraft = (data is Map && data['response'] is Map)
+            ? (data['response'] as Map)['aircraft']
+            : null;
+        if (aircraft is Map) {
+          String? str(String key) {
+            final v = aircraft[key];
+            return (v is String && v.trim().isNotEmpty) ? v.trim() : null;
+          }
+
+          _tailNumberInfo = TailNumberInfo(
+            tailNumber: str('registration') ?? normalized,
+            aircraftType: str('icao_type'),
+            manufacturer: str('manufacturer'),
+            model: str('type'),
+            owner: str('registered_owner'),
+          );
+        } else {
+          _tailError = _tailNotFoundMessage(normalized);
+        }
+      } else if (response.statusCode == 404) {
+        _tailError = _tailNotFoundMessage(normalized);
+      } else {
+        _tailError = 'Couldn\'t reach the aircraft database. Try again.';
+      }
     } catch (e) {
-      // Provide demo data
-      _tailNumberInfo = TailNumberInfo(
-        tailNumber: normalized,
-        status: 'Demo Data',
-        manufacturer: _getManufacturerFromTail(normalized),
-        model: 'Cessna 172S Skyhawk',
-        owner: 'Private Owner',
-        registrationDate: '2018-03-15',
-        engineType: 'Reciprocating',
-        seats: '4',
-        weight: 'Class 1 (up to 12,499 lbs)',
-      );
+      _tailError =
+          'Couldn\'t reach the aircraft database. Check your connection and try again.';
     }
 
     _isLoading = false;
     notifyListeners();
   }
+
+  String _tailNotFoundMessage(String tail) =>
+      'No record for $tail in the public aircraft database (adsbdb.com). '
+      'This does not confirm or deny FAA registration. Check the FAA Registry.';
 
   // Airport arrivals — flights that landed at <icao> in the last ~12 hours.
   // TODO(tracking): airline schedules/delay data need a commercial API
@@ -314,58 +346,5 @@ class FlightTrackerService extends ChangeNotifier {
     } catch (e) {
       return [];
     }
-  }
-
-  String _getManufacturerFromTail(String tail) {
-    // Simplified heuristic
-    if (tail.startsWith('N1') || tail.startsWith('N2')) return 'Cessna';
-    if (tail.startsWith('N3') || tail.startsWith('N4')) return 'Piper';
-    if (tail.startsWith('N5') || tail.startsWith('N6')) return 'Beechcraft';
-    if (tail.startsWith('N7') || tail.startsWith('N8')) return 'Cirrus';
-    return 'Unknown';
-  }
-
-  List<AircraftState> _getDemoFlights() {
-    return [
-      AircraftState(
-        icao24: 'a12345',
-        callsign: 'UAL123',
-        originCountry: 'United States',
-        latitude: 37.85,
-        longitude: -122.35,
-        baroAltitude: 10668,
-        onGround: false,
-        velocity: 235,
-        trueTrack: 270,
-        verticalRate: 0,
-        squawk: '1234',
-      ),
-      AircraftState(
-        icao24: 'b67890',
-        callsign: 'DAL456',
-        originCountry: 'United States',
-        latitude: 37.72,
-        longitude: -122.50,
-        baroAltitude: 7620,
-        onGround: false,
-        velocity: 210,
-        trueTrack: 180,
-        verticalRate: -300,
-        squawk: '5678',
-      ),
-      AircraftState(
-        icao24: 'c11111',
-        callsign: 'N12345',
-        originCountry: 'United States',
-        latitude: 37.80,
-        longitude: -122.20,
-        baroAltitude: 1524,
-        onGround: false,
-        velocity: 55,
-        trueTrack: 090,
-        verticalRate: 200,
-        squawk: '1200',
-      ),
-    ];
   }
 }

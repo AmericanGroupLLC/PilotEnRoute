@@ -67,15 +67,25 @@ class _FlightPlanScreenState extends State<FlightPlanScreen> {
     if (service.isLoading) {
       return const Center(child: CircularProgressIndicator());
     }
+    final loadError = service.loadError;
     if (service.plans.isEmpty) {
       return Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
+            if (loadError != null) ...[
+              Text(
+                loadError,
+                textAlign: TextAlign.center,
+                style: GoogleFonts.inter(
+                    color: const Color(0xFFFFB300), fontSize: 13),
+              ),
+              const SizedBox(height: 16),
+            ],
             const Icon(Icons.map, color: Colors.white24, size: 64),
             const SizedBox(height: 16),
             Text(
-              'No flight plans yet',
+              'No saved flight plans yet.',
               style: GoogleFonts.inter(color: Colors.white54, fontSize: 16),
             ),
             const SizedBox(height: 8),
@@ -90,8 +100,21 @@ class _FlightPlanScreenState extends State<FlightPlanScreen> {
 
     return ListView.builder(
       padding: const EdgeInsets.all(12),
-      itemCount: service.plans.length,
+      itemCount: service.plans.length + (loadError != null ? 1 : 0),
       itemBuilder: (context, i) {
+        if (loadError != null) {
+          if (i == 0) {
+            return Padding(
+              padding: const EdgeInsets.only(bottom: 12),
+              child: Text(
+                loadError,
+                style: GoogleFonts.inter(
+                    color: const Color(0xFFFFB300), fontSize: 13),
+              ),
+            );
+          }
+          i -= 1;
+        }
         final plan = service.plans[i];
         return _buildPlanCard(plan, service);
       },

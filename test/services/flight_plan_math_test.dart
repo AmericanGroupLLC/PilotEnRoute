@@ -303,11 +303,26 @@ void main() {
       });
       final s = FlightPlanService();
       await s.loadPlans();
-      // Current behaviour: the whole store is replaced by the demo plans.
-      // Asserted so a change of policy is a deliberate decision, not a silent
-      // one — losing a pilot's saved plans to one bad row is a real risk.
+      // Never replaced by invented plans: the list stays empty and the
+      // screen is told the saved plans could not be read.
       expect(s.isLoading, isFalse);
-      expect(s.plans, isNotEmpty);
+      expect(s.plans, isEmpty);
+      expect(s.loadError, "Couldn't read your saved plans.");
+    });
+
+    test('one corrupt row keeps the readable plans and invents none',
+        () async {
+      SharedPreferences.setMockInitialValues({
+        'flight_plans': [
+          '{not json at all',
+          jsonEncode(makePlan('good', DateTime.utc(2026, 1, 1)).toJson()),
+        ],
+      });
+      final s = FlightPlanService();
+      await s.loadPlans();
+      expect(s.plans.map((p) => p.id), ['good']);
+      expect(s.loadError, "Couldn't read 1 of your saved plans.");
+      expect(s.plans.map((p) => p.id), isNot(contains(startsWith('demo_'))));
     });
 
     test('a plan with an unparseable created date does not take the app down',

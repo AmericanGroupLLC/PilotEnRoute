@@ -62,7 +62,7 @@ void main() {
       handle.dispose();
     });
 
-    testWidgets('the live-data cards and the store promo read as buttons',
+    testWidgets('the live-data cards read as buttons; no store promo',
         (tester) async {
       final handle = tester.ensureSemantics();
       tester.view.physicalSize = const Size(1200, 3600);
@@ -76,15 +76,16 @@ void main() {
         find.bySemanticsLabel('METAR, Live airport weather'),
         findsOneWidget,
       );
-      expect(
-        find.bySemanticsLabel(RegExp('^Pilot Gear Store')),
-        findsOneWidget,
+      final metar = tester.getSemantics(
+        find.bySemanticsLabel('METAR, Live airport weather'),
       );
+      expect(metar.flagsCollection.isButton, isTrue);
 
-      final store = tester.getSemantics(
-        find.bySemanticsLabel(RegExp('^Pilot Gear Store')),
+      // The Pilot Gear Store (invented ratings, dead affiliate links) is gone.
+      expect(
+        find.bySemanticsLabel(RegExp('Pilot Gear Store')),
+        findsNothing,
       );
-      expect(store.flagsCollection.isButton, isTrue);
 
       handle.dispose();
     });

@@ -9,10 +9,11 @@ import 'package:shared_preferences/shared_preferences.dart';
 /// PilotEnRoute — Alerts Center service.
 ///
 /// Manages configurable pilot [AlertRule]s and a rolling in-app [AlertItem]
-/// feed, both persisted to [SharedPreferences]. Provides evaluators that can
-/// run against live-ish inputs today (crosswind, fuel reserve, expiry dates)
-/// plus clearly-labelled SAMPLE generators for categories that require live
-/// feeds or GPS (weather, NOTAM, terrain, traffic, airspace).
+/// feed, both persisted to [SharedPreferences]. Provides evaluators that run
+/// only against real inputs (a loaded METAR, a runway and endurance the user
+/// supplied, expiry dates the user stored). Categories with no live data
+/// source (NOTAM, terrain, traffic, airspace, checklist) are reported as
+/// "not evaluated" — no alert is ever generated from invented inputs.
 ///
 /// Self-contained: owns its own [FlutterLocalNotificationsPlugin] instance so
 /// it does NOT depend on the app's NotificationService, and requires no
@@ -80,7 +81,8 @@ class AlertService extends ChangeNotifier {
 
       _feed
         ..clear()
-        ..addAll(_decodeFeed(prefs.getString(_kFeedKey)));
+        ..addAll(_decodeFeed(prefs.getString(_kFeedKey))
+            .where((a) => !_isLegacyInventedAlert(a)));
       _feed.sort((a, b) => b.timestamp.compareTo(a.timestamp));
     } catch (_) {
       // Corrupt / unavailable storage — fall back to sane defaults.
@@ -102,6 +104,24 @@ class AlertService extends ChangeNotifier {
           .toList();
     } catch (_) {
       return [];
+    }
+  }
+
+  /// Alerts written by earlier versions from invented inputs: the labelled
+  /// SAMPLE generators, the fixed "RWY 09" crosswind check, the fixed
+  /// 50-minute fuel check and the descent checklist reminder. Dropped on load
+  /// so a pilot never keeps seeing them.
+  static bool _isLegacyInventedAlert(AlertItem a) {
+    if (a.title.startsWith('SAMPLE')) return true;
+    switch (a.category) {
+      case AlertCategory.crosswind:
+        return a.title.endsWith('— RWY 09');
+      case AlertCategory.fuel:
+        return a.message.startsWith('Endurance 50m vs');
+      case AlertCategory.checklist:
+        return a.title == 'Checklist reminder — Descent';
+      default:
+        return false;
     }
   }
 
@@ -426,7 +446,7 @@ class AlertService extends ChangeNotifier {
   }
 
   /// Currency/medical expiry proximity. Reads a prefs date when [expiry] is
-  /// omitted; falls back to a labelled demo date when nothing is stored.
+  /// omitted; returns null (nothing evaluated) when no date is stored.
   Future<AlertItem?> evaluateExpiry({
     required AlertCategory category,
     DateTime? expiry,
@@ -437,19 +457,13 @@ class AlertService extends ChangeNotifier {
     final rule = ruleFor(category);
     if (rule == null || !rule.enabled) return null;
 
-    var isDemo = false;
-    var date = expiry;
-    if (date == null) {
-      date = await _readProfileDate(
-        category == AlertCategory.medical ? _kMedicalExpiryKey : _kBfrExpiryKey,
-      );
-      if (date == null) {
-        isDemo = true;
-        date = DateTime.now().add(Duration(
-          days: category == AlertCategory.medical ? 25 : 40,
-        ));
-      }
-    }
+    final date = expiry ??
+        await _readProfileDate(
+          category == AlertCategory.medical
+              ? _kMedicalExpiryKey
+              : _kBfrExpiryKey,
+        );
+    if (date == null) return null;
 
     final warnDays = rule.daysBeforeExpiry ?? 30;
     final daysLeft = date.difference(DateTime.now()).inDays;
@@ -474,12 +488,11 @@ class AlertService extends ChangeNotifier {
     final item = _mkItem(
       category: category,
       severity: severity,
-      title: '${isDemo ? 'SAMPLE — ' : ''}$title',
+      title: title,
       message: daysLeft < 0
           ? 'Expired ${-daysLeft} day(s) ago (${_ymd(date)}).'
-              '${isDemo ? ' [demo data — set your date in Profile]' : ''}'
           : '$daysLeft day(s) remaining (expires ${_ymd(date)}), alert threshold '
-              '$warnDays days.${isDemo ? ' [demo data — set your date in Profile]' : ''}',
+              '$warnDays days.',
     );
     await addAlert(item);
     return item;
@@ -496,106 +509,63 @@ class AlertService extends ChangeNotifier {
     }
   }
 
-  // ── SAMPLE generators (need live feeds / GPS — not yet wired) ────────────────
+  /// Categories the last [runChecksNow] could not evaluate, each with the
+  /// reason (missing input or no data source). Shown instead of an alert.
+  List<String> get lastNotEvaluated => List.unmodifiable(_lastNotEvaluated);
+  List<String> _lastNotEvaluated = const [];
 
-  /// Generates a clearly-labelled sample alert for a category whose real data
-  /// source is not wired yet. Returns null when the category is disabled.
-  Future<AlertItem?> generateSample(AlertCategory category) async {
-    final rule = ruleFor(category);
-    if (rule == null || !rule.enabled) return null;
-
-    late final AlertSeverity severity;
-    late final String title;
-    late final String message;
-
-    switch (category) {
-      case AlertCategory.weather:
-        // Only reached when no METAR was supplied to [runChecksNow]; with one
-        // in hand [evaluateWeather] grades the real ceiling and visibility.
-        severity = AlertSeverity.caution;
-        title = 'SAMPLE — Deteriorating weather';
-        message =
-            'Ceiling forecast to drop below 1000 ft within 2 hrs at destination. '
-            '[sample data — no METAR loaded]';
-      case AlertCategory.notam:
-        // TODO: wire to notam_service for the active route/aerodrome NOTAMs.
-        severity = AlertSeverity.warning;
-        title = 'SAMPLE — Runway closure NOTAM';
-        message =
-            'RWY 09/27 closed for maintenance 0600–1400Z at your destination. '
-            '[sample data — connect notam_service]';
-      case AlertCategory.terrain:
-        // TODO: wire to GPS + terrain database for real proximity checks.
-        severity = AlertSeverity.warning;
-        title = 'SAMPLE — Terrain proximity';
-        message =
-            'Rising terrain ahead within 5 nm on current track. '
-            '[sample data — connect GPS + terrain DB]';
-      case AlertCategory.traffic:
-        // TODO: wire to ADS-B feed for real traffic proximity/TCAS-style alerts.
-        severity = AlertSeverity.caution;
-        title = 'SAMPLE — Traffic advisory';
-        message =
-            'Traffic 2 nm, 500 ft below, converging. '
-            '[sample data — connect ADS-B feed]';
-      case AlertCategory.airspace:
-        // TODO: wire to GPS + airspace boundaries for real incursion warnings.
-        severity = AlertSeverity.caution;
-        title = 'SAMPLE — Airspace ahead';
-        message =
-            'Class C boundary 6 nm ahead — contact approach before entry. '
-            '[sample data — connect GPS + airspace data]';
-      case AlertCategory.checklist:
-        severity = AlertSeverity.info;
-        title = 'Checklist reminder — Descent';
-        message = 'Approaching top of descent: complete the DESCENT checklist.';
-      case AlertCategory.crosswind:
-      case AlertCategory.fuel:
-      case AlertCategory.currency:
-      case AlertCategory.medical:
-        // These have real evaluators — no sample generator needed.
-        return null;
-    }
-
-    final item = _mkItem(
-      category: category,
-      severity: severity,
-      title: title,
-      message: message,
-    );
-    await addAlert(item);
-    return item;
-  }
-
-  /// Runs every runnable evaluator against sample inputs and generates sample
-  /// alerts for the not-yet-wired categories. Returns the number of alerts
+  /// Runs every evaluator that has real inputs. Returns the number of alerts
   /// pushed to the feed.
   ///
-  /// When the caller has a decoded METAR to hand ([metarStation] plus its
-  /// ceiling/visibility), the weather category is graded for real instead of
-  /// falling back to the labelled sample. The crosswind check is likewise
-  /// driven by the reported wind when one is supplied.
+  /// - Weather is graded only from a supplied METAR ([metarStation] plus its
+  ///   ceiling/visibility).
+  /// - Crosswind runs only when both a reported wind and a runway the user
+  ///   chose ([runwayHeadingDeg]) are supplied.
+  /// - Fuel runs only when the user supplied [fuelEnduranceMinutes].
+  /// - Medical / flight review run only from dates the user stored.
+  /// - NOTAM, terrain, traffic, airspace and checklist have no live source
+  ///   wired, so they are never alerted on.
+  ///
+  /// Everything skipped is listed in [lastNotEvaluated].
   Future<int> runChecksNow({
     String? metarStation,
     int? ceilingFt,
     double? visibilitySm,
     int? windDirDeg,
     int? windSpeedKts,
+    double? runwayHeadingDeg,
+    String? runwayLabel,
+    int? fuelEnduranceMinutes,
   }) async {
     final before = _feed.length;
+    final skipped = <String>[];
 
-    // Runnable evaluators (sample inputs — replace with live data when wired).
-    await evaluateCrosswind(
-      runwayHeadingDeg: 90,
-      windDirDeg: (windDirDeg ?? 150).toDouble(),
-      windSpeedKts: (windSpeedKts ?? 22).toDouble(),
-      runwayLabel: 'RWY 09',
-    );
-    await evaluateFuel(enduranceMinutes: 50);
-    await evaluateExpiry(category: AlertCategory.medical);
-    await evaluateExpiry(category: AlertCategory.currency);
+    if (windDirDeg != null && windSpeedKts != null && runwayHeadingDeg != null) {
+      await evaluateCrosswind(
+        runwayHeadingDeg: runwayHeadingDeg,
+        windDirDeg: windDirDeg.toDouble(),
+        windSpeedKts: windSpeedKts.toDouble(),
+        runwayLabel: runwayLabel,
+      );
+    } else {
+      skipped.add('Crosswind — not evaluated: needs a loaded METAR wind and a runway');
+    }
 
-    // Weather is real whenever a METAR was supplied.
+    if (fuelEnduranceMinutes != null) {
+      await evaluateFuel(enduranceMinutes: fuelEnduranceMinutes);
+    } else {
+      skipped.add('Fuel — not evaluated: enter your fuel endurance');
+    }
+
+    if (await evaluateExpiry(category: AlertCategory.medical) == null &&
+        ruleFor(AlertCategory.medical)?.enabled == true) {
+      skipped.add('Medical — not evaluated: set your medical expiry date in Profile');
+    }
+    if (await evaluateExpiry(category: AlertCategory.currency) == null &&
+        ruleFor(AlertCategory.currency)?.enabled == true) {
+      skipped.add('Flight review — not evaluated: set your flight review date in Profile');
+    }
+
     if (metarStation != null && metarStation.isNotEmpty) {
       await evaluateWeather(
         station: metarStation,
@@ -603,16 +573,21 @@ class AlertService extends ChangeNotifier {
         visibilitySm: visibilitySm,
       );
     } else {
-      await generateSample(AlertCategory.weather);
+      skipped.add('Weather — not evaluated: load a METAR in Weather first');
     }
 
-    // Sample generators for categories awaiting real data sources.
-    await generateSample(AlertCategory.notam);
-    await generateSample(AlertCategory.terrain);
-    await generateSample(AlertCategory.traffic);
-    await generateSample(AlertCategory.airspace);
-    await generateSample(AlertCategory.checklist);
+    for (final c in const [
+      AlertCategory.notam,
+      AlertCategory.terrain,
+      AlertCategory.traffic,
+      AlertCategory.airspace,
+      AlertCategory.checklist,
+    ]) {
+      skipped.add('${c.label} — not evaluated: no data source');
+    }
 
+    _lastNotEvaluated = skipped;
+    notifyListeners();
     return _feed.length - before;
   }
 

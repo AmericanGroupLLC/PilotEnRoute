@@ -6,6 +6,8 @@
 /// to come out as a warning, not as an informational note.
 library;
 
+import 'dart:convert';
+
 import 'package:flutter_test/flutter_test.dart';
 import 'package:pilot_enroute/services/alert_service.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -174,26 +176,128 @@ void main() {
       expect(weather.single.title, isNot(contains('SAMPLE')));
     });
 
-    test('with no METAR it still falls back to the labelled sample', () async {
+    test('with no inputs it raises nothing invented', () async {
       final service = await freshService();
-      await service.runChecksNow();
+      final count = await service.runChecksNow();
 
-      final weather = service.feed
-          .where((a) => a.category == AlertCategory.weather)
-          .toList();
-      expect(weather, hasLength(1));
-      expect(weather.single.title, contains('SAMPLE'));
+      // No METAR, runway, endurance or stored dates: nothing is real, so
+      // nothing is alerted — and nothing fires a device notification.
+      expect(count, 0);
+      expect(service.feed, isEmpty);
+      expect(
+        service.lastNotEvaluated.join('\n'),
+        allOf(
+          contains('Crosswind — not evaluated'),
+          contains('Fuel — not evaluated'),
+          contains('Weather — not evaluated'),
+          contains('NOTAM — not evaluated: no data source'),
+          contains('Terrain — not evaluated: no data source'),
+          contains('Traffic — not evaluated: no data source'),
+          contains('Airspace — not evaluated: no data source'),
+        ),
+      );
     });
 
-    test('a supplied wind drives the crosswind check', () async {
+    test('no alert uses an invented runway, wind, endurance or sample',
+        () async {
       final service = await freshService();
-      // RWY 09 is fixed at 090; a wind straight down it has no crosswind.
-      await service.runChecksNow(windDirDeg: 90, windSpeedKts: 30);
+      await service.runChecksNow(
+        metarStation: 'KJFK',
+        ceilingFt: 400,
+        visibilitySm: 0.75,
+        windDirDeg: 150,
+        windSpeedKts: 22,
+      );
+
+      final text =
+          service.feed.map((a) => '${a.title} ${a.message}').join('\n');
+      expect(text, isNot(contains('SAMPLE')));
+      expect(text, isNot(contains('RWY 09')));
+      expect(text, isNot(contains('Endurance 50m')));
+      // Only the METAR-driven weather check had real input.
+      expect(
+        service.feed.map((a) => a.category).toSet(),
+        {AlertCategory.weather},
+      );
+    });
+
+    test('a supplied wind and runway drive the crosswind check', () async {
+      final service = await freshService();
+      await service.runChecksNow(
+        windDirDeg: 90,
+        windSpeedKts: 30,
+        runwayHeadingDeg: 90,
+        runwayLabel: 'RWY 09',
+      );
 
       final crosswind = service.feed
           .firstWhere((a) => a.category == AlertCategory.crosswind);
       expect(crosswind.title, 'Crosswind 0 kt — RWY 09');
       expect(crosswind.severity, AlertSeverity.info);
+    });
+
+    test('a supplied endurance drives the fuel check', () async {
+      final service = await freshService();
+      await service.runChecksNow(fuelEnduranceMinutes: 120);
+
+      final fuel =
+          service.feed.firstWhere((a) => a.category == AlertCategory.fuel);
+      expect(fuel.message, startsWith('Endurance 120m'));
+    });
+
+    test('stored medical date is evaluated; a missing one is not invented',
+        () async {
+      final expiry = DateTime.now().add(const Duration(days: 200));
+      SharedPreferences.setMockInitialValues({
+        'profile_medical_expiry': expiry.toIso8601String(),
+      });
+      final service = AlertService();
+      await service.init();
+      await service.runChecksNow();
+
+      final medical = service.feed
+          .where((a) => a.category == AlertCategory.medical)
+          .toList();
+      expect(medical, hasLength(1));
+      expect(medical.single.title, 'Medical certificate current');
+      expect(
+          service.feed.where((a) => a.category == AlertCategory.currency),
+          isEmpty);
+    });
+
+    test('alerts persisted from invented inputs are dropped on load',
+        () async {
+      SharedPreferences.setMockInitialValues({
+        'alert_feed': jsonEncode([
+          AlertItem(
+            id: '1',
+            category: AlertCategory.notam,
+            severity: AlertSeverity.warning,
+            title: 'SAMPLE — Runway closure NOTAM',
+            message: 'x',
+            timestamp: DateTime(2026, 1, 1),
+          ).toJson(),
+          AlertItem(
+            id: '2',
+            category: AlertCategory.crosswind,
+            severity: AlertSeverity.caution,
+            title: 'Crosswind 19 kt — RWY 09',
+            message: 'x',
+            timestamp: DateTime(2026, 1, 1),
+          ).toJson(),
+          AlertItem(
+            id: '3',
+            category: AlertCategory.weather,
+            severity: AlertSeverity.warning,
+            title: 'KJFK LIFR',
+            message: 'ceiling 400 ft.',
+            timestamp: DateTime(2026, 1, 1),
+          ).toJson(),
+        ]),
+      });
+      final service = AlertService();
+      await service.init();
+      expect(service.feed.map((a) => a.id), ['3']);
     });
   });
 }

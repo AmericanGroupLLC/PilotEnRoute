@@ -69,8 +69,6 @@ class FlightTrack {
     required this.points,
   });
 
-  bool get isSample => id.startsWith('sample_');
-
   /// Total elapsed time from first to last point.
   Duration get duration {
     if (points.length < 2) return Duration.zero;
@@ -160,8 +158,7 @@ class FlightTrack {
 /// Manages recorded flight tracks for the Flight Debrief / track replay feature.
 ///
 /// Persists user-recorded tracks to shared_preferences (JSON, key
-/// [_storageKey]) and always exposes 1-2 built-in synthetic SAMPLE tracks so
-/// the debrief screen is usable before any real flight has been recorded.
+/// [_storageKey]). Only the user's own recordings are ever shown.
 ///
 /// TODO(gps): real recording will consume LocationService position stream once
 /// geolocator is wired — [beginRecording]/[recordPosition]/[endRecording] below
@@ -170,7 +167,6 @@ class FlightDebriefService extends ChangeNotifier {
   static const _storageKey = 'debrief_tracks';
 
   final List<FlightTrack> _userTracks = [];
-  late final List<FlightTrack> _samples = _buildSampleTracks();
 
   bool _loaded = false;
   bool get isLoaded => _loaded;
@@ -180,8 +176,8 @@ class FlightDebriefService extends ChangeNotifier {
   bool _recording = false;
   bool get isRecording => _recording;
 
-  /// All tracks shown in the UI: user recordings first, then built-in samples.
-  List<FlightTrack> get tracks => [..._userTracks, ..._samples];
+  /// All tracks shown in the UI: the user's own recordings only.
+  List<FlightTrack> get tracks => List.unmodifiable(_userTracks);
 
   /// Load persisted user tracks. Safe to call multiple times.
   Future<void> load() async {
@@ -231,7 +227,7 @@ class FlightDebriefService extends ChangeNotifier {
     await _persist();
   }
 
-  /// Removes a user-recorded track. Sample tracks are read-only and ignored.
+  /// Removes a user-recorded track.
   Future<void> deleteTrack(String id) async {
     final before = _userTracks.length;
     _userTracks.removeWhere((t) => t.id == id);
@@ -271,115 +267,5 @@ class FlightDebriefService extends ChangeNotifier {
     _recordingBuffer.clear();
     await addTrack(track);
     return track;
-  }
-
-  // --- Synthetic sample tracks ---------------------------------------------
-
-  List<FlightTrack> _buildSampleTracks() {
-    return [
-      _buildPatternSample(),
-      _buildBayTourSample(),
-    ];
-  }
-
-  /// A short synthetic closed traffic pattern at Palo Alto (KPAO), Rwy 31.
-  FlightTrack _buildPatternSample() {
-    // KPAO field: 37.4611 N, 122.1150 W, elevation ~5 ft.
-    final gen = _TrackBuilder(startLat: 37.4611, startLon: -122.1150, startAltFt: 5);
-    // Takeoff & upwind climb on runway heading 313.
-    gen.leg(headingDeg: 313, groundSpeedKt: 70, targetAltFt: 500, seconds: 40);
-    // Crosswind, climbing to pattern altitude.
-    gen.leg(headingDeg: 43, groundSpeedKt: 80, targetAltFt: 800, seconds: 25);
-    // Downwind, level at 800 ft.
-    gen.leg(headingDeg: 133, groundSpeedKt: 90, targetAltFt: 800, seconds: 45);
-    // Base, beginning descent.
-    gen.leg(headingDeg: 223, groundSpeedKt: 80, targetAltFt: 500, seconds: 25);
-    // Final approach, descending to the numbers.
-    gen.leg(headingDeg: 313, groundSpeedKt: 65, targetAltFt: 20, seconds: 40);
-    // Touchdown & rollout.
-    gen.leg(headingDeg: 313, groundSpeedKt: 15, targetAltFt: 5, seconds: 15);
-    return FlightTrack(
-      id: 'sample_pattern_kpao',
-      name: 'KPAO Pattern Work',
-      date: DateTime.now().subtract(const Duration(days: 3)),
-      points: gen.points,
-    );
-  }
-
-  /// A short synthetic bay sightseeing hop out of KPAO.
-  FlightTrack _buildBayTourSample() {
-    final gen = _TrackBuilder(startLat: 37.4611, startLon: -122.1150, startAltFt: 5);
-    gen.leg(headingDeg: 313, groundSpeedKt: 75, targetAltFt: 1500, seconds: 60);
-    gen.leg(headingDeg: 20, groundSpeedKt: 110, targetAltFt: 3500, seconds: 120);
-    gen.leg(headingDeg: 90, groundSpeedKt: 120, targetAltFt: 3500, seconds: 90);
-    gen.leg(headingDeg: 160, groundSpeedKt: 115, targetAltFt: 2500, seconds: 120);
-    gen.leg(headingDeg: 240, groundSpeedKt: 100, targetAltFt: 1200, seconds: 90);
-    gen.leg(headingDeg: 313, groundSpeedKt: 70, targetAltFt: 20, seconds: 60);
-    gen.leg(headingDeg: 313, groundSpeedKt: 15, targetAltFt: 5, seconds: 15);
-    return FlightTrack(
-      id: 'sample_bay_tour',
-      name: 'Bay Tour Hop',
-      date: DateTime.now().subtract(const Duration(days: 10)),
-      points: gen.points,
-    );
-  }
-}
-
-/// Helper that simulates simple constant-heading legs, integrating position
-/// from ground speed so sample tracks look like real GPS breadcrumbs.
-class _TrackBuilder {
-  double _lat;
-  double _lon;
-  double _alt;
-  int _t = 0;
-  final List<TrackPoint> points = [];
-
-  _TrackBuilder({
-    required double startLat,
-    required double startLon,
-    required double startAltFt,
-  })  : _lat = startLat,
-        _lon = startLon,
-        _alt = startAltFt {
-    points.add(TrackPoint(
-      lat: _lat,
-      lon: _lon,
-      altitudeFt: _alt,
-      groundSpeedKt: 0,
-      headingDeg: 0,
-      timestamp: 0,
-    ));
-  }
-
-  void leg({
-    required double headingDeg,
-    required double groundSpeedKt,
-    required double targetAltFt,
-    required int seconds,
-    int stepSeconds = 2,
-  }) {
-    if (seconds <= 0) return;
-    final startAlt = _alt;
-    final hr = headingDeg * math.pi / 180.0;
-    // Ground speed in knots -> degrees of latitude per second.
-    final degLatPerSec = groundSpeedKt / 3600.0 / 60.0;
-    for (var s = stepSeconds; s <= seconds; s += stepSeconds) {
-      final frac = s / seconds;
-      _alt = startAlt + (targetAltFt - startAlt) * frac;
-      final dLat = math.cos(hr) * degLatPerSec * stepSeconds;
-      final cosLat = math.cos(_lat * math.pi / 180.0);
-      final dLon = math.sin(hr) * degLatPerSec * stepSeconds / (cosLat.abs() < 1e-6 ? 1e-6 : cosLat);
-      _lat += dLat;
-      _lon += dLon;
-      _t += stepSeconds;
-      points.add(TrackPoint(
-        lat: _lat,
-        lon: _lon,
-        altitudeFt: _alt,
-        groundSpeedKt: groundSpeedKt,
-        headingDeg: headingDeg,
-        timestamp: _t,
-      ));
-    }
   }
 }

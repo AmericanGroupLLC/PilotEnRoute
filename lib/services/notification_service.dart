@@ -222,8 +222,9 @@ class NotificationService extends ChangeNotifier {
     // Load saved notifications (reserved for future persistence)
     // ignore: unused_local_variable
     final saved = prefs.getStringList('notifications') ?? [];
-    // For demo, generate fresh notifications based on pilot level
-    _notifications = _generateNotifications(_pilotLevel);
+    // No invented feed: in-app notifications are empty until real items
+    // (stored dates, fetched NOTAMs) are wired in.
+    _notifications = [];
     _unreadCount = _notifications.where((n) => !n.isRead).length;
     notifyListeners();
   }
@@ -232,7 +233,6 @@ class NotificationService extends ChangeNotifier {
     _pilotLevel = level;
     final prefs = await SharedPreferences.getInstance();
     await prefs.setString('pilot_level', level.name);
-    _notifications = _generateNotifications(level);
     _unreadCount = _notifications.where((n) => !n.isRead).length;
     notifyListeners();
   }
@@ -382,218 +382,6 @@ class NotificationService extends ChangeNotifier {
       scheduledDate = scheduledDate.add(const Duration(days: 1));
     }
     return scheduledDate;
-  }
-
-  // ─── Generate In-App Notifications Based on Pilot Level ───────────────────
-  List<PilotNotification> _generateNotifications(PilotLevel level) {
-    final now = DateTime.now();
-    final notifications = <PilotNotification>[];
-
-    // Universal notifications for ALL pilots
-    notifications.addAll([
-      PilotNotification(
-        id: 'faa_001',
-        title: '🏛️ FAA Safety Alert: SAFO 24001',
-        body: 'FAA issues Safety Alert for Operators regarding runway incursion prevention procedures.',
-        category: NotificationCategory.faaAlert,
-        scheduledDate: now.subtract(const Duration(hours: 2)),
-        deepLink: '/education',
-      ),
-      PilotNotification(
-        id: 'quiz_001',
-        title: '✈️ Daily Quiz Ready',
-        body: 'Today\'s aviation knowledge quiz is ready. Test your understanding of ${_getSubjectForLevel(level)}.',
-        category: NotificationCategory.dailyQuiz,
-        scheduledDate: now.subtract(const Duration(hours: 1)),
-        deepLink: '/quiz',
-      ),
-      PilotNotification(
-        id: 'notam_001',
-        title: '📢 NOTAM: KJFK Runway 13L/31R',
-        body: 'NOTAM D0123/24: Runway 13L/31R closed 0600-1400Z daily for maintenance. Effective through 30 days.',
-        category: NotificationCategory.notam,
-        scheduledDate: now.subtract(const Duration(minutes: 30)),
-        deepLink: '/airport',
-      ),
-    ]);
-
-    // Student Pilot notifications
-    if (level == PilotLevel.student || level == PilotLevel.sport) {
-      notifications.addAll([
-        PilotNotification(
-          id: 'student_001',
-          title: '📚 Student Pilot: Solo Endorsement Requirements',
-          body: 'Review the requirements for your first solo flight. Your CFI must provide endorsements per 14 CFR 61.87.',
-          category: NotificationCategory.licenseRenewal,
-          scheduledDate: now.subtract(const Duration(days: 1)),
-          deepLink: '/endorsements',
-        ),
-        PilotNotification(
-          id: 'student_002',
-          title: '🩺 Student Pilot Medical Required',
-          body: 'You need at least a 3rd Class FAA Medical Certificate before your first solo flight.',
-          category: NotificationCategory.medicalReminder,
-          scheduledDate: now.subtract(const Duration(days: 2)),
-          deepLink: '/notifications',
-        ),
-      ]);
-    }
-
-    // Private Pilot and above
-    if ([PilotLevel.private, PilotLevel.instrument, PilotLevel.commercial,
-         PilotLevel.cfi, PilotLevel.atp].contains(level)) {
-      notifications.addAll([
-        PilotNotification(
-          id: 'bfr_001',
-          title: '📋 Flight Review (BFR) Reminder',
-          body: 'Your Biennial Flight Review is due within 60 days. Schedule with a CFI to maintain pilot-in-command privileges.',
-          category: NotificationCategory.bfrReminder,
-          scheduledDate: now.subtract(const Duration(days: 3)),
-          deepLink: '/endorsements',
-        ),
-        PilotNotification(
-          id: 'currency_001',
-          title: '🛬 Passenger Currency Check',
-          body: 'To carry passengers, you need 3 takeoffs and landings in the last 90 days in the same category/class.',
-          category: NotificationCategory.currencyReminder,
-          scheduledDate: now.subtract(const Duration(days: 4)),
-          deepLink: '/logbook',
-        ),
-        PilotNotification(
-          id: 'medical_001',
-          title: '🏥 3rd Class Medical Expiry',
-          body: 'Your 3rd Class Medical Certificate expires in 90 days. Under 40: valid 60 months. Over 40: valid 24 months.',
-          category: NotificationCategory.medicalReminder,
-          scheduledDate: now.subtract(const Duration(days: 5)),
-          deepLink: '/notifications',
-        ),
-        PilotNotification(
-          id: 'wings_001',
-          title: '🦅 FAA WINGS Program',
-          body: 'Complete your FAA WINGS Phase to maintain currency and improve your skills. Visit faasafety.gov.',
-          category: NotificationCategory.wingsProgram,
-          scheduledDate: now.subtract(const Duration(days: 6)),
-          deepLink: '/education',
-        ),
-      ]);
-    }
-
-    // Instrument Rating and above
-    if ([PilotLevel.instrument, PilotLevel.commercial,
-         PilotLevel.cfi, PilotLevel.atp].contains(level)) {
-      notifications.addAll([
-        PilotNotification(
-          id: 'ifr_001',
-          title: '☁️ IFR Currency Reminder',
-          body: 'IFR currency requires 6 instrument approaches, holds, and intercepting/tracking in the last 6 months.',
-          category: NotificationCategory.ifrCurrency,
-          scheduledDate: now.subtract(const Duration(days: 7)),
-          deepLink: '/logbook',
-        ),
-        PilotNotification(
-          id: 'ifr_002',
-          title: '📡 IPC Reminder',
-          body: 'If your IFR currency has lapsed, you need an Instrument Proficiency Check (IPC) with a CFII.',
-          category: NotificationCategory.ifrCurrency,
-          scheduledDate: now.subtract(const Duration(days: 8)),
-          deepLink: '/endorsements',
-        ),
-      ]);
-    }
-
-    // Commercial and above
-    if ([PilotLevel.commercial, PilotLevel.cfi, PilotLevel.atp].contains(level)) {
-      notifications.addAll([
-        PilotNotification(
-          id: 'comm_001',
-          title: '💼 Commercial Pilot: 1st Class Medical',
-          body: 'For commercial operations, you need a 1st Class Medical Certificate valid for 12 months (under 40) or 6 months (40+).',
-          category: NotificationCategory.medicalReminder,
-          scheduledDate: now.subtract(const Duration(days: 9)),
-          deepLink: '/notifications',
-        ),
-      ]);
-    }
-
-    // ATP
-    if (level == PilotLevel.atp) {
-      notifications.addAll([
-        PilotNotification(
-          id: 'atp_001',
-          title: '✈️ ATP: Recurrent Training Due',
-          body: 'Part 121/135 operators require recurrent training every 12 months. Check your training schedule.',
-          category: NotificationCategory.licenseRenewal,
-          scheduledDate: now.subtract(const Duration(days: 10)),
-          deepLink: '/education',
-        ),
-        PilotNotification(
-          id: 'atp_002',
-          title: '🏥 1st Class Medical: 6-Month Renewal',
-          body: 'Your 1st Class Medical Certificate requires renewal every 6 months for ATP operations.',
-          category: NotificationCategory.medicalReminder,
-          scheduledDate: now.subtract(const Duration(days: 11)),
-          deepLink: '/notifications',
-        ),
-      ]);
-    }
-
-    // Drone Part 107
-    if (level == PilotLevel.drone107) {
-      notifications.addAll([
-        PilotNotification(
-          id: 'drone_001',
-          title: '🚁 Part 107 Certificate Renewal',
-          body: 'Your Remote Pilot Certificate requires recurrent knowledge test every 24 months.',
-          category: NotificationCategory.licenseRenewal,
-          scheduledDate: now.subtract(const Duration(days: 1)),
-          deepLink: '/drone',
-        ),
-        PilotNotification(
-          id: 'drone_002',
-          title: '📡 Remote ID Compliance',
-          body: 'Ensure your drone has FAA-compliant Remote ID. Required for all operations since September 2023.',
-          category: NotificationCategory.faaAlert,
-          scheduledDate: now.subtract(const Duration(days: 2)),
-          deepLink: '/drone',
-        ),
-      ]);
-    }
-
-    // ICARA notifications for international students
-    notifications.add(
-      PilotNotification(
-        id: 'icara_001',
-        title: '🌍 ICARA: International Student Alert',
-        body: 'TSA ICARA approval required for non-US citizens training in US-registered aircraft. Check your status.',
-        category: NotificationCategory.icara,
-        scheduledDate: now.subtract(const Duration(days: 12)),
-        deepLink: '/icara',
-      ),
-    );
-
-    // Sort by date (newest first)
-    notifications.sort((a, b) => b.scheduledDate.compareTo(a.scheduledDate));
-    return notifications;
-  }
-
-  String _getSubjectForLevel(PilotLevel level) {
-    switch (level) {
-      case PilotLevel.student:
-      case PilotLevel.sport:
-        return 'principles of flight and air law';
-      case PilotLevel.private:
-        return 'navigation and meteorology';
-      case PilotLevel.instrument:
-        return 'instrument procedures and radio navigation';
-      case PilotLevel.commercial:
-        return 'performance and flight planning';
-      case PilotLevel.cfi:
-        return 'instructional techniques and human performance';
-      case PilotLevel.atp:
-        return 'ATPL systems and mass & balance';
-      case PilotLevel.drone107:
-        return 'Part 107 regulations and airspace';
-    }
   }
 
   // ─── Medical Doctor Finder (AME) ───────────────────────────────────────────

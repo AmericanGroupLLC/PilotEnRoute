@@ -7,8 +7,9 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 // FAA NOTAM API — https://external-api.faa.gov/notamapi/v1/notams
 // The FAA API requires client_id / client_secret headers. Supply real
-// credentials below to fetch live NOTAMs; otherwise the service falls back to
-// realistic sample data so the UI remains fully usable.
+// credentials below to fetch live NOTAMs. Without them, or when a request
+// fails, the service returns no NOTAMs and an explicit error — never invented
+// notices, and never an empty list that could read as "no NOTAMs".
 //
 // TODO(notam-keys): supply FAA NOTAM API credentials
 const String _faaClientId = '';
@@ -178,25 +179,25 @@ class Notam {
   }
 }
 
-/// Fetches NOTAMs from the FAA API with a robust MOCK fallback.
+/// Fetches NOTAMs from the FAA API. Never substitutes sample notices.
 ///
 /// Instantiate and dispose in the owning screen's [State] — no global provider
 /// registration is required.
 class NotamService extends ChangeNotifier {
   static const String _prefsLastIcaoKey = 'notam_last_icao';
 
+  static const String noCredentialsMessage =
+      'Live NOTAMs aren\'t available in this app yet. Check official NOTAMs '
+      'at notams.aim.faa.gov or 1800wxbrief.com before flight.';
+  static const String fetchFailedMessage = 'Couldn\'t load NOTAMs. Try again.';
+
   bool _isLoading = false;
   String? _error;
-  bool _usingMockData = false;
   List<Notam> _notams = const [];
   String _lastQuery = '';
 
   bool get isLoading => _isLoading;
   String? get error => _error;
-
-  /// True when the displayed list came from the built-in sample generator
-  /// (either because no API key is configured or the request failed).
-  bool get usingMockData => _usingMockData;
 
   List<Notam> get notams => List.unmodifiable(_notams);
   String get lastQuery => _lastQuery;
@@ -260,12 +261,13 @@ class NotamService extends ChangeNotifier {
     notifyListeners();
   }
 
-  /// Core fetch: tries the live FAA API per ICAO, falling back to mock data
-  /// when credentials are absent or any request fails.
+  /// Core fetch: live FAA API per ICAO. With no credentials, or on any
+  /// failure, returns an empty list and sets [error] so the screen can never
+  /// present "no NOTAMs" when the truth is "NOTAMs unknown".
   Future<List<Notam>> _fetch(List<String> codes) async {
     if (!hasCredentials) {
-      _usingMockData = true;
-      return _mockForCodes(codes);
+      _error = noCredentialsMessage;
+      return const [];
     }
 
     try {
@@ -277,19 +279,16 @@ class NotamService extends ChangeNotifier {
           if (seen.add(n.id)) all.add(n);
         }
       }
-      _usingMockData = false;
       _error = null;
       return all;
     } catch (e) {
-      // Any failure (network, timeout, parse) degrades gracefully to mock data.
-      _usingMockData = true;
-      _error = null;
-      return _mockForCodes(codes);
+      _error = fetchFailedMessage;
+      return const [];
     }
   }
 
   /// Live FAA API call for one ICAO. Throws on any failure so the caller can
-  /// fall back to mock data.
+  /// report the error.
   Future<List<Notam>> _fetchFaa(String icao) async {
     final uri = Uri.parse(_faaNotamBase).replace(queryParameters: {
       'icaoLocation': icao,
@@ -324,83 +323,5 @@ class NotamService extends ChangeNotifier {
       }
     }
     return out;
-  }
-
-  List<Notam> _mockForCodes(List<String> codes) {
-    final out = <Notam>[];
-    for (final code in codes) {
-      out.addAll(_mockNotams(code));
-    }
-    return out;
-  }
-
-  /// Realistic sample NOTAMs so the UI is fully usable without API keys.
-  ///
-  /// The set intentionally spans every [NotamCategory] and mixes active,
-  /// upcoming, and until-further-notice windows.
-  List<Notam> _mockNotams(String icao) {
-    final now = DateTime.now();
-    return [
-      Notam(
-        id: '$icao 07/024',
-        location: icao,
-        type: 'DOM',
-        text:
-            'RWY 04L/22R CLSD DUE TO MAINTENANCE. USE RWY 13/31 FOR ALL OPS.',
-        category: NotamCategory.runway,
-        effectiveStart: now.subtract(const Duration(hours: 6)),
-        effectiveEnd: now.add(const Duration(days: 2)),
-      ),
-      Notam(
-        id: '$icao 07/031',
-        location: icao,
-        type: 'DOM',
-        text:
-            'TWY B BTN TWY C AND TWY F CLSD. TAXI VIA TWY A AS DIRECTED BY ATC.',
-        category: NotamCategory.taxiway,
-        effectiveStart: now.subtract(const Duration(days: 1)),
-        effectiveEnd: now.add(const Duration(days: 5)),
-      ),
-      Notam(
-        id: '$icao 07/009',
-        location: icao,
-        type: 'FDC',
-        text:
-            'TEMPORARY FLIGHT RESTRICTION. AIRSPACE WITHIN 5NM OF $icao SFC-3000FT AGL FOR VIP MOVEMENT.',
-        category: NotamCategory.airspace,
-        effectiveStart: now.add(const Duration(hours: 4)),
-        effectiveEnd: now.add(const Duration(hours: 10)),
-      ),
-      Notam(
-        id: '$icao 07/017',
-        location: icao,
-        type: 'DOM',
-        text:
-            'OBST CRANE ERECTED 0.8NM SW OF ARP 320FT AGL / 540FT MSL NOT LGTD.',
-        category: NotamCategory.obstacle,
-        effectiveStart: now.subtract(const Duration(days: 3)),
-        effectiveEnd: null, // until further notice
-      ),
-      Notam(
-        id: '$icao 07/022',
-        location: icao,
-        type: 'DOM',
-        text:
-            'ILS RWY 13 LOC/GS U/S. EXPECT VOR OR RNAV APCH. ATIS FREQ 126.150 OTS.',
-        category: NotamCategory.communication,
-        effectiveStart: now.subtract(const Duration(hours: 12)),
-        effectiveEnd: now.add(const Duration(days: 1)),
-      ),
-      Notam(
-        id: '$icao 07/028',
-        location: icao,
-        type: 'DOM',
-        text:
-            'AD ABN U/S. BIRD ACTIVITY VICINITY OF ARP. EXER CAUTION ON APCH AND DEP.',
-        category: NotamCategory.other,
-        effectiveStart: now.subtract(const Duration(days: 2)),
-        effectiveEnd: now.add(const Duration(days: 7)),
-      ),
-    ];
   }
 }

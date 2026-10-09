@@ -78,7 +78,6 @@ class _NotamScreenState extends State<NotamScreen> {
         children: [
           _buildSearchBar(),
           _buildPopularAirports(),
-          if (_service.usingMockData && _hasSearched) _buildMockBanner(),
           if (_hasSearched && _service.notams.isNotEmpty) _buildFilterChips(),
           Expanded(child: _buildContent()),
         ],
@@ -164,30 +163,6 @@ class _NotamScreenState extends State<NotamScreen> {
     );
   }
 
-  Widget _buildMockBanner() {
-    return Container(
-      width: double.infinity,
-      color: const Color(0xFFFFB300).withValues(alpha: 0.15),
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-      child: Row(
-        children: [
-          const Icon(Icons.info_outline, color: Color(0xFFFFB300), size: 18),
-          const SizedBox(width: 10),
-          Expanded(
-            child: Text(
-              'Sample data — add FAA API key',
-              style: GoogleFonts.inter(
-                color: const Color(0xFFFFB300),
-                fontSize: 12,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
   Widget _buildFilterChips() {
     const categories = NotamCategory.values;
     return Container(
@@ -254,7 +229,7 @@ class _NotamScreenState extends State<NotamScreen> {
     if (_service.error != null) {
       return _buildPlaceholder(
         icon: Icons.error_outline,
-        title: 'Something went wrong',
+        title: 'NOTAMs unavailable',
         subtitle: _service.error!,
         iconColor: const Color(0xFFF44336),
       );

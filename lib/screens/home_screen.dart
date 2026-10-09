@@ -64,7 +64,6 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
             SliverToBoxAdapter(child: _buildModulesGrid()),
             SliverToBoxAdapter(child: _buildLiveDataSection()),
             SliverToBoxAdapter(child: _buildNewsSection()),
-            SliverToBoxAdapter(child: _buildStorePromo()),
             const SliverToBoxAdapter(child: AdBannerWidget()),
             const SliverToBoxAdapter(child: SizedBox(height: 80)),
           ],
@@ -110,11 +109,6 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
         ],
       ),
       actions: [
-        IconButton(
-          icon: const Icon(Icons.storefront, color: Color(0xFFFFD700)),
-          tooltip: 'Pilot Store',
-          onPressed: () => Navigator.pushNamed(context, '/store'),
-        ),
         IconButton(
           tooltip: 'Notifications',
           icon: const Icon(Icons.notifications_outlined, color: Colors.white70),
@@ -556,48 +550,6 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     );
   }
 
-  Widget _buildStorePromo() {
-    return Semantics(
-      container: true,
-      button: true,
-      label: 'Pilot Gear Store. Headsets, GPS, charts and more, curated by '
-          'pilots',
-      excludeSemantics: true,
-      child: GestureDetector(
-      onTap: () => Navigator.pushNamed(context, '/store'),
-      child: Container(
-        margin: const EdgeInsets.fromLTRB(16, 24, 16, 0),
-        padding: const EdgeInsets.all(16),
-        decoration: BoxDecoration(
-          gradient: const LinearGradient(
-            colors: [Color(0xFF7B5E00), Color(0xFF4A3800)],
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-          ),
-          borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: const Color(0xFFFFD700).withAlpha(80)),
-        ),
-        child: Row(
-          children: [
-            const Icon(Icons.storefront, color: Color(0xFFFFD700), size: 36),
-            const SizedBox(width: 14),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text('Pilot Gear Store', style: GoogleFonts.orbitron(color: const Color(0xFFFFD700), fontSize: 14, fontWeight: FontWeight.bold)),
-                  Text('Headsets, GPS, Charts & More — Curated by Pilots', style: GoogleFonts.inter(color: Colors.white60, fontSize: 12)),
-                ],
-              ),
-            ),
-            const Icon(Icons.arrow_forward_ios, color: Color(0xFFFFD700), size: 16),
-          ],
-        ),
-      ),
-      ),
-    );
-  }
-
   Widget _buildBottomNav() {
     return BottomNavigationBar(
       currentIndex: _selectedIndex,
@@ -612,16 +564,12 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
           case 2:
             Navigator.pushNamed(context, '/weather');
             break;
-          case 3:
-            Navigator.pushNamed(context, '/store');
-            break;
         }
       },
       items: const [
         BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'),
         BottomNavigationBarItem(icon: Icon(Icons.quiz), label: 'Quiz'),
         BottomNavigationBarItem(icon: Icon(Icons.cloud), label: 'Weather'),
-        BottomNavigationBarItem(icon: Icon(Icons.storefront), label: 'Store'),
       ],
     );
   }

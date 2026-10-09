@@ -341,6 +341,7 @@ class _MapScreenState extends State<MapScreen> {
           if (_measuring) _buildMeasureReadout(),
           if (_navLog.isNotEmpty) _buildNavLogPanel(),
           _buildGpsBanner(),
+          if (_showTraffic) _buildTrafficBanner(),
           if (_loadingRoute)
             const Positioned.fill(
               child: ColoredBox(
@@ -897,6 +898,43 @@ class _MapScreenState extends State<MapScreen> {
           ],
         ),
       ),
+    );
+  }
+
+  /// Shown when live traffic could not be fetched, so an empty traffic
+  /// layer is never mistaken for "no traffic nearby".
+  Widget _buildTrafficBanner() {
+    return Consumer<FlightTrackerService>(
+      builder: (context, tracker, _) {
+        if (tracker.error == null) return const SizedBox.shrink();
+        return Positioned(
+          bottom: 56,
+          left: 10,
+          right: 80,
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+            decoration: BoxDecoration(
+              color: Colors.black.withAlpha(180),
+              borderRadius: BorderRadius.circular(10),
+              border: Border.all(color: const Color(0xFFFFB300)),
+            ),
+            child: Row(
+              children: [
+                const Icon(Icons.info_outline,
+                    color: Color(0xFFFFB300), size: 14),
+                const SizedBox(width: 6),
+                Expanded(
+                  child: Text(
+                    tracker.error!,
+                    style: GoogleFonts.inter(
+                        color: const Color(0xFFFFB300), fontSize: 11),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
     );
   }
 

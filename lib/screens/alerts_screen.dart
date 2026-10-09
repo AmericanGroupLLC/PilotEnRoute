@@ -144,6 +144,7 @@ class _AlertsScreenState extends State<AlertsScreen>
     return Column(
       children: [
         _buildFeedToolbar(),
+        if (_service.lastNotEvaluated.isNotEmpty) _buildNotEvaluated(),
         Expanded(
           child: items.isEmpty
               ? _buildEmptyFeed()
@@ -154,6 +155,44 @@ class _AlertsScreenState extends State<AlertsScreen>
                 ),
         ),
       ],
+    );
+  }
+
+  /// Lists the checks the last run skipped because there was no real input,
+  /// instead of raising alerts from invented values.
+  Widget _buildNotEvaluated() {
+    final lines = _service.lastNotEvaluated;
+    return Container(
+      margin: const EdgeInsets.fromLTRB(12, 0, 12, 8),
+      decoration: BoxDecoration(
+        color: _card,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: Colors.white12),
+      ),
+      child: Theme(
+        data: Theme.of(context).copyWith(dividerColor: Colors.transparent),
+        child: ExpansionTile(
+          tilePadding: const EdgeInsets.symmetric(horizontal: 12),
+          childrenPadding: const EdgeInsets.fromLTRB(12, 0, 12, 12),
+          title: Text(
+            '${lines.length} check${lines.length == 1 ? '' : 's'} not evaluated',
+            style: GoogleFonts.inter(color: Colors.white70, fontSize: 12),
+          ),
+          children: [
+            for (final line in lines)
+              Align(
+                alignment: Alignment.centerLeft,
+                child: Padding(
+                  padding: const EdgeInsets.only(bottom: 4),
+                  child: Text(
+                    line,
+                    style: GoogleFonts.inter(color: Colors.white54, fontSize: 11),
+                  ),
+                ),
+              ),
+          ],
+        ),
+      ),
     );
   }
 
@@ -620,8 +659,8 @@ class _AlertsScreenState extends State<AlertsScreen>
 
   // ── Actions ──────────────────────────────────────────────────────────────────
   Future<void> _runChecks() async {
-    // Grade the weather category against a real METAR when the user has one
-    // loaded; otherwise runChecksNow falls back to its labelled sample.
+    // Only real inputs are passed: the METAR the user loaded. Anything
+    // without an input is reported as not evaluated, never alerted on.
     final metar = context.read<WeatherService>().currentMetar;
     final count = await _service.runChecksNow(
       metarStation: metar?.icao,
@@ -632,7 +671,7 @@ class _AlertsScreenState extends State<AlertsScreen>
     );
     if (!mounted) return;
     _snack(count == 0
-        ? 'No alerts raised (all categories disabled?)'
+        ? 'No alerts raised — see checks not evaluated'
         : '$count alert${count == 1 ? '' : 's'} added to feed');
   }
 

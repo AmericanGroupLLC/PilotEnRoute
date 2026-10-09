@@ -183,6 +183,12 @@ class _PremiumScreenState extends State<PremiumScreen>
   }
 
   Widget _buildFeatureList() {
+    // Every row used to say PREMIUM, but PremiumGate is used nowhere: the only
+    // thing isPremium changes is whether ads show. The features below are
+    // real and free to everyone, and are now labelled that way. The "AI
+    // Aviation Instructor" row is gone — it calls api.americangroupllc.com,
+    // which has no DNS record — and "FAA-compliant", "unlimited" and the
+    // exact aircraft/scenario counts are claims nothing here verifies.
     final features = [
       _FeatureItem(
         icon: Icons.block,
@@ -194,51 +200,44 @@ class _PremiumScreenState extends State<PremiumScreen>
       _FeatureItem(
         icon: Icons.quiz,
         color: const Color(0xFF4CAF50),
-        title: 'Unlimited Exam Questions',
-        subtitle: 'Full access to the live FAA-style question bank',
-        free: false,
+        title: 'Exam Practice',
+        subtitle: 'FAA-style knowledge test questions',
+        free: true,
       ),
       _FeatureItem(
         icon: Icons.flight,
         color: const Color(0xFF2196F3),
-        title: 'All Aircraft & Scenarios',
-        subtitle: '6 aircraft types, 7 simulation scenarios',
-        free: false,
+        title: 'Aircraft & Scenarios',
+        subtitle: 'Practise across aircraft types and simulated scenarios',
+        free: true,
       ),
       _FeatureItem(
         icon: Icons.book,
         color: const Color(0xFF9C27B0),
         title: 'Digital Logbook PDF Export',
-        subtitle: 'Export FAA-compliant logbook as PDF',
-        free: false,
+        subtitle: 'Export your logbook as a PDF',
+        free: true,
       ),
       _FeatureItem(
         icon: Icons.cloud,
         color: const Color(0xFF00BCD4),
-        title: 'Advanced Weather Data',
+        title: 'Aviation Weather',
         subtitle: 'PIREPs, SIGMETs, AIRMETs, winds aloft',
-        free: false,
+        free: true,
       ),
       _FeatureItem(
         icon: Icons.map,
         color: const Color(0xFFFF9800),
-        title: 'Full Flight Planner',
+        title: 'Flight Planner',
         subtitle: 'ICAO flight plans with weather integration',
-        free: false,
-      ),
-      _FeatureItem(
-        icon: Icons.smart_toy,
-        color: const Color(0xFFE91E63),
-        title: 'AI Aviation Instructor',
-        subtitle: 'Ask any aviation question, get FAA answers',
-        free: false,
+        free: true,
       ),
       _FeatureItem(
         icon: Icons.wifi_off,
         color: const Color(0xFF607D8B),
         title: 'Offline Mode',
         subtitle: 'Study without internet connection',
-        free: false,
+        free: true,
       ),
     ];
 
@@ -300,16 +299,18 @@ class _PremiumScreenState extends State<PremiumScreen>
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
             decoration: BoxDecoration(
-              color: const Color(0xFFFFD700).withAlpha(20),
+              color: (feature.free ? _kFreeGreen : const Color(0xFFFFD700))
+                  .withAlpha(20),
               borderRadius: BorderRadius.circular(8),
               border: Border.all(
-                color: const Color(0xFFFFD700).withAlpha(80),
+                color: (feature.free ? _kFreeGreen : const Color(0xFFFFD700))
+                    .withAlpha(80),
               ),
             ),
             child: Text(
-              'PREMIUM',
+              feature.free ? 'FREE' : 'PREMIUM',
               style: GoogleFonts.orbitron(
-                color: const Color(0xFFFFD700),
+                color: feature.free ? _kFreeGreen : const Color(0xFFFFD700),
                 fontSize: 8,
                 fontWeight: FontWeight.bold,
                 letterSpacing: 0.5,
@@ -752,6 +753,8 @@ class _PremiumScreenState extends State<PremiumScreen>
 // ─────────────────────────────────────────────────────────────────────────────
 // Data models
 // ─────────────────────────────────────────────────────────────────────────────
+const _kFreeGreen = Color(0xFF4CAF50);
+
 class _FeatureItem {
   final IconData icon;
   final Color color;

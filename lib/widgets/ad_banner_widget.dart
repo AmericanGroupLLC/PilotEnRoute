@@ -2,13 +2,10 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
-import 'package:provider/provider.dart';
-import '../services/premium_service.dart';
 import '../services/ad_service.dart';
-import '../screens/premium_screen.dart';
 
 // ─────────────────────────────────────────────────────────────────────────────
-// AdBannerWidget — drop-in banner ad that respects premium status
+// AdBannerWidget — drop-in banner ad
 // Usage: just add AdBannerWidget() anywhere in a screen's Column/body
 // ─────────────────────────────────────────────────────────────────────────────
 class AdBannerWidget extends StatefulWidget {
@@ -48,37 +45,30 @@ class _AdBannerWidgetState extends State<AdBannerWidget> {
 
   @override
   Widget build(BuildContext context) {
-    return Consumer<PremiumService>(
-      builder: (context, premium, _) {
-        // Premium users see nothing
-        if (premium.isPremium) return const SizedBox.shrink();
+    // No ad will ever be requested while the unit IDs are still Google's
+    // test units, so the slot must take up no space at all — the loading
+    // placeholder below would otherwise sit there as a permanent grey bar.
+    if (!AdUnitIds.adsAllowedForThisBuild) return const SizedBox.shrink();
 
-        // No ad will ever be requested while the unit IDs are still Google's
-        // test units, so the slot must take up no space at all — the loading
-        // placeholder below would otherwise sit there as a permanent grey bar.
-        if (!AdUnitIds.adsAllowedForThisBuild) return const SizedBox.shrink();
+    // Web: show styled placeholder
+    if (kIsWeb) return _buildWebPlaceholder(context);
 
-        // Web: show styled placeholder
-        if (kIsWeb) return _buildWebPlaceholder(context);
+    // Mobile: show real AdMob banner or placeholder while loading
+    if (_isAdLoaded && _bannerAd != null) {
+      return Semantics(
+        container: true,
+        label: 'Advertisement',
+        child: Container(
+          alignment: Alignment.center,
+          width: _bannerAd!.size.width.toDouble(),
+          height: _bannerAd!.size.height.toDouble(),
+          child: AdWidget(ad: _bannerAd!),
+        ),
+      );
+    }
 
-        // Mobile: show real AdMob banner or placeholder while loading
-        if (_isAdLoaded && _bannerAd != null) {
-          return Semantics(
-            container: true,
-            label: 'Advertisement',
-            child: Container(
-              alignment: Alignment.center,
-              width: _bannerAd!.size.width.toDouble(),
-              height: _bannerAd!.size.height.toDouble(),
-              child: AdWidget(ad: _bannerAd!),
-            ),
-          );
-        }
-
-        // Loading / fallback placeholder
-        return _buildPlaceholder(context);
-      },
-    );
+    // Loading / fallback placeholder
+    return _buildPlaceholder(context);
   }
 
   Widget _buildPlaceholder(BuildContext context) {
@@ -100,12 +90,11 @@ class _AdBannerWidgetState extends State<AdBannerWidget> {
           const SizedBox(width: 10),
           Expanded(
             child: Text(
-              'Upgrade to Premium — Remove Ads & Unlock All Features',
+              'Advertisement',
               style: GoogleFonts.inter(color: Colors.white38, fontSize: 11),
               overflow: TextOverflow.ellipsis,
             ),
           ),
-          _upgradeButton(context),
         ],
       ),
     );
@@ -130,12 +119,11 @@ class _AdBannerWidgetState extends State<AdBannerWidget> {
           const SizedBox(width: 10),
           Expanded(
             child: Text(
-              'Advertisement — Go Premium for an ad-free experience',
+              'Advertisement',
               style: GoogleFonts.inter(color: Colors.white38, fontSize: 11),
               overflow: TextOverflow.ellipsis,
             ),
           ),
-          _upgradeButton(context),
         ],
       ),
     );
@@ -158,29 +146,6 @@ class _AdBannerWidgetState extends State<AdBannerWidget> {
             color: Colors.white54,
             fontSize: 9,
             fontWeight: FontWeight.bold,
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _upgradeButton(BuildContext context) {
-    return Semantics(
-      container: true,
-      button: true,
-      label: 'Go Premium, remove ads',
-      excludeSemantics: true,
-      child: TextButton(
-        onPressed: () => Navigator.push(
-          context,
-          MaterialPageRoute(builder: (_) => const PremiumScreen()),
-        ),
-        child: Text(
-          'Go Premium',
-          style: GoogleFonts.inter(
-            color: const Color(0xFFFFD700),
-            fontSize: 11,
-            fontWeight: FontWeight.w600,
           ),
         ),
       ),

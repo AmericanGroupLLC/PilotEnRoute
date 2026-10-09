@@ -19,7 +19,6 @@ import 'package:pilot_enroute/screens/fuel_screen.dart';
 import 'package:pilot_enroute/screens/home_screen.dart';
 import 'package:pilot_enroute/services/aviation_api_service.dart';
 import 'package:pilot_enroute/services/news_service.dart';
-import 'package:pilot_enroute/services/premium_service.dart';
 import 'package:pilot_enroute/services/weather_service.dart';
 
 Widget wrap(Widget child) {
@@ -28,14 +27,11 @@ Widget wrap(Widget child) {
       ChangeNotifierProvider<AviationApiService>(
           create: (_) => AviationApiService()),
       ChangeNotifierProvider<NewsService>(create: (_) => NewsService()),
-      // PremiumService is a singleton — .value avoids disposal issues.
-      ChangeNotifierProvider<PremiumService>.value(value: PremiumService()),
       ChangeNotifierProvider<WeatherService>(create: (_) => WeatherService()),
     ],
     child: MaterialApp(
       home: child,
       routes: {
-        '/premium': (_) => const Scaffold(body: Text('Premium')),
         '/store': (_) => const Scaffold(body: Text('Store')),
         '/news': (_) => const Scaffold(body: Text('News')),
         '/weather': (_) => const Scaffold(body: Text('Weather')),

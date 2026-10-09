@@ -126,7 +126,6 @@ void main() {
       '/checklist',
       '/emergency',
       '/profile',
-      '/premium',
     ];
 
     for (final route in routes) {

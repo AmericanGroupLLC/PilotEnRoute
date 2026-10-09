@@ -3,7 +3,6 @@ import 'package:provider/provider.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../services/aviation_api_service.dart';
 import '../services/news_service.dart';
-import '../services/premium_service.dart';
 import '../widgets/ad_banner_widget.dart';
 import '../widgets/adaptive_grid.dart';
 import '../widgets/app_drawer.dart';
@@ -111,37 +110,6 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
         ],
       ),
       actions: [
-        Consumer<PremiumService>(
-          builder: (context, premium, _) => premium.isPremium
-              ? const SizedBox.shrink()
-              : Semantics(
-                  container: true,
-                  button: true,
-                  label: 'Upgrade to Pro',
-                  excludeSemantics: true,
-                  child: GestureDetector(
-                  onTap: () => Navigator.pushNamed(context, '/premium'),
-                  child: Container(
-                    margin: const EdgeInsets.only(right: 4),
-                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                    decoration: BoxDecoration(
-                      gradient: const LinearGradient(
-                        colors: [Color(0xFFFFD700), Color(0xFFFFA500)],
-                      ),
-                      borderRadius: BorderRadius.circular(10),
-                    ),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        const Icon(Icons.workspace_premium, color: Colors.black, size: 12),
-                        const SizedBox(width: 3),
-                        Text('PRO', style: GoogleFonts.orbitron(color: Colors.black, fontSize: 9, fontWeight: FontWeight.bold)),
-                      ],
-                    ),
-                  ),
-                ),
-                ),
-        ),
         IconButton(
           icon: const Icon(Icons.storefront, color: Color(0xFFFFD700)),
           tooltip: 'Pilot Store',

@@ -115,6 +115,46 @@ class _AccountScreenState extends State<AccountScreen> {
     _showSnack('Signed out', _kCyan);
   }
 
+  Future<void> _confirmDeleteAccount() async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: _kCard,
+        title: Text('Delete account?',
+            style: GoogleFonts.orbitron(color: Colors.white, fontSize: 16)),
+        content: Text(
+          'This permanently deletes your PilotEnRoute account. It cannot be '
+          'undone. Your logbook and other data saved on this device are not '
+          'part of your account and stay on this device.',
+          style: GoogleFonts.inter(color: Colors.white70),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: Text('Cancel',
+                style: GoogleFonts.inter(color: Colors.white70)),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            child: Text('Delete permanently',
+                style: GoogleFonts.inter(color: _kRed)),
+          ),
+        ],
+      ),
+    );
+    if (confirmed != true || !mounted) return;
+
+    setState(() => _submitting = true);
+    final result = await _auth.deleteAccount();
+    if (!mounted) return;
+    setState(() => _submitting = false);
+    if (result.ok) {
+      _showSnack('Your account has been deleted', _kCyan);
+    } else {
+      _showSnack(result.error ?? 'Could not delete your account', _kRed);
+    }
+  }
+
   Future<void> _contactSupport() async {
     final uri = Uri(
       scheme: 'mailto',
@@ -423,6 +463,15 @@ class _AccountScreenState extends State<AccountScreen> {
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(12),
             ),
+          ),
+        ),
+        const SizedBox(height: 8),
+        TextButton.icon(
+          onPressed: _submitting ? null : _confirmDeleteAccount,
+          icon: const Icon(Icons.delete_forever_outlined, color: _kRed),
+          label: Text(
+            'Delete account',
+            style: GoogleFonts.inter(color: _kRed, fontWeight: FontWeight.w600),
           ),
         ),
       ],

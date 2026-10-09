@@ -2,7 +2,6 @@ import 'dart:io';
 import 'package:agl_ads/agl_ads.dart';
 import 'package:flutter/foundation.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
-import 'premium_service.dart';
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Ad Unit IDs
@@ -115,7 +114,7 @@ class AdService extends ChangeNotifier {
     _loadRewardedAd();
   }
 
-  // ── Check if ads should show (premium users see no ads) ──────────────────
+  // ── Check if ads should show ─────────────────────────────────────────────
   bool shouldShowAds() {
     if (kIsWeb) return false;
     // Serving Google's test units to a real user is an AdMob policy breach and
@@ -124,8 +123,7 @@ class AdService extends ChangeNotifier {
     // No ad may be requested until UMP says consent allows it. This is the
     // predicate every caller already checks before createBannerAd(), which
     // returns a non-nullable BannerAd and so cannot decline on its own.
-    if (!AglConsent.adsAllowed) return false;
-    return !PremiumService().isPremium;
+    return AglConsent.adsAllowed;
   }
 
   // ── Banner Ad Widget ─────────────────────────────────────────────────────

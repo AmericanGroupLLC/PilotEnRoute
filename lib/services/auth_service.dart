@@ -19,6 +19,7 @@ import 'package:supabase_flutter/supabase_flutter.dart'
         AuthState,
         AuthChangeEvent,
         OAuthProvider,
+        PostgrestException,
         User;
 
 import '../config/backend_config.dart';
@@ -760,6 +761,57 @@ class AuthService extends ChangeNotifier {
 
     _supabaseSession = false;
     await _clearTokens();
+  }
+
+  // ── Account deletion ─────────────────────────────────────────────────────────
+
+  /// Profile details the user typed on the Profile screen. They describe the
+  /// person who owns the account, so they go with it.
+  static const List<String> _kProfilePrefKeys = <String>[
+    'profile_name',
+    'profile_cert',
+    'profile_level',
+    'profile_medical',
+    'profile_medical_expiry',
+    'profile_bfr_expiry',
+  ];
+
+  /// Deletes the signed-in account on the server, then signs out and clears
+  /// the account's locally stored details. Replaced in tests only.
+  @visibleForTesting
+  Future<void> Function() deleteUserOnServer = () async {
+    // public.delete_user() deletes the caller (auth.uid()) — see
+    // AmericanGroupLLC-Backend/supabase/migrations/20261009_delete_user.sql.
+    await Supabase.instance.client.rpc('delete_user');
+  };
+
+  /// Permanently deletes the account (App Store 5.1.1(v)).
+  ///
+  /// Success is reported only after the server confirms the delete. If the
+  /// call fails the user stays signed in and the error is returned, so the UI
+  /// never claims an account is gone when it is not.
+  Future<AuthResult> deleteAccount() async {
+    _setBusy(true);
+    try {
+      await deleteUserOnServer();
+    } on PostgrestException catch (e) {
+      _setBusy(false);
+      return AuthResult.failure('Could not delete your account: ${e.message}');
+    } catch (e) {
+      _setBusy(false);
+      return AuthResult.failure('Could not delete your account: $e');
+    }
+    await signOut();
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      for (final key in _kProfilePrefKeys) {
+        await prefs.remove(key);
+      }
+    } catch (_) {
+      // The account is already gone on the server; nothing to undo.
+    }
+    _setBusy(false);
+    return const AuthResult(true);
   }
 
   // ── Validation helpers (exposed for the UI to reuse) ───────────────────────────

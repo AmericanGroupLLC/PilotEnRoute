@@ -8,7 +8,6 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import 'package:pilot_enroute/services/aviation_api_service.dart';
 import 'package:pilot_enroute/services/news_service.dart';
-import 'package:pilot_enroute/services/premium_service.dart';
 import 'package:pilot_enroute/services/logbook_service.dart';
 import 'package:pilot_enroute/services/notification_service.dart';
 import 'package:pilot_enroute/services/flight_plan_service.dart';
@@ -30,7 +29,6 @@ import 'package:pilot_enroute/screens/notifications_screen.dart';
 import 'package:pilot_enroute/screens/checklist_screen.dart';
 import 'package:pilot_enroute/screens/emergency_screen.dart';
 import 'package:pilot_enroute/screens/profile_screen.dart';
-import 'package:pilot_enroute/screens/premium_screen.dart';
 import 'package:pilot_enroute/screens/flashcard_screen.dart';
 import 'package:pilot_enroute/screens/exam_screen.dart';
 import 'package:pilot_enroute/screens/logbook_screen.dart';
@@ -44,8 +42,6 @@ Widget buildProviders(Widget child) {
     providers: [
       ChangeNotifierProvider(create: (_) => AviationApiService()),
       ChangeNotifierProvider(create: (_) => NewsService()),
-      // PremiumService is a singleton — use .value to avoid disposal issues
-      ChangeNotifierProvider<PremiumService>.value(value: PremiumService()),
       ChangeNotifierProvider(create: (_) => LogbookService()),
       ChangeNotifierProvider(create: (_) => NotificationService()),
       ChangeNotifierProvider(create: (_) => FlightPlanService()),
@@ -56,7 +52,6 @@ Widget buildProviders(Widget child) {
     child: MaterialApp(
       home: child,
       routes: {
-        '/premium': (_) => const Scaffold(body: Text('Premium')),
         '/store': (_) => const Scaffold(body: Text('Store')),
         '/weather': (_) => const Scaffold(body: Text('Weather')),
         '/quiz': (_) => const Scaffold(body: Text('Quiz')),
@@ -110,7 +105,6 @@ void main() {
     testWidgets('ChecklistScreen renders', (t) async => smokeTest(t, const ChecklistScreen()));
     testWidgets('EmergencyScreen renders', (t) async => smokeTest(t, const EmergencyScreen()));
     testWidgets('ProfileScreen renders', (t) async => smokeTest(t, const ProfileScreen()));
-    testWidgets('PremiumScreen renders', (t) async => smokeTest(t, const PremiumScreen()));
     testWidgets('FlashcardScreen renders', (t) async => smokeTest(t, const FlashcardScreen()));
     testWidgets('ExamScreen renders', (t) async => smokeTest(t, const ExamScreen()));
     // LogbookScreen uses sqflite which requires a real device/emulator — tested via integration tests

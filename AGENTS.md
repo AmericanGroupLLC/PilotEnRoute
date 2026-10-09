@@ -5,7 +5,7 @@ AI-oriented map of this repo. Keep dense and accurate. Deeper detail: `docs/DESI
 ## What
 Flutter (Dart) aviation training platform "PilotEnRoute" for iOS / Android / Web from one codebase.
 ~40 feature screens: FAA education, AI flight sim (Flame), logbook, flight planner, live weather,
-flight tracking, exams/flashcards, drone (Part 107), notifications, monetization (AdMob + IAP).
+flight tracking, exams/flashcards, drone (Part 107), notifications, monetization (AdMob).
 Mostly free public APIs, no first-party server required; optional AmericanGroupLLC backend for auth/AI.
 
 ## Run
@@ -28,7 +28,7 @@ SDK: Flutter 3.44.x / Dart 3. Flutter SDK used here: `/Users/spatchava/agl/.flut
 | `lib/config/backend_config.dart` | AmericanGroupLLC backend URLs + client-public keys/OAuth IDs |
 | `lib/screens/*.dart` (41) | One screen per feature/route (~27.6k LOC total) |
 | `lib/services/*.dart` (23) | Business logic + API clients + persistence; most are `ChangeNotifier` |
-| `lib/widgets/*.dart` (6) | Shared UI: `app_drawer`, `module_card`, `news_ticker`, `daily_quote_card`, `ad_banner_widget`, `premium_gate` |
+| `lib/widgets/*.dart` (6) | Shared UI: `app_drawer`, `module_card`, `news_ticker`, `daily_quote_card`, `ad_banner_widget`, `adaptive_grid` |
 | `assets/data/*.json` | Bundled content: FAA questions, flashcards, career paths, endorsements, ICARA, affiliate products |
 | `assets/logo/` | Brand source SVGs + rendered PNG master (icon + wordmark) |
 | `assets/images/` | App icon master, splash, store screenshots/graphics |
@@ -46,7 +46,6 @@ SDK: Flutter 3.44.x / Dart 3. Flutter SDK used here: `/Users/spatchava/agl/.flut
 | `logbook_service` | FAA logbook CRUD + PDF export | sqflite |
 | `navdb_service` | Nav database | sqflite + Hive |
 | `flashcard_service` | Spaced repetition | shared_preferences |
-| `premium_service` | IAP tiers + feature gates | in_app_purchase + shared_preferences |
 | `ad_service` | AdMob banners/interstitials | google_mobile_ads |
 | `ai_service` | AI instructor chat; offline reference fallback | Anthropic API (Claude) via `--dart-define` key, or backend `/ai/chat` |
 | `notification_service` | Pilot-level reminders (medical, currency, BFR…) | flutter_local_notifications + timezone |
@@ -66,7 +65,6 @@ App launch → `main()` inits Hive/tz/notifications/AdMob/auth → `MultiProvide
 | Add a service | `lib/services/x_service.dart`; if stateful add `ChangeNotifierProvider` in `main.dart` |
 | Theme / colors | `_buildTheme()` in `lib/main.dart` (primary `#00BCD4`, secondary `#FFB300`, bg `#0A1628`, Orbitron+Inter fonts) |
 | Backend URL / keys / OAuth IDs | `lib/config/backend_config.dart` |
-| IAP product IDs | `lib/services/premium_service.dart` (`kMonthlyProductId` etc.) |
 | AdMob ad unit IDs | `lib/services/ad_service.dart` |
 | AI model/key | `lib/services/ai_service.dart` (`ANTHROPIC_API_KEY` dart-define) |
 | Bundled content | `assets/data/*.json` |
@@ -81,7 +79,7 @@ App launch → `main()` inits Hive/tz/notifications/AdMob/auth → `MultiProvide
 - `backend_config.dart` intentionally ships client-public values (anon key, OAuth client IDs, Firebase project id) — no server secrets. Don't add service-role secrets here.
 - `ai_service` runs an honest "offline reference" mode when no API key is supplied; it never fakes a live AI.
 - `cloud_sync_service` is a same-device stub, not real multi-device sync.
-- AdMob/IAP still use placeholder/test IDs — replace before store release (see README checklist).
+- AdMob still uses placeholder/test IDs — replace before store release (see README checklist).
 - Android release currently signs with the debug keystore (TODO in `build.gradle.kts`).
 - Two asset dirs (`assets/icons/`, `assets/lottie/`) exist only as placeholders (`.gitkeep`) to satisfy pubspec declarations.
 

@@ -21,7 +21,6 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import 'package:pilot_enroute/services/aviation_api_service.dart';
 import 'package:pilot_enroute/services/news_service.dart';
-import 'package:pilot_enroute/services/premium_service.dart';
 import 'package:pilot_enroute/services/logbook_service.dart';
 import 'package:pilot_enroute/services/notification_service.dart';
 import 'package:pilot_enroute/services/flight_plan_service.dart';
@@ -44,7 +43,6 @@ import 'package:pilot_enroute/screens/notifications_screen.dart';
 import 'package:pilot_enroute/screens/checklist_screen.dart';
 import 'package:pilot_enroute/screens/emergency_screen.dart';
 import 'package:pilot_enroute/screens/profile_screen.dart';
-import 'package:pilot_enroute/screens/premium_screen.dart';
 import 'package:pilot_enroute/screens/flashcard_screen.dart';
 import 'package:pilot_enroute/screens/exam_screen.dart';
 import 'package:pilot_enroute/screens/flight_plan_screen.dart';
@@ -79,10 +77,6 @@ Widget _wrap(Widget screen, {double textScale = 1.0}) {
     providers: [
       ChangeNotifierProvider(create: (_) => AviationApiService()),
       ChangeNotifierProvider(create: (_) => NewsService()),
-      // PremiumService and the other singletons must be provided with .value —
-      // `create:` makes the provider the owner and it disposes them on
-      // teardown, poisoning the singleton for the rest of the process.
-      ChangeNotifierProvider<PremiumService>.value(value: PremiumService()),
       ChangeNotifierProvider(create: (_) => LogbookService()),
       ChangeNotifierProvider(create: (_) => NotificationService()),
       ChangeNotifierProvider(create: (_) => FlightPlanService()),
@@ -99,7 +93,6 @@ Widget _wrap(Widget screen, {double textScale = 1.0}) {
         ),
       ),
       routes: {
-        '/premium': (_) => const Scaffold(body: Text('Premium')),
         '/store': (_) => const Scaffold(body: Text('Store')),
         '/weather': (_) => const Scaffold(body: Text('Weather')),
         '/quiz': (_) => const Scaffold(body: Text('Quiz')),
@@ -129,8 +122,8 @@ Widget _wrap(Widget screen, {double textScale = 1.0}) {
 
 /// Pumps until the tree is quiet.
 ///
-/// `pumpAndSettle` alone cannot be used across the whole app: PremiumScreen
-/// drives a shimmer controller with `..repeat()`, which never settles. A
+/// `pumpAndSettle` alone cannot be used across the whole app: a screen that
+/// drives a controller with `..repeat()` never settles. A
 /// timeout there is not a layout failure, so it is swallowed — any real
 /// build/layout exception is still recorded by the binding and is picked up by
 /// `takeException()` below.
@@ -203,7 +196,6 @@ void main() {
     _foldSweep('ChecklistScreen', () => const ChecklistScreen());
     _foldSweep('EmergencyScreen', () => const EmergencyScreen());
     _foldSweep('ProfileScreen', () => const ProfileScreen());
-    _foldSweep('PremiumScreen', () => const PremiumScreen());
     _foldSweep('FlashcardScreen', () => const FlashcardScreen());
     _foldSweep('ExamScreen', () => const ExamScreen());
     _foldSweep('FlightPlanScreen', () => const FlightPlanScreen());
@@ -232,7 +224,6 @@ void main() {
       'WeightBalanceScreen': () => const WeightBalanceScreen(),
       'DroneScreen': () => const DroneScreen(),
       'CareerScreen': () => const CareerScreen(),
-      'PremiumScreen': () => const PremiumScreen(),
       'ExamScreen': () => const ExamScreen(),
     };
 

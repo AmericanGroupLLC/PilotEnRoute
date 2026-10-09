@@ -24,7 +24,6 @@ import 'services/logbook_service.dart';
 import 'services/flight_plan_service.dart';
 import 'services/flight_tracker_service.dart';
 import 'services/flashcard_service.dart';
-import 'services/premium_service.dart';
 import 'services/ad_service.dart';
 import 'services/auth_service.dart';
 
@@ -67,7 +66,6 @@ import 'screens/icara_screen.dart';
 import 'screens/checklist_screen.dart';
 import 'screens/emergency_screen.dart';
 import 'screens/profile_screen.dart';
-import 'screens/premium_screen.dart';
 import 'screens/store_screen.dart';
 import 'services/error_reporter.dart';
 
@@ -171,7 +169,6 @@ class PilotEnRouteApp extends StatelessWidget {
         // they must be provided with `.value`: `create:` makes the provider
         // the owner and it calls dispose() on teardown, which permanently
         // poisons the singleton for the rest of the process.
-        ChangeNotifierProvider<PremiumService>.value(value: PremiumService()),
         ChangeNotifierProvider<AdService>.value(value: AdService()),
         // ── Auth (AmericanGroupLLC backend) — shared singleton ────────────
         ChangeNotifierProvider<AuthService>.value(value: AuthService.instance),
@@ -232,7 +229,6 @@ class PilotEnRouteApp extends StatelessWidget {
           '/emergency': (ctx) => const EmergencyScreen(),
           '/profile': (ctx) => const ProfileScreen(),
           // ── Monetization Screens ───────────────────────────────────────
-          '/premium': (ctx) => const PremiumScreen(),
           '/store': (ctx) => const StoreScreen(),
         },
       ),

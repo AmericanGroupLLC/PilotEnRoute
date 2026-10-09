@@ -1,7 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:provider/provider.dart';
-import '../services/premium_service.dart';
 
 class AppDrawer extends StatelessWidget {
   const AppDrawer({super.key});
@@ -17,8 +15,6 @@ class AppDrawer extends StatelessWidget {
             child: ListView(
               padding: EdgeInsets.zero,
               children: [
-                // ── Premium Banner ──────────────────────────────────────
-                _buildPremiumBanner(context),
                 // ── Training ────────────────────────────────────────────
                 _buildSection('TRAINING'),
                 _buildItem(context, Icons.flight_takeoff, 'AI Flight Simulator',
@@ -92,151 +88,52 @@ class AppDrawer extends StatelessWidget {
   }
 
   Widget _buildHeader(BuildContext context) {
-    return Consumer<PremiumService>(
-      builder: (context, premium, _) {
-        return Container(
-          padding: const EdgeInsets.fromLTRB(20, 60, 20, 20),
-          decoration: BoxDecoration(
-            gradient: LinearGradient(
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-              colors: premium.isPremium
-                  ? [const Color(0xFF7B5E00), const Color(0xFF0A1628)]
-                  : [const Color(0xFF1565C0), const Color(0xFF0A1628)],
-            ),
-          ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
+    return Container(
+      padding: const EdgeInsets.fromLTRB(20, 60, 20, 20),
+      decoration: const BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [Color(0xFF1565C0), Color(0xFF0A1628)],
+        ),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
             children: [
-              Row(
-                children: [
-                  Container(
-                    width: 56,
-                    height: 56,
-                    decoration: BoxDecoration(
-                      color: const Color(0xFF00BCD4).withAlpha(50),
-                      borderRadius: BorderRadius.circular(16),
-                      border: Border.all(
-                          color: const Color(0xFF00BCD4), width: 2),
-                    ),
-                    child: const Icon(Icons.flight,
-                        color: Color(0xFF00BCD4), size: 28),
-                  ),
-                  const Spacer(),
-                  if (premium.isPremium)
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 8, vertical: 4),
-                      decoration: BoxDecoration(
-                        gradient: const LinearGradient(
-                          colors: [Color(0xFFFFD700), Color(0xFFFFA500)],
-                        ),
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          const Icon(Icons.workspace_premium,
-                              color: Colors.black, size: 12),
-                          const SizedBox(width: 4),
-                          Text(
-                            'PREMIUM',
-                            style: GoogleFonts.orbitron(
-                              color: Colors.black,
-                              fontSize: 8,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                ],
-              ),
-              const SizedBox(height: 12),
-              Text(
-                'PilotEnRoute',
-                style: GoogleFonts.orbitron(
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.white,
+              Container(
+                width: 56,
+                height: 56,
+                decoration: BoxDecoration(
+                  color: const Color(0xFF00BCD4).withAlpha(50),
+                  borderRadius: BorderRadius.circular(16),
+                  border: Border.all(
+                      color: const Color(0xFF00BCD4), width: 2),
                 ),
-              ),
-              Text(
-                'Aviation Training Platform',
-                style: GoogleFonts.inter(
-                  fontSize: 12,
-                  color: Colors.white60,
-                ),
+                child: const Icon(Icons.flight,
+                    color: Color(0xFF00BCD4), size: 28),
               ),
             ],
           ),
-        );
-      },
-    );
-  }
-
-  Widget _buildPremiumBanner(BuildContext context) {
-    return Consumer<PremiumService>(
-      builder: (context, premium, _) {
-        if (premium.isPremium) return const SizedBox.shrink();
-        return Semantics(
-          container: true,
-          button: true,
-          label: 'Upgrade to Premium, remove ads and unlock all features',
-          excludeSemantics: true,
-          child: GestureDetector(
-          onTap: () {
-            Navigator.pop(context);
-            Navigator.pushNamed(context, '/premium');
-          },
-          child: Container(
-            margin: const EdgeInsets.fromLTRB(12, 12, 12, 4),
-            padding: const EdgeInsets.all(12),
-            decoration: BoxDecoration(
-              gradient: const LinearGradient(
-                colors: [Color(0xFF7B5E00), Color(0xFF4A3800)],
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-              ),
-              borderRadius: BorderRadius.circular(14),
-              border: Border.all(
-                  color: const Color(0xFFFFD700).withAlpha(80)),
-            ),
-            child: Row(
-              children: [
-                const Icon(Icons.workspace_premium,
-                    color: Color(0xFFFFD700), size: 28),
-                const SizedBox(width: 10),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        'Upgrade to Premium',
-                        style: GoogleFonts.orbitron(
-                          color: const Color(0xFFFFD700),
-                          fontSize: 11,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                      Text(
-                        'Remove ads • Unlock all features',
-                        style: GoogleFonts.inter(
-                          color: Colors.white60,
-                          fontSize: 10,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                const Icon(Icons.chevron_right,
-                    color: Color(0xFFFFD700), size: 20),
-              ],
+          const SizedBox(height: 12),
+          Text(
+            'PilotEnRoute',
+            style: GoogleFonts.orbitron(
+              fontSize: 18,
+              fontWeight: FontWeight.bold,
+              color: Colors.white,
             ),
           ),
+          Text(
+            'Aviation Training Platform',
+            style: GoogleFonts.inter(
+              fontSize: 12,
+              color: Colors.white60,
+            ),
           ),
-        );
-      },
+        ],
+      ),
     );
   }
 

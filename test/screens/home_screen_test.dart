@@ -4,7 +4,6 @@ import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:pilot_enroute/services/aviation_api_service.dart';
 import 'package:pilot_enroute/services/news_service.dart';
-import 'package:pilot_enroute/services/premium_service.dart';
 import 'package:pilot_enroute/services/weather_service.dart';
 import 'package:pilot_enroute/screens/home_screen.dart';
 
@@ -13,8 +12,6 @@ Widget buildTestApp(Widget child) {
     providers: [
       ChangeNotifierProvider<AviationApiService>(create: (_) => AviationApiService()),
       ChangeNotifierProvider<NewsService>(create: (_) => NewsService()),
-      // Use .value with the singleton to avoid disposal issues in tests
-      ChangeNotifierProvider<PremiumService>.value(value: PremiumService()),
       ChangeNotifierProvider<WeatherService>(create: (_) => WeatherService()),
     ],
     child: MaterialApp(
@@ -41,7 +38,6 @@ Widget buildTestApp(Widget child) {
         '/garmin': (_) => const Scaffold(body: Text('Garmin')),
         '/notifications': (_) => const Scaffold(body: Text('Notifications')),
         '/profile': (_) => const Scaffold(body: Text('Profile')),
-        '/premium': (_) => const Scaffold(body: Text('Premium')),
         '/store': (_) => const Scaffold(body: Text('Store')),
       },
     ),

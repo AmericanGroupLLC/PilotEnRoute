@@ -1,10 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:pilot_enroute/services/premium_service.dart';
 import 'package:pilot_enroute/widgets/module_card.dart';
-import 'package:pilot_enroute/widgets/premium_gate.dart';
 import 'package:pilot_enroute/screens/home_screen.dart' show ModuleData;
 
 void main() {
@@ -79,57 +76,6 @@ void main() {
       await tester.tap(find.byType(GestureDetector).first);
       await tester.pumpAndSettle();
       expect(find.text('Weather Screen'), findsOneWidget);
-    });
-  });
-
-  group('PremiumGate widget', () {
-    testWidgets('renders without crashing for free users', (WidgetTester tester) async {
-      SharedPreferences.setMockInitialValues({'is_premium': false});
-      // Use the singleton directly without calling dispose
-      await tester.pumpWidget(
-        ChangeNotifierProvider<PremiumService>.value(
-          value: PremiumService(),
-          child: MaterialApp(
-            home: const Scaffold(
-              body: PremiumGate(
-                feature: 'locked_feature',
-                title: 'Locked Feature',
-                description: 'Upgrade to unlock this locked feature.',
-                child: Text('Locked Content'),
-              ),
-            ),
-            routes: {
-              '/premium': (_) => const Scaffold(body: Text('Premium Screen')),
-            },
-          ),
-        ),
-      );
-      await tester.pump(const Duration(milliseconds: 300));
-      expect(find.byType(Scaffold), findsAtLeastNWidgets(1));
-    });
-
-    testWidgets('PremiumGate renders for free users without crash', (WidgetTester tester) async {
-      SharedPreferences.setMockInitialValues({'is_premium': false});
-      await tester.pumpWidget(
-        ChangeNotifierProvider<PremiumService>.value(
-          value: PremiumService(),
-          child: MaterialApp(
-            home: const Scaffold(
-              body: PremiumGate(
-                feature: 'logbook_export',
-                title: 'Logbook Export',
-                description: 'Export your logbook to PDF.',
-                child: Icon(Icons.download),
-              ),
-            ),
-            routes: {
-              '/premium': (_) => const Scaffold(body: Text('Premium Screen')),
-            },
-          ),
-        ),
-      );
-      await tester.pump(const Duration(milliseconds: 300));
-      expect(find.byType(Scaffold), findsAtLeastNWidgets(1));
     });
   });
 }

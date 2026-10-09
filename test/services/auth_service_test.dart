@@ -233,6 +233,67 @@ void main() {
     });
   });
 
+  group('delete account', () {
+    final realDelete = auth.deleteUserOnServer;
+    tearDown(() => auth.deleteUserOnServer = realDelete);
+
+    Future<void> signedIn() async {
+      SharedPreferences.setMockInitialValues({
+        'agl_is_local_session': true,
+        'agl_user_id': 'u1',
+        'agl_local_email': 'pilot@example.com',
+        'profile_name': 'Amelia',
+        'profile_cert': '1234567',
+      });
+      await auth.init();
+      expect(auth.isAuthenticated, isTrue);
+    }
+
+    test('a confirmed server delete signs out and clears the profile',
+        () async {
+      await signedIn();
+      var calls = 0;
+      auth.deleteUserOnServer = () async => calls++;
+
+      final result = await auth.deleteAccount();
+
+      expect(result.ok, isTrue);
+      expect(calls, equals(1));
+      expect(auth.isAuthenticated, isFalse);
+      expect(auth.currentUser, isNull);
+      final prefs = await SharedPreferences.getInstance();
+      expect(prefs.get('profile_name'), isNull);
+      expect(prefs.get('profile_cert'), isNull);
+      expect(prefs.get('agl_user_id'), isNull);
+    });
+
+    test('a failed server delete is an error and the user stays signed in',
+        () async {
+      await signedIn();
+      auth.deleteUserOnServer =
+          () async => throw Exception('function not found');
+
+      final result = await auth.deleteAccount();
+
+      expect(result.ok, isFalse);
+      expect(result.error, contains('function not found'));
+      expect(auth.isAuthenticated, isTrue);
+      expect(auth.isBusy, isFalse);
+      final prefs = await SharedPreferences.getInstance();
+      expect(prefs.get('profile_name'), equals('Amelia'));
+    });
+
+    test('with Supabase unreachable nothing is reported as deleted', () async {
+      // The real call: Supabase is not initialised in these tests.
+      await signedIn();
+
+      final result = await auth.deleteAccount();
+
+      expect(result.ok, isFalse);
+      expect(auth.isAuthenticated, isTrue);
+    });
+  });
+
   group('offline sign-in', () {
     test('an ordinary account gets an honest network error, not a fake '
         'session', () async {

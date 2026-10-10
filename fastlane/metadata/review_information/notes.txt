@@ -1,21 +1,32 @@
-Thanks for reviewing PilotEnRoute.
+2. DEVICES AND OS VERSIONS TESTED
+Automated tests run on every build: iPhone 17 Pro Max and iPad Pro 13-inch simulators on iOS 26, and a Pixel Android emulator on API 34.
+Each release is also installed and launched on those targets, so a
+build that cannot start never ships.
 
-PilotEnRoute is an aviation STUDY and record-keeping app, not a navigation or avionics product - the listing, the terms and the in-app disclaimer all say so. Sign-in is OPTIONAL: tap "Continue as guest" on the login screen and every feature is available. No demo account is needed.
+3. WHAT THIS APP DOES, AND FOR WHOM
+PilotEnRoute is a study and record-keeping companion for pilots and student pilots. It is a training tool for use on the ground — not an avionics or navigation product.
 
-Test instructions:
-1. Launch the app and step through onboarding.
-2. On the login screen tap "Continue as guest" - this is the intended review path and no account is required.
-3. Open Education and start any subject, then take an exam and review the debrief.
-4. Open Tools and use the E6B flight computer.
-5. Open Logbook and add an entry, then open Endorsements and Documents.
-6. Open Checklists and create a checklist.
-7. Open Weather to see live conditions pulled from public aviation sources.
-8. Notification reminders (daily quiz, medical expiry) use INEXACT alarms; the app requests no exact-alarm permission.
+Intended audience:
+FAA study, logbook & E6B
 
-Privacy:
-• Data collected: Your logbook entries, endorsements, documents, checklists and study progress, held on your device. Sign-in is optional; if you use it, your email is held by our authentication provider.
-• Network: Public aviation weather and airport data sources. No server of our own is required for the app to function.
-• Location: Used only to show weather and airports near you, while the app is in use. You can decline and search by identifier instead.
-• Tracking: None. The app does not read the advertising identifier and shows no App Tracking Transparency prompt.
+4. SETTING UP AND REACHING THE MAIN FEATURES
+The app opens on a sign-in screen. An account is optional; the main features can be reached without signing in.
 
-If you need anything else, please email contact@safecodeg.com and we will respond within one business day.
+5. EXTERNAL SERVICES USED
+- Supabase — account and data storage
+- Google AdMob — advertising
+- Google Sign-In — authentication
+- Sign in with Apple — authentication
+- HTTPS requests to the app's own endpoints
+- Free public data APIs, no account: OpenSky Network (live traffic), adsbdb.com (aircraft lookup by registration), U.S. Bureau of Labor Statistics (career median pay), aviationweather.gov (weather)
+
+6. REGIONAL DIFFERENCES
+The app ships 12 languages (Arabic, Chinese (Simplified), English, French, German, Hindi, Italian, Japanese, Korean, Portuguese, Russian, Spanish). Features are identical in every region.
+
+7. REGULATED INDUSTRY OR THIRD-PARTY MATERIAL
+
+The app is not in a regulated industry and carries no licensed third-party material. All content, artwork and copy are the developer's own.
+
+
+ACCOUNT DELETION
+Account deletion is in the app: open the menu (drawer) > Account > Delete account.

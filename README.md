@@ -372,7 +372,7 @@ and creates a persisted session that survives app restarts.
 
 | Field    | Value                          |
 | -------- | ------------------------------ |
-| Email    | `test@americangroupllc.com`    |
+| Email    | `test@americangroup.ai`    |
 | Password | `Test1234!`                    |
 
 **How to sign in**

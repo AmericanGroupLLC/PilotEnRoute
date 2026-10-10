@@ -160,7 +160,7 @@ aviation, pilot training, FAA, flight simulator, logbook
 
 ### Contact Email
 ```
-support@americangroupllc.com
+support@americangroup.ai
 ```
 
 ### Privacy Policy URL

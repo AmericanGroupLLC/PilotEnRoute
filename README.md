@@ -307,7 +307,7 @@ flutter build ios --release
 ```bash
 # GitHub Pages (automatic via .github/workflows/deploy-website.yml)
 # Enable in: Settings → Pages → Source: GitHub Actions
-# Live URL: https://www.safecodeg.com/PilotEnRoute/
+# Live URL: https://www.americangroup.ai/PilotEnRoute/
 
 # Manual: Upload web_marketing/ to any static host (Netlify, Vercel, S3)
 ```
@@ -358,7 +358,7 @@ Proprietary — © 2026 American Group LLC. All rights reserved.
 ## 🔗 Links
 
 - [GitHub Repository](https://github.com/AmericanGroupLLC/PilotEnRoute)
-- [Marketing Website](https://www.safecodeg.com/PilotEnRoute)
+- [Marketing Website](https://www.americangroup.ai/PilotEnRoute)
 - [FAA Official](https://www.faa.gov)
 - [Aviation Weather Center](https://aviationweather.gov)
 - [OpenSky Network](https://opensky-network.org)

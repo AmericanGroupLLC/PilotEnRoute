@@ -96,12 +96,12 @@ https://github.com/AmericanGroupLLC/PilotEnRoute/issues
 
 ### Marketing URL
 ```
-https://www.safecodeg.com/PilotEnRoute/
+https://www.americangroup.ai/PilotEnRoute/
 ```
 
 ### Privacy Policy URL
 ```
-https://www.safecodeg.com/policy/pilotenroute/-policy.html
+https://www.americangroup.ai/policy/pilotenroute/-policy.html
 ```
 
 ### Copyright
@@ -165,7 +165,7 @@ support@americangroupllc.com
 
 ### Privacy Policy URL
 ```
-https://www.safecodeg.com/policy/pilotenroute/-policy.html
+https://www.americangroup.ai/policy/pilotenroute/-policy.html
 ```
 
 ---

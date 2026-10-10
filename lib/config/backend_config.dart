@@ -6,7 +6,7 @@
 /// Firebase *project id*) — these are designed to ship inside client apps.
 /// No server/service-role secrets are stored here.
 ///
-/// Support / CORS / OAuth-callback whitelisting: support@safecodeg.com
+/// Support / CORS / OAuth-callback whitelisting: support@americangroup.ai
 class BackendConfig {
   BackendConfig._();
 
@@ -14,7 +14,7 @@ class BackendConfig {
   static const String apiBaseUrl = 'https://api.americangroupllc.com/api/v1';
 
   /// Developer support contact (from the integration guide, section 6).
-  static const String supportEmail = 'support@safecodeg.com';
+  static const String supportEmail = 'support@americangroup.ai';
 
   // ── Supabase (direct DB access if ever needed; gateway is preferred) ──
   static const String supabaseUrl = 'https://smvvjivvlprjhzhoizym.supabase.co';

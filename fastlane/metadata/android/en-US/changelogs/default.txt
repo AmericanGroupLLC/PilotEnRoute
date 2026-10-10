@@ -10,4 +10,4 @@ First release of PilotEnRoute.
 
 Not approved for navigation. A study and planning tool only - always verify against official sources.
 
-Feedback: contact@safecodeg.com
+Feedback: contact@americangroup.ai

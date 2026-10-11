@@ -55,11 +55,11 @@
 		</dict>
 	</dict>
 	<key>NSCameraUsageDescription</key>
-	<string>PilotEnRoute uses the camera to scan aircraft tail numbers and QR codes for quick aircraft lookup.</string>
+	<string>PilotEnRoute uses the camera when you choose to photograph a document, such as a certificate or medical, to keep in Documents.</string>
 	<key>NSPhotoLibraryAddUsageDescription</key>
-	<string>PilotEnRoute saves logbook reports and charts to your photo library.</string>
+	<string>PilotEnRoute saves to your photo library only if you choose to save a document or logbook export there from the system print or share screen.</string>
 	<key>NSPhotoLibraryUsageDescription</key>
-	<string>PilotEnRoute accesses your photo library to attach photos to logbook entries.</string>
+	<string>PilotEnRoute opens your photo library when you choose a photo of a document to keep in Documents.</string>
 	<key>UIApplicationSupportsIndirectInputEvents</key>
 	<true/>
 	<key>UILaunchScreen</key>
@@ -100,8 +100,6 @@
 		<string>it</string>
 		<string>ru</string>
 	</array>
-	<key>NSMicrophoneUsageDescription</key>
-	<string>Lets you dictate flight notes hands-free while in the cockpit.</string>
 	<key>UIApplicationSceneManifest</key>
 	<dict>
 		<key>UIApplicationSupportsMultipleScenes</key>

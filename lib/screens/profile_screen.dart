@@ -4,6 +4,8 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:agl_i18n/agl_i18n.dart';
 
+import '../services/notification_service.dart';
+
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
 
@@ -84,10 +86,16 @@ class _ProfileScreenState extends State<ProfileScreen>
     if (_bfrExpiry != null) {
       await prefs.setString('profile_bfr_expiry', _bfrExpiry!.toIso8601String());
     }
+    // Schedule (or replace) the expiry reminders for the saved dates, and
+    // report only what was actually scheduled.
+    final reminders = await NotificationService.syncExpiryReminders(
+      medicalExpiry: _medicalExpiry,
+      flightReviewDue: _bfrExpiry,
+    );
     if (!mounted) return;
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text('Profile saved', style: GoogleFonts.inter()),
+        content: Text(profileSavedMessage(reminders), style: GoogleFonts.inter()),
         backgroundColor: const Color(0xFF4CAF50),
       ),
     );
@@ -755,4 +763,19 @@ class _ProfileScreenState extends State<ProfileScreen>
       await launchUrl(uri, mode: LaunchMode.externalApplication);
     }
   }
+}
+
+/// Snackbar text after saving the profile. Names a reminder only when one was
+/// really scheduled.
+String profileSavedMessage(ExpiryReminderResult result) {
+  if (result.permissionDenied) {
+    return 'Profile saved. Notifications are off, so no expiry reminder was '
+        'set.';
+  }
+  if (result.scheduled.isEmpty) return 'Profile saved';
+  String fmt(DateTime d) => '${d.month}/${d.day}/${d.year}';
+  final parts = result.scheduled.map((r) =>
+      '${r.id == NotificationService.medicalReminderId ? 'medical' : 'flight review'} '
+      'reminder on ${fmt(r.at)}');
+  return 'Profile saved. Set ${parts.join(' and ')}.';
 }

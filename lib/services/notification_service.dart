@@ -297,59 +297,157 @@ class NotificationService extends ChangeNotifier {
     );
   }
 
-  Future<void> scheduleMedicalReminder(DateTime expiryDate) async {
-    // 90 days before
-    final reminderDate = expiryDate.subtract(const Duration(days: 90));
-    if (reminderDate.isAfter(DateTime.now())) {
-      await _plugin.zonedSchedule(
-        2001,
-        '🏥 FAA Medical Certificate Expiring',
-        'Your FAA Medical Certificate expires in 90 days. Schedule your AME appointment now.',
-        tz.TZDateTime.from(reminderDate, tz.local),
-        const NotificationDetails(
-          android: AndroidNotificationDetails(
-            'medical_reminders',
-            'Medical Reminders',
-            channelDescription: 'FAA Medical certificate renewal reminders',
-            importance: Importance.high,
-            priority: Priority.high,
-            icon: '@mipmap/ic_launcher',
-          ),
-          iOS: DarwinNotificationDetails(),
-        ),
-        androidScheduleMode: AndroidScheduleMode.inexactAllowWhileIdle,
-        uiLocalNotificationDateInterpretation:
-            UILocalNotificationDateInterpretation.absoluteTime,
-      );
+  // ─── Medical / flight-review expiry reminders ──────────────────────────────
+
+  /// Notification ids for the two expiry reminders. Re-scheduling with the
+  /// same id replaces the previous reminder.
+  static const int medicalReminderId = 2001;
+  static const int flightReviewReminderId = 3001;
+
+  /// Days before an expiry date the reminder may fire, most preferred first.
+  static const List<int> reminderLeadDays = <int>[90, 30, 7, 1];
+
+  /// The first reminder time (09:00 local) that is still in the future,
+  /// trying [reminderLeadDays] in order. Null when [due] is too close or past.
+  static DateTime? reminderTimeBefore(DateTime due, {required DateTime now}) {
+    for (final days in reminderLeadDays) {
+      final day = DateTime(due.year, due.month, due.day)
+          .subtract(Duration(days: days));
+      final at = DateTime(day.year, day.month, day.day, 9);
+      if (at.isAfter(now)) return at;
     }
+    return null;
   }
 
-  Future<void> scheduleBFRReminder(DateTime lastBFR) async {
-    // BFR required every 24 calendar months
-    final nextBFR = DateTime(lastBFR.year + 2, lastBFR.month, lastBFR.day);
-    final reminderDate = nextBFR.subtract(const Duration(days: 60));
-    if (reminderDate.isAfter(DateTime.now())) {
-      await _plugin.zonedSchedule(
-        3001,
-        '📋 Flight Review (BFR) Due Soon',
-        'Your Biennial Flight Review is due in 60 days. Schedule with a CFI to maintain currency.',
-        tz.TZDateTime.from(reminderDate, tz.local),
-        const NotificationDetails(
-          android: AndroidNotificationDetails(
-            'currency_reminders',
-            'Currency Reminders',
-            channelDescription: 'Pilot currency and BFR reminders',
-            importance: Importance.high,
-            priority: Priority.high,
-            icon: '@mipmap/ic_launcher',
-          ),
-          iOS: DarwinNotificationDetails(),
-        ),
-        androidScheduleMode: AndroidScheduleMode.inexactAllowWhileIdle,
-        uiLocalNotificationDateInterpretation:
-            UILocalNotificationDateInterpretation.absoluteTime,
-      );
+  /// Works out which expiry reminders should exist for the dates the user
+  /// saved on the Profile screen. Pure, so it can be tested.
+  static List<ExpiryReminder> planExpiryReminders({
+    DateTime? medicalExpiry,
+    DateTime? flightReviewDue,
+    required DateTime now,
+  }) {
+    final plans = <ExpiryReminder>[];
+    String fmt(DateTime d) => '${d.month}/${d.day}/${d.year}';
+    if (medicalExpiry != null) {
+      final at = reminderTimeBefore(medicalExpiry, now: now);
+      if (at != null) {
+        final days = DateTime(medicalExpiry.year, medicalExpiry.month,
+                medicalExpiry.day)
+            .difference(DateTime(at.year, at.month, at.day))
+            .inDays;
+        plans.add(ExpiryReminder(
+          id: medicalReminderId,
+          at: at,
+          channelId: 'medical_reminders',
+          title: 'FAA medical certificate expiring',
+          body: 'Your medical certificate expires in $days days '
+              '(${fmt(medicalExpiry)}). Schedule your AME appointment.',
+        ));
+      }
     }
+    if (flightReviewDue != null) {
+      final at = reminderTimeBefore(flightReviewDue, now: now);
+      if (at != null) {
+        final days = DateTime(flightReviewDue.year, flightReviewDue.month,
+                flightReviewDue.day)
+            .difference(DateTime(at.year, at.month, at.day))
+            .inDays;
+        plans.add(ExpiryReminder(
+          id: flightReviewReminderId,
+          at: at,
+          channelId: 'currency_reminders',
+          title: 'Flight review due soon',
+          body: 'Your flight review expires in $days days '
+              '(${fmt(flightReviewDue)}). Schedule one with a CFI.',
+        ));
+      }
+    }
+    return plans;
+  }
+
+  /// Seams so tests can observe scheduling without the platform plugin.
+  @visibleForTesting
+  static Future<bool> Function() permissionRequester = requestPermissions;
+  @visibleForTesting
+  static Future<void> Function(ExpiryReminder reminder) reminderScheduler =
+      _scheduleExpiryReminder;
+  @visibleForTesting
+  static Future<void> Function(int id) reminderCanceller =
+      (id) => _plugin.cancel(id);
+  @visibleForTesting
+  static DateTime Function() clock = DateTime.now;
+
+  /// Replaces the medical and flight-review reminders to match the saved
+  /// dates. Asks for notification permission first (the user just set a
+  /// date, so this is the moment they expect it). Returns the reminders that
+  /// were actually scheduled — empty when permission was refused, nothing
+  /// was due, or the platform refused — so the UI never claims a reminder
+  /// that does not exist.
+  static Future<ExpiryReminderResult> syncExpiryReminders({
+    DateTime? medicalExpiry,
+    DateTime? flightReviewDue,
+  }) async {
+    final plans = planExpiryReminders(
+      medicalExpiry: medicalExpiry,
+      flightReviewDue: flightReviewDue,
+      now: clock(),
+    );
+    try {
+      await reminderCanceller(medicalReminderId);
+      await reminderCanceller(flightReviewReminderId);
+    } catch (e) {
+      debugPrint('Cancelling expiry reminders failed: $e');
+    }
+    if (plans.isEmpty) return const ExpiryReminderResult(<ExpiryReminder>[]);
+
+    bool granted;
+    try {
+      granted = await permissionRequester();
+    } catch (e) {
+      debugPrint('Notification permission request failed: $e');
+      granted = false;
+    }
+    if (!granted) {
+      return const ExpiryReminderResult(<ExpiryReminder>[],
+          permissionDenied: true);
+    }
+
+    final scheduled = <ExpiryReminder>[];
+    for (final plan in plans) {
+      try {
+        await reminderScheduler(plan);
+        scheduled.add(plan);
+      } catch (e) {
+        debugPrint('Scheduling reminder ${plan.id} failed: $e');
+      }
+    }
+    return ExpiryReminderResult(scheduled);
+  }
+
+  static Future<void> _scheduleExpiryReminder(ExpiryReminder r) async {
+    final isMedical = r.id == medicalReminderId;
+    await _plugin.zonedSchedule(
+      r.id,
+      r.title,
+      r.body,
+      tz.TZDateTime.from(r.at, tz.local),
+      NotificationDetails(
+        android: AndroidNotificationDetails(
+          r.channelId,
+          isMedical ? 'Medical Reminders' : 'Currency Reminders',
+          channelDescription: isMedical
+              ? 'FAA Medical certificate renewal reminders'
+              : 'Pilot currency and BFR reminders',
+          importance: Importance.high,
+          priority: Priority.high,
+          icon: '@mipmap/ic_launcher',
+        ),
+        iOS: const DarwinNotificationDetails(),
+      ),
+      androidScheduleMode: AndroidScheduleMode.inexactAllowWhileIdle,
+      uiLocalNotificationDateInterpretation:
+          UILocalNotificationDateInterpretation.absoluteTime,
+    );
   }
 
   Future<void> sendImmediateNotification({
@@ -445,4 +543,29 @@ class NotificationService extends ChangeNotifier {
       ],
     },
   };
+}
+
+/// One planned expiry reminder.
+class ExpiryReminder {
+  const ExpiryReminder({
+    required this.id,
+    required this.at,
+    required this.channelId,
+    required this.title,
+    required this.body,
+  });
+
+  final int id;
+  final DateTime at;
+  final String channelId;
+  final String title;
+  final String body;
+}
+
+/// What [NotificationService.syncExpiryReminders] actually did.
+class ExpiryReminderResult {
+  const ExpiryReminderResult(this.scheduled, {this.permissionDenied = false});
+
+  final List<ExpiryReminder> scheduled;
+  final bool permissionDenied;
 }

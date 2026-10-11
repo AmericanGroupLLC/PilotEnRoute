@@ -10,8 +10,8 @@
 class BackendConfig {
   BackendConfig._();
 
-  /// The ONLY base URL the app should call.
-  static const String apiBaseUrl = 'https://api.americangroupllc.com/api/v1';
+  // The old API gateway (api.americangroupllc.com) no longer resolves and is
+  // not called: sign-in, session refresh and sign-out all go through Supabase.
 
   /// Developer support contact (from the integration guide, section 6).
   static const String supportEmail = 'support@americangroup.ai';
@@ -30,17 +30,4 @@ class BackendConfig {
   static const String facebookAppId = '1323978229267098';
   static const String twitterClientId = 'vcL1rnmUGnAfFCRIf3Czhdfj';
   static const String appleClientId = 'TLH7Z3G27A.com.americangroupllc.app';
-
-  // ── Auth endpoints (note the literal `auth/auth` prefix from the guide) ──
-  static const String registerPath = '/auth/auth/register';
-  static const String loginPath = '/auth/auth/login';
-  static const String refreshPath = '/auth/auth/refresh';
-  static const String logoutPath = '/auth/auth/logout';
-  static const String mePath = '/auth/me';
-  static const String firebaseVerifyPath = '/auth/auth/firebase/verify';
-
-
-  /// Backend AI assistant chat endpoint (requires Authorization).
-  static const String aiChatPath = '/ai/chat';
-
 }

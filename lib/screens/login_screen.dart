@@ -212,12 +212,14 @@ class _LoginScreenState extends State<LoginScreen> {
                       icon: Icons.apple,
                       onPressed: () => _runSocial(_auth.signInWithApple),
                     ),
-                    const SizedBox(height: 12),
-                    _buildSocialButton(
-                      label: (AglL10n.of(context)?.authContinueWithGoogle ?? 'Continue with Google'),
-                      icon: Icons.g_mobiledata,
-                      onPressed: () => _runSocial(_auth.signInWithGoogle),
-                    ),
+                    if (AuthService.googleSignInAvailable) ...[
+                      const SizedBox(height: 12),
+                      _buildSocialButton(
+                        label: (AglL10n.of(context)?.authContinueWithGoogle ?? 'Continue with Google'),
+                        icon: Icons.g_mobiledata,
+                        onPressed: () => _runSocial(_auth.signInWithGoogle),
+                      ),
+                    ],
                     const SizedBox(height: 16),
                     TextButton(
                       onPressed: _submitting ? null : _continueAsGuest,

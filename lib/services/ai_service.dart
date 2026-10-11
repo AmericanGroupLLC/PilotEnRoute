@@ -5,8 +5,6 @@ import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 
-import '../config/backend_config.dart';
-import 'auth_service.dart';
 
 /// API key for the Anthropic Claude adapter.
 ///
@@ -91,14 +89,14 @@ class AiService extends ChangeNotifier {
   bool _sending = false;
   bool get sending => _sending;
 
-  /// The AmericanGroupLLC backend AI service is the primary "one model" — it's
-  /// available whenever the user is signed in (the call is authenticated).
-  bool get backendAvailable => AuthService.instance.isAuthenticated;
+  /// True only when this build carries a model key, i.e. a live model can
+  /// actually answer. Production builds do not, so the assistant is not
+  /// offered there (see AppDrawer); the old gateway `/ai/chat` endpoint no
+  /// longer exists and is not called.
+  static bool get liveAiAvailable => _anthropicApiKey.trim().isNotEmpty;
 
-  /// True when a real model can answer (backend AI when signed in, or a direct
-  /// Anthropic key), so the UI can be honest about live-AI vs offline reference.
-  bool get configured =>
-      backendAvailable || _anthropicApiKey.trim().isNotEmpty;
+  /// Instance alias of [liveAiAvailable] for the screen's status banner.
+  bool get configured => liveAiAvailable;
 
   /// Which backend answered last, for an honest UI label.
   String _source = 'offline';
@@ -221,12 +219,7 @@ class AiService extends ChangeNotifier {
     String reply;
     bool offline;
     try {
-      if (backendAvailable) {
-        // Primary: the single backend AI model (authenticated /ai/chat).
-        reply = await _callBackendAi(trimmed, systemRole: systemRole);
-        offline = false;
-        _source = 'backend';
-      } else if (_anthropicApiKey.trim().isNotEmpty) {
+      if (liveAiAvailable) {
         reply = await _callAnthropic(trimmed, systemRole: systemRole);
         offline = false;
         _source = 'anthropic';
@@ -250,103 +243,6 @@ class AiService extends ChangeNotifier {
     notifyListeners();
     await _persist();
     return reply;
-  }
-
-  // ── AmericanGroupLLC backend AI adapter (primary model) ─────────────────────
-
-  /// Calls the backend AI service (POST /ai/chat) with the signed-in user's
-  /// bearer token. This is the single shared "model to help" for the app.
-  Future<String> _callBackendAi(String prompt, {String? systemRole}) async {
-    final token = AuthService.instance.accessToken;
-    if (token == null || token.isEmpty) {
-      // Shouldn't happen (guarded by backendAvailable), but stay honest.
-      return _offlineReply(prompt);
-    }
-
-    // The guide documents the body as { message, context }. We pass the role
-    // as context so the server can specialize the aviation assistant.
-    final body = <String, dynamic>{
-      'message': prompt,
-      'context': (systemRole != null && systemRole.trim().isNotEmpty)
-          ? systemRole.trim()
-          : 'aviation',
-    };
-
-    final http.Response response;
-    try {
-      response = await _client
-          .post(
-            Uri.parse('${BackendConfig.apiBaseUrl}${BackendConfig.aiChatPath}'),
-            headers: {
-              'Authorization': 'Bearer $token',
-              'Content-Type': 'application/json',
-            },
-            body: jsonEncode(body),
-          )
-          .timeout(_httpTimeout);
-    } on TimeoutException {
-      return 'The AI request timed out. Please check your connection and try '
-          'again.';
-    } catch (_) {
-      return 'Could not reach the AI service. Please check your internet '
-          'connection and try again.';
-    }
-
-    if (response.statusCode == 401) {
-      // Token likely expired — try one refresh, then retry once.
-      final refreshed = await AuthService.instance.refresh();
-      if (refreshed) return _callBackendAi(prompt, systemRole: systemRole);
-      return 'Your session expired. Please sign in again to use the AI '
-          'assistant.';
-    }
-    if (response.statusCode != 200 && response.statusCode != 201) {
-      return _httpErrorMessage(response.statusCode);
-    }
-
-    try {
-      final decoded = jsonDecode(response.body);
-      final text = _extractBackendReply(decoded);
-      if (text != null && text.trim().isNotEmpty) return text.trim();
-      return 'The AI returned an empty response. Please try rephrasing your '
-          'question.';
-    } catch (_) {
-      return 'The AI returned an unexpected response. Please try again.';
-    }
-  }
-
-  /// Defensively pull the reply text out of the backend's JSON, since the exact
-  /// field name isn't fixed by the guide.
-  String? _extractBackendReply(dynamic decoded) {
-    if (decoded is String) return decoded;
-    if (decoded is Map) {
-      for (final key in const [
-        'reply',
-        'response',
-        'message',
-        'answer',
-        'text',
-        'content',
-        'result',
-        'output',
-      ]) {
-        final v = decoded[key];
-        if (v is String && v.trim().isNotEmpty) return v;
-        if (v is Map) {
-          final nested = _extractBackendReply(v);
-          if (nested != null) return nested;
-        }
-        if (v is List && v.isNotEmpty) {
-          final first = v.first;
-          if (first is String) return first;
-          if (first is Map && first['text'] is String) {
-            return first['text'] as String;
-          }
-        }
-      }
-      // Some APIs wrap under `data`.
-      if (decoded['data'] != null) return _extractBackendReply(decoded['data']);
-    }
-    return null;
   }
 
   // ── Anthropic Claude adapter ────────────────────────────────────────────────
@@ -528,12 +424,9 @@ class AiService extends ChangeNotifier {
         '- Regulation lookup (required documents)\n'
         '- Radio phraseology\n'
         '- Emergency procedures\n\n'
-        'Ask about one of these, or add an API key for full AI answers.';
+        'Ask about one of these.';
 
-    return '**Offline reference (not signed in)**\n\n'
-        'Sign in to your AmericanGroupLLC account to use the live AI assistant. '
-        '(A direct Anthropic key via `--dart-define=ANTHROPIC_API_KEY=...` also '
-        'works for development.)\n\n'
+    return '**Offline reference — not a live AI answer**\n\n'
         '$body';
   }
 

@@ -30,7 +30,7 @@ class _GarminScreenState extends State<GarminScreen>
     return Scaffold(
       backgroundColor: const Color(0xFF0A1628),
       appBar: AppBar(
-        title: const Text('GARMIN & SERVICES'),
+        title: const Text('GARMIN & PILOT RESOURCES'),
         bottom: TabBar(
           controller: _tabController,
           indicatorColor: const Color(0xFF00BCD4),
@@ -103,7 +103,7 @@ class _GarminScreenState extends State<GarminScreen>
                       ),
                     ),
                     Text(
-                      'Connect IQ • Pilot • avionics',
+                      'Links to Garmin products and apps',
                       style: GoogleFonts.inter(
                         fontSize: 11,
                         color: Colors.white70,
@@ -116,9 +116,9 @@ class _GarminScreenState extends State<GarminScreen>
           ),
           const SizedBox(height: 16),
           Text(
-            'Integrate PilotEnRoute with your Garmin devices. '
-            'Access Garmin Pilot, Connect IQ apps, and Garmin avionics '
-            'data directly from your wearable.',
+            'PilotEnRoute does not connect to Garmin devices or exchange '
+            'data with them. These are links to Garmin\'s own pages for its '
+            'aviation apps, avionics and watches.',
             style: GoogleFonts.inter(
               fontSize: 13,
               color: Colors.white,
@@ -156,14 +156,14 @@ class _GarminScreenState extends State<GarminScreen>
         'name': 'G1000 NXi',
         'desc': 'Integrated flight deck with synthetic vision and weather',
         'icon': Icons.dashboard,
-        'url': 'https://www.garmin.com/en-US/p/621398',
+        'url': 'https://www.garmin.com/en-US/search/?query=G1000%20NXi',
         'badge': 'AVIONICS',
       },
       {
         'name': 'GTN 750Xi',
         'desc': 'Touchscreen navigator with IFR approach capability',
         'icon': Icons.navigation,
-        'url': 'https://www.garmin.com/en-US/p/621398',
+        'url': 'https://www.garmin.com/en-US/search/?query=GTN%20750Xi',
         'badge': 'NAV',
       },
       {
@@ -177,7 +177,7 @@ class _GarminScreenState extends State<GarminScreen>
         'name': 'GDL 52',
         'desc': 'Portable ADS-B receiver with SiriusXM weather',
         'icon': Icons.radar,
-        'url': 'https://www.garmin.com/en-US/p/621398',
+        'url': 'https://www.garmin.com/en-US/search/?query=GDL%2052',
         'badge': 'ADS-B',
       },
     ];
@@ -301,21 +301,15 @@ class _GarminScreenState extends State<GarminScreen>
           ),
           const SizedBox(height: 12),
           Text(
-            'PilotEnRoute is designed to work alongside Garmin Connect IQ apps '
-            'on your D2 Mach 1, D2 Delta, or Fenix aviation watch. '
-            'The Connect IQ SDK allows data exchange between your phone and wearable.',
+            'Connect IQ is Garmin\'s platform for apps on its watches, '
+            'including the D2 aviation range. PilotEnRoute has no Connect IQ '
+            'app; the link below is Garmin\'s developer overview.',
             style: GoogleFonts.inter(
               fontSize: 13,
               color: Colors.white70,
               height: 1.6,
             ),
           ),
-          const SizedBox(height: 12),
-          _buildConnectIQFeature('Flight data display on wrist', true),
-          _buildConnectIQFeature('METAR weather at a glance', true),
-          _buildConnectIQFeature('Altitude and airspeed readout', true),
-          _buildConnectIQFeature('Checklist notifications', true),
-          _buildConnectIQFeature('Emergency alert vibration', true),
           const SizedBox(height: 12),
           OutlinedButton.icon(
             onPressed: () => _launch('https://developer.garmin.com/connect-iq/overview/'),
@@ -327,31 +321,6 @@ class _GarminScreenState extends State<GarminScreen>
             style: OutlinedButton.styleFrom(
               foregroundColor: const Color(0xFF00BCD4),
               side: const BorderSide(color: Color(0xFF00BCD4)),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildConnectIQFeature(String text, bool available) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 6),
-      child: Row(
-        children: [
-          Icon(
-            available ? Icons.check_circle : Icons.radio_button_unchecked,
-            color: available ? const Color(0xFF4CAF50) : Colors.white38,
-            size: 16,
-          ),
-          const SizedBox(width: 8),
-          Expanded(
-            child: Text(
-              text,
-              style: GoogleFonts.inter(
-                fontSize: 12,
-                color: available ? Colors.white : Colors.white38,
-              ),
             ),
           ),
         ],
@@ -376,7 +345,7 @@ class _GarminScreenState extends State<GarminScreen>
               const SizedBox(width: 8),
               Expanded(
                 child: Text(
-                  'GARMIN PILOT INTEGRATION',
+                  'GARMIN PILOT',
                   style: GoogleFonts.orbitron(
                     fontSize: 10,
                     color: const Color(0xFFFFB300),
@@ -388,9 +357,8 @@ class _GarminScreenState extends State<GarminScreen>
           ),
           const SizedBox(height: 12),
           Text(
-            'Garmin Pilot is the industry-leading aviation app. '
-            'PilotEnRoute complements Garmin Pilot with education, '
-            'simulation, and training tools.',
+            'Garmin Pilot is Garmin\'s flight-planning app. PilotEnRoute is a '
+            'separate study tool and does not share data with it.',
             style: GoogleFonts.inter(
               fontSize: 13,
               color: Colors.white70,
@@ -398,40 +366,17 @@ class _GarminScreenState extends State<GarminScreen>
             ),
           ),
           const SizedBox(height: 12),
-          Row(
-            children: [
-              Expanded(
-                child: ElevatedButton(
-                  onPressed: () => _launch(
-                    'https://apps.apple.com/us/app/garmin-pilot/id394378702',
-                  ),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFF1A237E),
-                    foregroundColor: Colors.white,
-                  ),
-                  child: Text(
-                    'App Store',
-                    style: GoogleFonts.inter(fontSize: 12),
-                  ),
-                ),
-              ),
-              const SizedBox(width: 10),
-              Expanded(
-                child: ElevatedButton(
-                  onPressed: () => _launch(
-                    'https://play.google.com/store/apps/details?id=com.garmin.android.apps.pilot',
-                  ),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFF1B5E20),
-                    foregroundColor: Colors.white,
-                  ),
-                  child: Text(
-                    'Google Play',
-                    style: GoogleFonts.inter(fontSize: 12),
-                  ),
-                ),
-              ),
-            ],
+          ElevatedButton.icon(
+            onPressed: () => _launch('https://www.garmin.com/en-US/p/115856'),
+            icon: const Icon(Icons.open_in_new, size: 16),
+            label: Text(
+              'Garmin Pilot on garmin.com',
+              style: GoogleFonts.inter(fontSize: 12),
+            ),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFF1A237E),
+              foregroundColor: Colors.white,
+            ),
           ),
         ],
       ),
@@ -630,13 +575,6 @@ class _GarminScreenState extends State<GarminScreen>
         'desc': 'Official DJI drone control and flight planning app',
         'url': 'https://www.dji.com/downloads/djiapp/dji-fly',
         'color': const Color(0xFF37474F),
-      },
-      {
-        'name': 'AirMap',
-        'platform': 'iOS & Android',
-        'desc': 'Drone airspace intelligence and LAANC authorization',
-        'url': 'https://www.airmap.com',
-        'color': const Color(0xFF6A1B9A),
       },
       {
         'name': 'Infinite Flight',

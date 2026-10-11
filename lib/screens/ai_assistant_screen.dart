@@ -130,7 +130,9 @@ class _AiAssistantScreenState extends State<AiAssistantScreen> {
           const SizedBox(width: 8),
           Expanded(
             child: Text(
-              ready ? 'AI ready' : 'Offline reference mode — add API key',
+              ready
+                  ? 'Live AI ready'
+                  : 'Live AI is not available in this build — offline reference answers only',
               style: GoogleFonts.inter(
                 fontSize: 12,
                 fontWeight: FontWeight.w600,

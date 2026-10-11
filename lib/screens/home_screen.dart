@@ -189,7 +189,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
           ),
           const SizedBox(height: 8),
           Text(
-            'From Student Pilot to ATP — FAA Education, AI Simulation, Live Weather & More',
+            'From Student Pilot to ATP — FAA Education, Practice Tests, Live Weather & More',
             style: GoogleFonts.inter(
               fontSize: 13,
               color: Colors.white70,
@@ -204,7 +204,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
             spacing: 12,
             runSpacing: 8,
             children: [
-              _buildStatBadge('Live', 'FAA Q-Bank'),
+              _buildStatBadge('Live', 'ATPL Q-Bank'),
               _buildStatBadge('500+', 'Airports'),
               _buildStatBadge('13', 'Subjects'),
             ],
@@ -258,11 +258,10 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   Widget _buildModulesGrid() {
     final modules = [
       const ModuleData(
-        title: 'AI Flight\nSimulator',
+        title: 'Basic Flight\nSim',
         icon: Icons.flight_takeoff,
         color: Color(0xFF1565C0),
         route: '/simulation',
-        badge: 'NEW',
       ),
       const ModuleData(
         title: 'FAA\nEducation',
@@ -322,11 +321,10 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
         route: '/glossary',
       ),
       const ModuleData(
-        title: 'Garmin\nConnect',
+        title: 'Garmin\nResources',
         icon: Icons.watch,
         color: Color(0xFF1A237E),
         route: '/garmin',
-        badge: 'GPS',
       ),
     ];
 

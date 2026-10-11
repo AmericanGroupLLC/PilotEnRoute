@@ -21,47 +21,39 @@ class _RadioScreenState extends State<RadioScreen>
   static const Color _green = Color(0xFF4CAF50);
 
   late final TabController _tabController;
-  // Owned here (no provider) — disposed in dispose().
-  final RadioService _radio = RadioService();
 
   @override
   void initState() {
     super.initState();
     _tabController = TabController(length: 2, vsync: this);
-    _radio.addListener(_onRadioChanged);
-  }
-
-  void _onRadioChanged() {
-    if (mounted) setState(() {});
   }
 
   @override
   void dispose() {
-    _radio.removeListener(_onRadioChanged);
-    _radio.dispose();
     _tabController.dispose();
     super.dispose();
   }
 
-  Future<void> _toggleFeed(AtcFeed feed) async {
-    if (_radio.isFeedPlaying(feed.id)) {
-      await _radio.stop();
-      return;
-    }
+  /// Opens the airport's LiveATC page in the browser. The audio is not
+  /// played inside the app.
+  Future<void> _openFeed(AtcFeed feed) async {
+    var ok = false;
     try {
-      await _radio.play(feed);
+      ok = await launchUrl(feed.liveAtcPage,
+          mode: LaunchMode.externalApplication);
     } catch (_) {
-      if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          backgroundColor: _red,
-          content: Text(
-            'Feed unavailable — ${feed.airport} may be offline. Try another.',
-            style: GoogleFonts.inter(fontSize: 13, color: Colors.white),
-          ),
-        ),
-      );
+      ok = false;
     }
+    if (ok || !mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        backgroundColor: _red,
+        content: Text(
+          'Could not open liveatc.net.',
+          style: GoogleFonts.inter(fontSize: 13, color: Colors.white),
+        ),
+      ),
+    );
   }
 
   @override
@@ -75,7 +67,7 @@ class _RadioScreenState extends State<RadioScreen>
           indicatorColor: _cyan,
           labelStyle: GoogleFonts.orbitron(fontSize: 9, letterSpacing: 1),
           tabs: const [
-            Tab(text: 'LIVE ATC'),
+            Tab(text: 'ATC FEEDS'),
             Tab(text: 'PHRASEOLOGY'),
           ],
         ),
@@ -95,7 +87,6 @@ class _RadioScreenState extends State<RadioScreen>
   // ---------------------------------------------------------------------------
 
   Widget _buildLiveTab() {
-    final current = _radio.currentFeed;
     return Column(
       children: [
         _buildBanner(),
@@ -106,7 +97,6 @@ class _RadioScreenState extends State<RadioScreen>
             itemBuilder: (context, i) => _buildFeedCard(RadioService.feeds[i]),
           ),
         ),
-        if (current != null) _buildNowPlayingBar(current),
       ],
     );
   }
@@ -126,7 +116,8 @@ class _RadioScreenState extends State<RadioScreen>
           const SizedBox(width: 10),
           Expanded(
             child: Text(
-              'Live ATC via LiveATC.net (free) — feeds may be intermittent.',
+              'Live ATC audio is not played in this app. Tap an airport to '
+              'open its feeds on liveatc.net in your browser.',
               style: GoogleFonts.inter(
                 fontSize: 12,
                 color: Colors.white70,
@@ -140,174 +131,42 @@ class _RadioScreenState extends State<RadioScreen>
   }
 
   Widget _buildFeedCard(AtcFeed feed) {
-    final bool active = _radio.isFeedPlaying(feed.id);
-    final bool buffering =
-        _radio.currentFeedId == feed.id && _radio.isBuffering;
-    final bool isLast = _radio.lastFeedId == feed.id;
-
-    return Container(
-      margin: const EdgeInsets.only(bottom: 10),
-      decoration: BoxDecoration(
-        color: _card,
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 10),
+      child: Material(
+      color: _card,
+      shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(14),
-        border: Border.all(
-          color: active ? _cyan.withValues(alpha: 0.5) : Colors.white12,
-        ),
+        side: const BorderSide(color: Colors.white12),
       ),
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-        child: Row(
-          children: [
-            Container(
-              width: 44,
-              height: 44,
-              decoration: BoxDecoration(
-                color: (active ? _cyan : Colors.white24).withValues(alpha: 0.15),
-                borderRadius: BorderRadius.circular(10),
-              ),
-              child: Icon(
-                Icons.radio,
-                color: active ? _cyan : Colors.white38,
-                size: 22,
-              ),
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    children: [
-                      Text(
-                        feed.airport,
-                        style: GoogleFonts.orbitron(
-                          fontSize: 13,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.white,
-                          letterSpacing: 1,
-                        ),
-                      ),
-                      if (isLast) ...[
-                        const SizedBox(width: 8),
-                        _tag('LAST', _green),
-                      ],
-                    ],
-                  ),
-                  const SizedBox(height: 3),
-                  Text(
-                    feed.name,
-                    style: GoogleFonts.inter(
-                      fontSize: 12,
-                      color: Colors.white54,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            const SizedBox(width: 8),
-            _buildPlayButton(feed, active, buffering),
-          ],
+      clipBehavior: Clip.antiAlias,
+      child: ListTile(
+        onTap: () => _openFeed(feed),
+        leading: Container(
+          width: 44,
+          height: 44,
+          decoration: BoxDecoration(
+            color: _cyan.withValues(alpha: 0.15),
+            borderRadius: BorderRadius.circular(10),
+          ),
+          child: const Icon(Icons.radio, color: _cyan, size: 22),
         ),
-      ),
-    );
-  }
-
-  Widget _buildPlayButton(AtcFeed feed, bool active, bool buffering) {
-    if (buffering) {
-      return const SizedBox(
-        width: 44,
-        height: 44,
-        child: Center(
-          child: SizedBox(
-            width: 20,
-            height: 20,
-            child: CircularProgressIndicator(strokeWidth: 2, color: _cyan),
+        title: Text(
+          feed.airport,
+          style: GoogleFonts.orbitron(
+            fontSize: 13,
+            fontWeight: FontWeight.bold,
+            color: Colors.white,
+            letterSpacing: 1,
           ),
         ),
-      );
-    }
-    return IconButton(
-      onPressed: () => _toggleFeed(feed),
-      iconSize: 30,
-      icon: Icon(
-        active ? Icons.stop_circle : Icons.play_circle_fill,
-        color: active ? _red : _green,
-      ),
-      tooltip: active ? 'Stop' : 'Play ${feed.airport}',
-    );
-  }
-
-  Widget _buildNowPlayingBar(AtcFeed feed) {
-    final bool buffering = _radio.isBuffering;
-    return Container(
-      padding: const EdgeInsets.fromLTRB(16, 12, 12, 12),
-      decoration: BoxDecoration(
-        color: _card,
-        border: Border(top: BorderSide(color: _cyan.withValues(alpha: 0.4))),
-      ),
-      child: SafeArea(
-        top: false,
-        child: Row(
-          children: [
-            Icon(
-              buffering ? Icons.hourglass_top : Icons.graphic_eq,
-              color: buffering ? _amber : _cyan,
-              size: 22,
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    buffering ? 'CONNECTING…' : 'NOW PLAYING',
-                    style: GoogleFonts.orbitron(
-                      fontSize: 9,
-                      color: buffering ? _amber : _cyan,
-                      letterSpacing: 1.5,
-                    ),
-                  ),
-                  const SizedBox(height: 3),
-                  Text(
-                    '${feed.airport} · ${feed.name}',
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: GoogleFonts.inter(
-                      fontSize: 13,
-                      fontWeight: FontWeight.w600,
-                      color: Colors.white,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            IconButton(
-              onPressed: () => _radio.stop(),
-              iconSize: 34,
-              icon: const Icon(Icons.stop_circle, color: _red),
-              tooltip: 'Stop',
-            ),
-          ],
+        subtitle: Text(
+          '${feed.name} · liveatc.net',
+          style: GoogleFonts.inter(fontSize: 12, color: Colors.white54),
         ),
+        trailing: Icon(Icons.open_in_new, color: _green,
+            semanticLabel: 'Open ${feed.airport} on liveatc.net'),
       ),
-    );
-  }
-
-  Widget _tag(String text, Color color) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1),
-      decoration: BoxDecoration(
-        color: color.withValues(alpha: 0.15),
-        borderRadius: BorderRadius.circular(6),
-      ),
-      child: Text(
-        text,
-        style: GoogleFonts.orbitron(
-          fontSize: 8,
-          fontWeight: FontWeight.bold,
-          color: color,
-          letterSpacing: 1,
-        ),
       ),
     );
   }

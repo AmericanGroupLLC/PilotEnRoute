@@ -13,7 +13,8 @@ import '../services/flight_plan_service.dart';
 import '../services/flight_tracker_service.dart';
 import '../services/location_service.dart';
 
-/// Moving-map screen built on flutter_map + OpenStreetMap tiles.
+/// Aviation map (charts, airspace, traffic) built on flutter_map. It is not a
+/// moving map: the app has no GPS backend, so there is no own-ship position.
 ///
 /// Fully functional today: base map (standard/terrain), live ADS-B traffic
 /// overlay (OpenSky), airport search + marker, range rings, and a tap-to-measure
@@ -319,7 +320,7 @@ class _MapScreenState extends State<MapScreen> {
     return Scaffold(
       backgroundColor: const Color(0xFF0A1628),
       appBar: AppBar(
-        title: const Text('MOVING MAP'),
+        title: const Text('AVIATION MAP'),
         actions: [
           IconButton(
             tooltip: 'Load flight plan',
@@ -956,7 +957,7 @@ class _MapScreenState extends State<MapScreen> {
             const Icon(Icons.gps_off, color: Colors.white54, size: 14),
             const SizedBox(width: 6),
             Text(
-              'GPS not configured',
+              'No GPS position · study map only',
               style: GoogleFonts.inter(color: Colors.white54, fontSize: 10),
             ),
           ],

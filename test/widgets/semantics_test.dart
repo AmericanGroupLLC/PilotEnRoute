@@ -54,8 +54,8 @@ void main() {
       await tester.pumpWidget(wrap(const HomeScreen()));
       await tester.pump(const Duration(milliseconds: 500));
 
-      // 'AI Flight\nSimulator' must not be read with a pause mid-name.
-      expect(find.bySemanticsLabel('AI Flight Simulator, NEW'), findsOneWidget);
+      // 'Basic Flight\nSim' must not be read with a pause mid-name.
+      expect(find.bySemanticsLabel('Basic Flight Sim'), findsOneWidget);
       expect(find.bySemanticsLabel('Live Weather, LIVE'), findsOneWidget);
       expect(find.bySemanticsLabel('Smart Checklists'), findsOneWidget);
 

@@ -5,7 +5,6 @@ import 'dart:math' show Random;
 import 'package:crypto/crypto.dart' show sha256;
 import 'package:flutter/foundation.dart';
 import 'package:google_sign_in/google_sign_in.dart';
-import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:sign_in_with_apple/sign_in_with_apple.dart';
 // Narrow `show` list keeps Supabase's exports (which include a `Provider`
@@ -22,7 +21,6 @@ import 'package:supabase_flutter/supabase_flutter.dart'
         PostgrestException,
         User;
 
-import '../config/backend_config.dart';
 import 'supabase_config.dart';
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -33,9 +31,9 @@ import 'supabase_config.dart';
 // auto-restores its own session, so a networked device always uses the real
 // backend.
 //
-// Backend-brokered social login (Google/Apple/Facebook via OAuth start URL +
-// WebView) and Firebase Phone OTP verification still go through the
-// AmericanGroupLLC API gateway (see BackendConfig) and are unchanged.
+// Google and Apple sign-in exchange their native ID tokens with Supabase Auth
+// as well. The old AmericanGroupLLC API gateway no longer exists, so nothing
+// here calls it; a token persisted by a build that did is discarded on launch.
 //
 // Offline: when the device cannot reach Supabase (network/socket error),
 // email/password sign-in fails with a network error. See [loginEmail].
@@ -173,12 +171,8 @@ class AuthService extends ChangeNotifier {
   /// Validation rule (referenced by the UI).
   static const int minPasswordLength = 6;
 
-  /// Network timeout for all requests.
-  static const Duration _timeout = Duration(seconds: 15);
-
   // ── State ────────────────────────────────────────────────────────────────────
   String? _accessToken;
-  String? _refreshToken;
   String? _userId;
   AuthUser? _currentUser;
   bool _initialized = false;
@@ -217,7 +211,8 @@ class AuthService extends ChangeNotifier {
   ///
   /// Precedence: a live Supabase session (auto-restored by the SDK on a
   /// networked device) wins; otherwise a persisted local demo session; otherwise
-  /// a legacy BackendConfig token session (social / phone).
+  /// signed out. A token stored by an older build for the retired API gateway
+  /// is discarded: that server no longer exists, so the token proves nothing.
   Future<void> init() async {
     try {
       final prefs = await SharedPreferences.getInstance();
@@ -235,15 +230,21 @@ class AuthService extends ChangeNotifier {
           role: UserRole.student,
         );
       } else {
-        // Legacy backend-token session (social / phone login).
-        _accessToken = prefs.getString(_kAccessTokenKey);
-        _refreshToken = prefs.getString(_kRefreshTokenKey);
-        _userId = prefs.getString(_kUserIdKey);
+        // Token left behind by an older build's retired API gateway login.
+        // Nothing can validate it any more, so drop it instead of treating
+        // it as a signed-in session.
+        if (prefs.containsKey(_kAccessTokenKey) ||
+            prefs.containsKey(_kRefreshTokenKey)) {
+          await prefs.remove(_kAccessTokenKey);
+          await prefs.remove(_kRefreshTokenKey);
+          await prefs.remove(_kUserIdKey);
+        }
+        _accessToken = null;
+        _userId = null;
       }
     } catch (_) {
       // Corrupt/unavailable prefs — treat as signed out, never crash.
       _accessToken = null;
-      _refreshToken = null;
       _userId = null;
       _isLocal = false;
       _currentUser = null;
@@ -259,7 +260,6 @@ class AuthService extends ChangeNotifier {
         _supabaseSession = true;
         _isLocal = false;
         _accessToken = session.accessToken;
-        _refreshToken = session.refreshToken;
         _userId = user.id;
         _currentUser = _userFromSupabase(user);
       }
@@ -282,17 +282,6 @@ class AuthService extends ChangeNotifier {
 
     _initialized = true;
     notifyListeners();
-
-    // Best-effort profile fetch only for legacy backend-token sessions. The
-    // local demo session has no server to hit, and a Supabase session already
-    // carries its user.
-    if (_accessToken != null && !_isLocal && !_supabaseSession) {
-      try {
-        await fetchMe();
-      } catch (_) {
-        // Keep the session; UI can still function offline.
-      }
-    }
   }
 
   // ── Email / password ──────────────────────────────────────────────────────────
@@ -420,7 +409,6 @@ class AuthService extends ChangeNotifier {
         if (_supabaseSession) {
           _supabaseSession = false;
           _accessToken = null;
-          _refreshToken = null;
           _userId = null;
           _currentUser = null;
           notifyListeners();
@@ -433,7 +421,6 @@ class AuthService extends ChangeNotifier {
         _isLocal = false;
         _guest = false;
         _accessToken = session.accessToken;
-        _refreshToken = session.refreshToken;
         _userId = session.user.id;
         var mapped = _userFromSupabase(session.user);
         // Preserve a name captured elsewhere (e.g. Apple's first-authorization
@@ -520,6 +507,24 @@ class AuthService extends ChangeNotifier {
     }
   }
 
+  /// Whether "Continue with Google" can work on [platform]. On iOS and macOS
+  /// the native SDK needs an iOS OAuth client id (GOOGLE_IOS_CLIENT_ID, or
+  /// GIDClientID in Info.plist); this build has neither, so the button is not
+  /// offered there rather than failing after the tap.
+  static bool googleSignInAvailableOn(
+    TargetPlatform platform, {
+    String iosClientId = SupabaseConfig.googleIosClientId,
+  }) {
+    if (platform == TargetPlatform.iOS || platform == TargetPlatform.macOS) {
+      return iosClientId.trim().isNotEmpty;
+    }
+    return true;
+  }
+
+  /// [googleSignInAvailableOn] for the platform the app is running on.
+  static bool get googleSignInAvailable =>
+      googleSignInAvailableOn(defaultTargetPlatform);
+
   /// Sign in with Google via the Supabase-native ID-token flow.
   ///
   /// The native SDK returns a Google `idToken` (+ `accessToken`); Supabase
@@ -599,7 +604,6 @@ class AuthService extends ChangeNotifier {
     _isLocal = false;
     _guest = false;
     _accessToken = sSession.accessToken;
-    _refreshToken = sSession.refreshToken;
     _userId = sUser.id;
     var user = _userFromSupabase(sUser);
     if ((user.name == null || user.name!.trim().isEmpty) &&
@@ -656,94 +660,9 @@ class AuthService extends ChangeNotifier {
     }
   }
 
-  // ── Token / session ───────────────────────────────────────────────────────────
-
-  /// Refresh the access token using the stored refresh token. Returns true on
-  /// success.
-  Future<bool> refresh() async {
-    final rt = _refreshToken;
-    if (rt == null || rt.isEmpty) return false;
-    try {
-      final resp = await http
-          .post(
-            _uri(BackendConfig.refreshPath),
-            headers: const {'Content-Type': 'application/json'},
-            body: jsonEncode({'refresh_token': rt}),
-          )
-          .timeout(_timeout);
-      if (resp.statusCode < 200 || resp.statusCode >= 300) return false;
-      final map = _decode(resp.body);
-      if (map == null) return false;
-      final newAccess = _str(map, ['access_token']);
-      if (newAccess == null || newAccess.isEmpty) return false;
-      await _storeTokens(
-        accessToken: newAccess,
-        refreshToken: _str(map, ['refresh_token']) ?? rt,
-        userId: _str(map, ['user_id']) ?? _userId,
-      );
-      return true;
-    } catch (_) {
-      return false;
-    }
-  }
-
-  /// GET /auth/me with Bearer. On 401, attempts one refresh then retries.
-  Future<AuthUser?> fetchMe() async {
-    final user = await _fetchMeOnce();
-    if (user != null) {
-      _currentUser = user;
-      notifyListeners();
-    }
-    return user;
-  }
-
-  Future<AuthUser?> _fetchMeOnce({bool allowRefresh = true}) async {
-    final token = _accessToken;
-    if (token == null) return null;
-    try {
-      final resp = await http
-          .get(_uri(BackendConfig.mePath), headers: _authHeaders(token))
-          .timeout(_timeout);
-      if (resp.statusCode == 401 && allowRefresh) {
-        if (await refresh()) {
-          return _fetchMeOnce(allowRefresh: false);
-        }
-        return null;
-      }
-      if (resp.statusCode < 200 || resp.statusCode >= 300) return null;
-      final map = _decode(resp.body);
-      if (map == null) return null;
-      // Some backends wrap the user under 'user' / 'data'.
-      final inner = map['user'] ?? map['data'];
-      final userMap = inner is Map<String, dynamic> ? inner : map;
-      return AuthUser.fromJson(userMap);
-    } catch (_) {
-      return null;
-    }
-  }
-
   /// Sign out and clear BOTH sessions: the Supabase session and the persisted
-  /// local demo session (plus any legacy backend token). Best-effort network
-  /// calls; clearing local state is what matters.
+  /// local session. Clearing local state is what matters.
   Future<void> signOut() async {
-    // Legacy backend token session → best-effort backend logout.
-    final token = _accessToken;
-    if (token != null && !_isLocal && !_supabaseSession) {
-      try {
-        await http
-            .post(
-              _uri(BackendConfig.logoutPath),
-              headers: _authHeaders(token),
-              body: jsonEncode({
-                if (_refreshToken != null) 'refresh_token': _refreshToken,
-              }),
-            )
-            .timeout(_timeout);
-      } catch (_) {
-        // Ignore — clearing local state below is what matters.
-      }
-    }
-
     // Sign out of Supabase (clears its persisted session on disk).
     try {
       await Supabase.instance.client.auth.signOut();
@@ -835,75 +754,8 @@ class AuthService extends ChangeNotifier {
     return null;
   }
 
-  // ── Internal request helpers ───────────────────────────────────────────────────
-
-
-
-  Uri _uri(String path) => Uri.parse('${BackendConfig.apiBaseUrl}$path');
-
-  Map<String, String> _authHeaders(String token) => {
-    'Content-Type': 'application/json',
-    'Authorization': 'Bearer $token',
-  };
-
-  Map<String, dynamic>? _decode(String body) {
-    if (body.isEmpty) return null;
-    try {
-      final decoded = jsonDecode(body);
-      if (decoded is Map<String, dynamic>) return decoded;
-    } catch (_) {
-      // Non-JSON body.
-    }
-    return null;
-  }
-
-  String? _str(Map<String, dynamic> map, List<String> keys) {
-    for (final k in keys) {
-      final v = map[k];
-      if (v != null) {
-        final s = v.toString();
-        if (s.isNotEmpty) return s;
-      }
-    }
-    return null;
-  }
-
-
-  // ── Token storage ──────────────────────────────────────────────────────────────
-  //
-  // Tokens live in shared_preferences today — see the secure-storage note
-  // at the top of this file.
-
-  Future<void> _storeTokens({
-    required String accessToken,
-    String? refreshToken,
-    String? userId,
-  }) async {
-    _accessToken = accessToken;
-    if (refreshToken != null && refreshToken.isNotEmpty) {
-      _refreshToken = refreshToken;
-    }
-    if (userId != null && userId.isNotEmpty) {
-      _userId = userId;
-    }
-    try {
-      final prefs = await SharedPreferences.getInstance();
-      await prefs.setString(_kAccessTokenKey, _accessToken!);
-      if (_refreshToken != null) {
-        await prefs.setString(_kRefreshTokenKey, _refreshToken!);
-      }
-      if (_userId != null) {
-        await prefs.setString(_kUserIdKey, _userId!);
-      }
-    } catch (_) {
-      // In-memory tokens still work for this session.
-    }
-    notifyListeners();
-  }
-
   Future<void> _clearTokens() async {
     _accessToken = null;
-    _refreshToken = null;
     _userId = null;
     _currentUser = null;
     _isLocal = false;

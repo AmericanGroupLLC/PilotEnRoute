@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
+import '../services/ai_service.dart';
+import '../services/notam_service.dart';
+
 class AppDrawer extends StatelessWidget {
   const AppDrawer({super.key});
 
@@ -17,8 +20,8 @@ class AppDrawer extends StatelessWidget {
               children: [
                 // ── Training ────────────────────────────────────────────
                 _buildSection('TRAINING'),
-                _buildItem(context, Icons.flight_takeoff, 'AI Flight Simulator',
-                    '/simulation', badge: 'NEW'),
+                _buildItem(context, Icons.flight_takeoff, 'Basic Flight Sim',
+                    '/simulation'),
                 _buildItem(context, Icons.school, 'FAA Education Hub', '/education'),
                 _buildItem(context, Icons.checklist_rtl, 'Smart Checklists', '/checklist'),
                 _buildItem(context, Icons.warning_amber, 'Emergency Trainer',
@@ -26,8 +29,8 @@ class AppDrawer extends StatelessWidget {
                 _buildItem(context, Icons.toys, 'Drone Education', '/drone'),
                 _buildItem(context, Icons.quiz, 'ATPL Quiz Bank', '/quiz'),
                 _buildItem(context, Icons.style, 'Flashcards', '/flashcards'),
-                _buildItem(context, Icons.assignment, 'FAA Exam Tests', '/exam',
-                    badge: 'PREP'),
+                _buildItem(context, Icons.assignment, 'Knowledge Test Practice',
+                    '/exam', badge: 'PREP'),
                 // ── Live Data ───────────────────────────────────────────
                 _buildSection('LIVE DATA'),
                 _buildItem(context, Icons.cloud, 'Aviation Weather', '/weather',
@@ -37,12 +40,19 @@ class AppDrawer extends StatelessWidget {
                     badge: 'LIVE'),
                 _buildItem(context, Icons.radar, 'Flight Tracker', '/flight-tracker',
                     badge: 'ADS-B'),
-                _buildItem(context, Icons.map, 'Moving Map', '/map', badge: 'NEW'),
+                // No GPS backend: this is a chart/airspace map, not a moving
+                // map, so it is not labelled as one.
+                _buildItem(context, Icons.map, 'Aviation Map', '/map'),
                 _buildItem(context, Icons.map_outlined, 'Charts & Plates', '/charts'),
                 _buildItem(context, Icons.air, 'Wind Map', '/wind'),
-                _buildItem(context, Icons.campaign, 'NOTAMs', '/notams'),
+                // Offered only when this build carries FAA NOTAM API
+                // credentials; without them the screen can only say
+                // "unavailable", so the entry is not shown.
+                if (NotamService.credentialsConfigured)
+                  _buildItem(context, Icons.campaign, 'NOTAMs', '/notams'),
                 _buildItem(context, Icons.storage, 'Nav Database', '/navdb'),
-                _buildItem(context, Icons.headset_mic, 'Radio / ATC', '/radio'),
+                _buildItem(context, Icons.headset_mic, 'Radio Phraseology',
+                    '/radio'),
                 // ── Pilot Tools ─────────────────────────────────────────
                 _buildSection('PILOT TOOLS'),
                 _buildItem(context, Icons.book, 'Digital Logbook', '/logbook'),
@@ -56,8 +66,10 @@ class AppDrawer extends StatelessWidget {
                 _buildItem(context, Icons.folder, 'Documents', '/documents'),
                 // ── Assistant ───────────────────────────────────────────
                 _buildSection('ASSISTANT'),
-                _buildItem(context, Icons.smart_toy, 'AI Assistant', '/ai',
-                    badge: 'AI'),
+                // Shown only when a live model can answer in this build.
+                if (AiService.liveAiAvailable)
+                  _buildItem(context, Icons.smart_toy, 'AI Assistant', '/ai',
+                      badge: 'AI'),
                 _buildItem(context, Icons.verified, 'Endorsements', '/endorsements'),
                 _buildItem(context, Icons.trending_up, 'Career Pathways', '/career'),
                 _buildItem(context, Icons.public, 'ICARA (Intl Students)', '/icara'),
@@ -65,8 +77,8 @@ class AppDrawer extends StatelessWidget {
                 _buildSection('REFERENCE'),
                 _buildItem(context, Icons.gavel, 'Regulations (FAR/AIM)', '/regulations'),
                 _buildItem(context, Icons.menu_book, 'Aviation Glossary', '/glossary'),
-                _buildItem(context, Icons.watch, 'Garmin Connect', '/garmin',
-                    badge: 'GPS'),
+                _buildItem(context, Icons.watch, 'Garmin & Pilot Resources',
+                    '/garmin'),
                 const Divider(color: Colors.white12),
                 // ── Account ─────────────────────────────────────────────
                 _buildItem(context, Icons.account_circle, 'Account', '/account'),

@@ -6,9 +6,81 @@ import 'package:flame/components.dart';
 import 'package:flame/events.dart';
 import 'package:agl_i18n/agl_i18n.dart';
 
-// ─── Lightweight AI Flight Simulation ─────────────────────────────────────────
-// Uses the Flame game engine for 2D top-down flight simulation.
-// AI autopilot uses simple rule-based physics (no server required).
+// ─── Basic flight sim ─────────────────────────────────────────────────────────
+// A simple 2D flight-dynamics trainer on the Flame engine. A rule-based
+// altitude/speed/heading hold flies the aircraft until the user touches a
+// control. Each aircraft's speed, climb rate and ceiling come from
+// [kSimAircraft]; this is a study aid, not a certified simulator.
+
+/// Rounded performance figures the sim flies each aircraft with.
+class SimAircraftPerformance {
+  const SimAircraftPerformance({
+    required this.cruiseKt,
+    required this.maxKt,
+    required this.climbFpm,
+    required this.ceilingFt,
+    required this.cruiseAltitudeFt,
+  });
+
+  /// Normal cruise speed; the autopilot holds it in the cruise scenario.
+  final double cruiseKt;
+
+  /// Speed reached at full throttle in level flight.
+  final double maxKt;
+
+  /// Best climb / descent rate the sim allows.
+  final double climbFpm;
+
+  /// Service ceiling; the sim will not climb above it.
+  final double ceilingFt;
+
+  /// Altitude the cruise scenario starts at.
+  final double cruiseAltitudeFt;
+}
+
+/// Aircraft offered in the sim. Every name here is selectable, and every
+/// selection changes the physics.
+const Map<String, SimAircraftPerformance> kSimAircraft =
+    <String, SimAircraftPerformance>{
+  'Cessna 172': SimAircraftPerformance(
+      cruiseKt: 124, maxKt: 163, climbFpm: 730, ceilingFt: 14000,
+      cruiseAltitudeFt: 5500),
+  'Piper Cherokee': SimAircraftPerformance(
+      cruiseKt: 117, maxKt: 148, climbFpm: 660, ceilingFt: 14000,
+      cruiseAltitudeFt: 5500),
+  'Cirrus SR22': SimAircraftPerformance(
+      cruiseKt: 183, maxKt: 205, climbFpm: 1270, ceilingFt: 17500,
+      cruiseAltitudeFt: 8500),
+  'Boeing 737': SimAircraftPerformance(
+      cruiseKt: 453, maxKt: 473, climbFpm: 3000, ceilingFt: 41000,
+      cruiseAltitudeFt: 35000),
+  'Airbus A320': SimAircraftPerformance(
+      cruiseKt: 447, maxKt: 470, climbFpm: 3000, ceilingFt: 39800,
+      cruiseAltitudeFt: 35000),
+  'DJI Phantom (Drone)': SimAircraftPerformance(
+      cruiseKt: 35, maxKt: 39, climbFpm: 1180, ceilingFt: 400,
+      cruiseAltitudeFt: 200),
+};
+
+/// Scenarios offered for [aircraft]: the drone gets the FPV scenario and no
+/// engine-failure glide; aeroplanes get the reverse.
+List<String> simScenariosFor(String aircraft) {
+  final isDrone = aircraft.contains('Drone');
+  return kSimScenarios.where((s) {
+    if (s == 'Drone FPV Flight') return isDrone;
+    if (s == 'Emergency: Engine Failure') return !isDrone;
+    return true;
+  }).toList();
+}
+
+/// Scenarios the sim actually implements (see [FlightSimGame]).
+const List<String> kSimScenarios = <String>[
+  'Normal Cruise',
+  'Takeoff Training',
+  'Landing Approach',
+  'Emergency: Engine Failure',
+  'Drone FPV Flight',
+];
 
 class SimulationScreen extends StatefulWidget {
   const SimulationScreen({super.key});
@@ -23,31 +95,16 @@ class _SimulationScreenState extends State<SimulationScreen> {
   String _selectedScenario = 'Normal Cruise';
   bool _gameStarted = false;
 
-  final List<String> _aircraft = [
-    'Cessna 172',
-    'Piper Cherokee',
-    'Cirrus SR22',
-    'Boeing 737',
-    'Airbus A320',
-    'DJI Phantom (Drone)',
-  ];
+  final List<String> _aircraft = kSimAircraft.keys.toList();
 
-  final List<String> _scenarios = [
-    'Normal Cruise',
-    'Takeoff Training',
-    'Landing Approach',
-    'Emergency: Engine Failure',
-    'Emergency: Electrical Failure',
-    'Cross-Country Navigation',
-    'Drone FPV Flight',
-  ];
+  List<String> get _scenarios => simScenariosFor(_selectedAircraft);
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFF0A1628),
       appBar: AppBar(
-        title: const Text('AI FLIGHT SIMULATOR'),
+        title: const Text('BASIC FLIGHT SIM'),
         actions: [
           if (_gameStarted)
             IconButton(
@@ -101,7 +158,7 @@ class _SimulationScreenState extends State<SimulationScreen> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'AI FLIGHT SIMULATOR',
+                  'BASIC FLIGHT SIM',
                   style: GoogleFonts.orbitron(
                     fontSize: 14,
                     fontWeight: FontWeight.bold,
@@ -111,7 +168,9 @@ class _SimulationScreenState extends State<SimulationScreen> {
                 ),
                 const SizedBox(height: 4),
                 Text(
-                  'Lightweight AI-driven flight simulation\nSelect aircraft and scenario to begin',
+                  'Simple 2D flight dynamics with an altitude, speed and '
+                  'heading hold. A study aid, not a certified simulator.\n'
+                  'Select aircraft and scenario to begin',
                   style: GoogleFonts.inter(
                     fontSize: 12,
                     color: Colors.white70,
@@ -145,7 +204,12 @@ class _SimulationScreenState extends State<SimulationScreen> {
           children: _aircraft.map((a) {
             final isSelected = a == _selectedAircraft;
             return GestureDetector(
-              onTap: () => setState(() => _selectedAircraft = a),
+              onTap: () => setState(() {
+                _selectedAircraft = a;
+                if (!_scenarios.contains(_selectedScenario)) {
+                  _selectedScenario = _scenarios.first;
+                }
+              }),
               child: Container(
                 padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
                 decoration: BoxDecoration(
@@ -468,10 +532,13 @@ class _SimulationScreenState extends State<SimulationScreen> {
   }
 }
 
-// ─── Flame Game Engine — Lightweight AI Flight Simulation ─────────────────────
+// ─── Flame Game Engine — basic flight dynamics ───────────────────────────────
 class FlightSimGame extends FlameGame with TapCallbacks {
   final String aircraft;
   final String scenario;
+
+  /// Performance of [aircraft]; unknown names fly as a Cessna 172.
+  final SimAircraftPerformance performance;
 
   // AI Flight State
   double _altitude = 5000.0;
@@ -504,40 +571,69 @@ class FlightSimGame extends FlameGame with TapCallbacks {
   final _random = Random();
   double _cloudOffset = 0;
 
-  FlightSimGame({required this.aircraft, required this.scenario}) {
+  FlightSimGame({required this.aircraft, required this.scenario})
+      : performance = kSimAircraft[aircraft] ?? kSimAircraft['Cessna 172']! {
     _initScenario();
   }
 
+  /// True in the engine-failure scenario: throttle has no effect.
+  bool _engineOut = false;
+
+  @visibleForTesting
+  double get altitudeFt => _altitude;
+  @visibleForTesting
+  double get airspeedKt => _airspeed;
+  @visibleForTesting
+  double get verticalSpeedFpm => _verticalSpeed;
+  @visibleForTesting
+  double get throttle => _throttle;
+  @visibleForTesting
+  double get pitchDeg => _pitch;
+
+  /// Advances the autopilot and physics by [dt] seconds without rendering.
+  @visibleForTesting
+  void step(double dt) {
+    _runAI(dt);
+    _updatePhysics(dt);
+  }
+
   void _initScenario() {
+    final p = performance;
     switch (scenario) {
       case 'Takeoff Training':
         _altitude = 0;
         _airspeed = 0;
         _throttle = 0.0;
-        _targetAltitude = 3000;
+        _targetAltitude = (p.cruiseAltitudeFt * 0.5).clamp(0, p.ceilingFt);
+        _targetAirspeed = p.cruiseKt * 0.8;
         break;
       case 'Landing Approach':
-        _altitude = 3000;
-        _airspeed = 90;
+        _altitude = (p.ceilingFt < 3000 ? p.ceilingFt : 3000).toDouble();
+        _airspeed = p.cruiseKt * 0.7;
         _targetAltitude = 0;
-        _targetAirspeed = 65;
+        _targetAirspeed = p.cruiseKt * 0.55;
         break;
       case 'Emergency: Engine Failure':
-        _altitude = 8000;
-        _airspeed = 80;
+        _engineOut = true;
+        _altitude = (p.ceilingFt < 8000 ? p.ceilingFt * 0.8 : 8000)
+            .toDouble();
+        _airspeed = p.cruiseKt * 0.65;
         _throttle = 0.0;
         _targetAltitude = 0;
+        _targetAirspeed = p.cruiseKt * 0.65; // best-glide approximation
         break;
       case 'Drone FPV Flight':
-        _altitude = 400;
-        _airspeed = 35;
-        _targetAltitude = 400;
-        _targetAirspeed = 35;
+        _altitude = (p.ceilingFt < 400 ? p.ceilingFt : 400).toDouble();
+        _airspeed = 35.0.clamp(0, p.maxKt).toDouble();
+        _targetAltitude = _altitude;
+        _targetAirspeed = _airspeed;
         break;
       default:
-        _altitude = 5000;
-        _airspeed = 120;
-        _targetAltitude = 5000;
+        _altitude = p.cruiseAltitudeFt;
+        _airspeed = p.cruiseKt;
+        _targetAltitude = p.cruiseAltitudeFt;
+        _targetAirspeed = p.cruiseKt;
+        _throttle = p.cruiseKt / p.maxKt;
     }
   }
 
@@ -650,30 +746,36 @@ class FlightSimGame extends FlameGame with TapCallbacks {
   }
 
   void _updatePhysics(double dt) {
-    // Simple flight physics
-    final thrustForce = _throttle * 200.0;
-    final dragForce = _airspeed * 0.5;
-    final liftForce = _airspeed * 0.8;
+    final p = performance;
+    // Thrust is scaled so full throttle in level flight settles at maxKt;
+    // drag grows with airspeed. With the engine out there is no thrust and
+    // the aircraft trades height for speed instead.
+    final thrust = _engineOut ? 0.0 : _throttle * p.maxKt;
+    final drag = _airspeed;
+    final glideGain = _engineOut && _pitch < 0 ? -_pitch * 0.4 : 0.0;
+    _airspeed += (thrust - drag + glideGain) * dt * 0.2;
+    _airspeed = _airspeed.clamp(0.0, p.maxKt * 1.1);
 
-    // Update airspeed
-    _airspeed += (thrustForce - dragForce) * dt * 0.1;
-    _airspeed = _airspeed.clamp(0.0, 600.0);
+    // Climb needs flying speed: below ~45% of cruise the wing cannot climb.
+    final canClimb = _airspeed >= p.cruiseKt * 0.45;
+    var vs = _pitch / 15.0 * p.climbFpm;
+    if (!canClimb && vs > 0) vs = 0;
+    if (_engineOut) vs = vs.clamp(-p.climbFpm, -p.climbFpm * 0.4);
+    _verticalSpeed = vs.clamp(-p.climbFpm, p.climbFpm);
 
-    // Update vertical speed from pitch and lift
-    _verticalSpeed = (_pitch * _airspeed * 0.5) + (liftForce - 9.81 * 10) * dt;
-    _verticalSpeed = _verticalSpeed.clamp(-3000.0, 3000.0);
-
-    // Update altitude
     _altitude += _verticalSpeed * dt / 60.0;
-    _altitude = _altitude.clamp(0.0, 45000.0);
+    _altitude = _altitude.clamp(0.0, p.ceilingFt);
+    if (_altitude <= 0 && _verticalSpeed < 0) _verticalSpeed = 0;
 
     // Update heading from bank
     _heading += _bank * dt * 0.5;
     if (_heading >= 360) _heading -= 360;
     if (_heading < 0) _heading += 360;
 
+    if (!isLoaded) return; // physics stepped before the scene exists
+
     // Animate plane vertical position based on altitude ratio
-    final altRatio = (_altitude / 45000.0).clamp(0.0, 1.0);
+    final altRatio = (_altitude / p.ceilingFt).clamp(0.0, 1.0);
     _plane.position.y = size.y * (0.65 - altRatio * 0.5);
 
     // Tilt plane based on pitch
@@ -693,8 +795,9 @@ class FlightSimGame extends FlameGame with TapCallbacks {
   }
 
   // Control inputs
-  void pitchUp() { _autopilot = false; _pitch = (_pitch - 5).clamp(-30.0, 30.0); }
-  void pitchDown() { _autopilot = false; _pitch = (_pitch + 5).clamp(-30.0, 30.0); }
+  // Positive pitch is nose-up (climb), matching the altitude hold above.
+  void pitchUp() { _autopilot = false; _pitch = (_pitch + 5).clamp(-15.0, 15.0); }
+  void pitchDown() { _autopilot = false; _pitch = (_pitch - 5).clamp(-15.0, 15.0); }
   void bankLeft() { _autopilot = false; _bank = (_bank - 10).clamp(-45.0, 45.0); }
   void bankRight() { _autopilot = false; _bank = (_bank + 10).clamp(-45.0, 45.0); }
   void increaseThrottle() { _autopilot = false; _throttle = (_throttle + 0.1).clamp(0.0, 1.0); }

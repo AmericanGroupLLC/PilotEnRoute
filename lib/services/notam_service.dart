@@ -202,8 +202,12 @@ class NotamService extends ChangeNotifier {
   List<Notam> get notams => List.unmodifiable(_notams);
   String get lastQuery => _lastQuery;
 
-  bool get hasCredentials =>
+  /// True when this build carries FAA NOTAM API credentials. The drawer hides
+  /// the NOTAMs entry when it is false.
+  static bool get credentialsConfigured =>
       _faaClientId.isNotEmpty && _faaClientSecret.isNotEmpty;
+
+  bool get hasCredentials => credentialsConfigured;
 
   /// Load the last searched ICAO from persistent storage, if any.
   Future<String?> loadLastIcao() async {

@@ -26,6 +26,39 @@ class ExamQuestion {
   });
 }
 
+/// Question count and time limit for one practice test.
+class ExamFormat {
+  const ExamFormat({required this.questions, required this.minutes});
+
+  final int questions;
+  final int minutes;
+
+  /// Time allowed when only [loaded] of the [questions] could be loaded
+  /// (the live bank or the offline bank ran short). Scaled per question and
+  /// rounded up, so a short test is never given the full-length clock.
+  int secondsFor(int loaded) {
+    if (loaded <= 0) return 0;
+    if (loaded >= questions) return minutes * 60;
+    return (minutes * 60 * loaded / questions).ceil();
+  }
+}
+
+/// The one table both the exam cards and the timer read from, so the format a
+/// card states is the format the test actually runs. Counts and times follow
+/// the FAA airman knowledge test of the same name.
+const Map<String, ExamFormat> kExamFormats = <String, ExamFormat>{
+  'Private Pilot (PAR)': ExamFormat(questions: 60, minutes: 150),
+  'Instrument Rating (IRA)': ExamFormat(questions: 60, minutes: 150),
+  'Commercial Pilot (CAX)': ExamFormat(questions: 100, minutes: 180),
+  'Flight Instructor (FOI)': ExamFormat(questions: 50, minutes: 150),
+  'ATP (ATM)': ExamFormat(questions: 125, minutes: 240),
+  'Remote Pilot (RPA) - Part 107': ExamFormat(questions: 60, minutes: 120),
+  'Sport Pilot (SPR)': ExamFormat(questions: 40, minutes: 120),
+};
+
+/// Passing score for every practice test, in percent.
+const int kExamPassPercent = 70;
+
 class ExamScreen extends StatefulWidget {
   const ExamScreen({super.key});
 
@@ -38,6 +71,7 @@ class _ExamScreenState extends State<ExamScreen> {
   bool _examFinished = false;
   bool _isLoading = false;
   bool _usingOfflineBank = false;
+  bool _timed = false;
   int _currentQuestion = 0;
   int _score = 0;
   int _timeLeft = 0;
@@ -47,15 +81,7 @@ class _ExamScreenState extends State<ExamScreen> {
   String _selectedExamType = 'Private Pilot (PAR)';
   late ConfettiController _confettiController;
 
-  final List<String> _examTypes = [
-    'Private Pilot (PAR)',
-    'Instrument Rating (IRA)',
-    'Commercial Pilot (CAX)',
-    'Flight Instructor (FOI)',
-    'ATP (ATM)',
-    'Remote Pilot (RPA) - Part 107',
-    'Sport Pilot (SPR)',
-  ];
+  final List<String> _examTypes = kExamFormats.keys.toList();
 
   @override
   void initState() {
@@ -70,9 +96,13 @@ class _ExamScreenState extends State<ExamScreen> {
     super.dispose();
   }
 
+  ExamFormat get _selectedFormat =>
+      kExamFormats[_selectedExamType] ??
+      const ExamFormat(questions: 60, minutes: 150);
+
   void _startExam() {
-    // FAA standard full exam: 60 questions, 150-minute timer.
-    _prepareExam(limit: 60, timed: true);
+    // Full test in the selected exam's own format (see [kExamFormats]).
+    _prepareExam(limit: _selectedFormat.questions, timed: true);
   }
 
   void _startQuickQuiz() {
@@ -124,14 +154,15 @@ class _ExamScreenState extends State<ExamScreen> {
       _selectedAnswers = List.filled(_questions.length, null);
       _currentQuestion = 0;
       _score = 0;
-      _timeLeft = timed ? 150 * 60 : 999999; // 150 minutes (FAA standard)
+      _timed = timed;
+      _timeLeft = timed ? _selectedFormat.secondsFor(_questions.length) : 0;
       _examStarted = true;
       _examFinished = false;
       _isLoading = false;
       _usingOfflineBank = usedFallback;
     });
 
-    if (timed) _startTimer();
+    if (timed && _questions.isNotEmpty) _startTimer();
   }
 
   /// Converts a live [AviationQuestion] into the local [ExamQuestion] model,
@@ -196,7 +227,7 @@ class _ExamScreenState extends State<ExamScreen> {
       if (_selectedAnswers[i] == _questions[i].correctIndex) _score++;
     }
     final percentage = (_score / _questions.length * 100).round();
-    if (percentage >= 70) _confettiController.play();
+    if (percentage >= kExamPassPercent) _confettiController.play();
     setState(() => _examFinished = true);
   }
 
@@ -217,7 +248,7 @@ class _ExamScreenState extends State<ExamScreen> {
   Widget _buildLoading() {
     return Scaffold(
       backgroundColor: const Color(0xFF0A1628),
-      appBar: AppBar(title: const Text('FAA KNOWLEDGE TESTS')),
+      appBar: AppBar(title: const Text('KNOWLEDGE TEST PRACTICE')),
       body: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -248,7 +279,7 @@ class _ExamScreenState extends State<ExamScreen> {
   Widget _buildExamSelector() {
     return Scaffold(
       backgroundColor: const Color(0xFF0A1628),
-      appBar: AppBar(title: const Text('FAA KNOWLEDGE TESTS')),
+      appBar: AppBar(title: const Text('KNOWLEDGE TEST PRACTICE')),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(20),
         child: Column(
@@ -269,7 +300,7 @@ class _ExamScreenState extends State<ExamScreen> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    'FAA KNOWLEDGE TEST PREP',
+                    'KNOWLEDGE TEST PRACTICE',
                     style: GoogleFonts.orbitron(
                       fontSize: 13,
                       fontWeight: FontWeight.bold,
@@ -279,8 +310,11 @@ class _ExamScreenState extends State<ExamScreen> {
                   ),
                   const SizedBox(height: 8),
                   Text(
-                    'Practice with a live FAA-style question bank. '
-                    '60 questions · 150 minutes · 70% passing score.',
+                    'Online, questions come from the RotatePilot bank, which '
+                    'follows the EASA ATPL syllabus; each test draws the '
+                    'subjects closest to that FAA test. These are not '
+                    'official FAA questions. Question count and time follow '
+                    'the FAA test format · $kExamPassPercent% to pass.',
                     style: GoogleFonts.inter(
                       fontSize: 13,
                       color: Colors.white70,
@@ -430,6 +464,7 @@ class _ExamScreenState extends State<ExamScreen> {
           style: GoogleFonts.orbitron(fontSize: 13),
         ),
         actions: [
+          if (_timed)
           Container(
             margin: const EdgeInsets.only(right: 12),
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
@@ -775,7 +810,8 @@ class _ExamScreenState extends State<ExamScreen> {
                 const SizedBox(height: 8),
                 Text(
                   passed
-                      ? 'You\'re ready for the real FAA knowledge test!'
+                      ? 'You passed this practice test. Keep studying the '
+                          'FAA ACS for your certificate before the real test.'
                       : 'Review the topics you missed and try again.',
                   textAlign: TextAlign.center,
                   style: GoogleFonts.inter(
@@ -934,16 +970,25 @@ class _ExamScreenState extends State<ExamScreen> {
   }
 
   Map<String, dynamic> _getExamInfo(String type) {
-    final infos = {
-      'Private Pilot (PAR)': {'icon': Icons.flight, 'color': const Color(0xFF4CAF50), 'desc': '60 questions · 150 min · 70% passing'},
-      'Instrument Rating (IRA)': {'icon': Icons.cloud, 'color': const Color(0xFF2196F3), 'desc': '60 questions · 150 min · 70% passing'},
-      'Commercial Pilot (CAX)': {'icon': Icons.star, 'color': const Color(0xFFFFB300), 'desc': '100 questions · 180 min · 70% passing'},
-      'Flight Instructor (FOI)': {'icon': Icons.person_pin, 'color': const Color(0xFFFF9800), 'desc': '50 questions · 150 min · 70% passing'},
-      'ATP (ATM)': {'icon': Icons.workspace_premium, 'color': const Color(0xFFF44336), 'desc': '125 questions · 180 min · 70% passing'},
-      'Remote Pilot (RPA) - Part 107': {'icon': Icons.flight_takeoff, 'color': const Color(0xFF009688), 'desc': '60 questions · 120 min · 70% passing'},
-      'Sport Pilot (SPR)': {'icon': Icons.paragliding, 'color': const Color(0xFF8BC34A), 'desc': '40 questions · 90 min · 70% passing'},
+    const styles = <String, List<Object>>{
+      'Private Pilot (PAR)': [Icons.flight, Color(0xFF4CAF50)],
+      'Instrument Rating (IRA)': [Icons.cloud, Color(0xFF2196F3)],
+      'Commercial Pilot (CAX)': [Icons.star, Color(0xFFFFB300)],
+      'Flight Instructor (FOI)': [Icons.person_pin, Color(0xFFFF9800)],
+      'ATP (ATM)': [Icons.workspace_premium, Color(0xFFF44336)],
+      'Remote Pilot (RPA) - Part 107': [Icons.flight_takeoff, Color(0xFF009688)],
+      'Sport Pilot (SPR)': [Icons.paragliding, Color(0xFF8BC34A)],
     };
-    return infos[type] ?? {'icon': Icons.quiz, 'color': const Color(0xFF00BCD4), 'desc': '60 questions · 150 min'};
+    final style = styles[type] ?? const [Icons.quiz, Color(0xFF00BCD4)];
+    final format = kExamFormats[type];
+    return {
+      'icon': style[0],
+      'color': style[1],
+      'desc': format == null
+          ? ''
+          : '${format.questions} questions · ${format.minutes} min · '
+              '$kExamPassPercent% passing',
+    };
   }
 
   // ---------------------------------------------------------------------------
@@ -956,7 +1001,13 @@ class _ExamScreenState extends State<ExamScreen> {
   // never shown. They are intentionally general FAA-knowledge questions so the
   // app remains usable for any selected exam type while offline.
   // ---------------------------------------------------------------------------
-  List<ExamQuestion> _getOfflineFallbackQuestions(String examType) {
+  List<ExamQuestion> _getOfflineFallbackQuestions(String examType) =>
+      offlineFallbackExamQuestions();
+}
+
+/// The offline fallback bank (see the note above). Top-level so its answer
+/// key can be checked by tests.
+List<ExamQuestion> offlineFallbackExamQuestions() {
     return [
       ExamQuestion(
         id: 'par_001',
@@ -966,7 +1017,7 @@ class _ExamScreenState extends State<ExamScreen> {
           '3 SM visibility; 500 ft below, 1,000 ft above, 2,000 ft horizontal',
           '5 SM visibility; 1,000 ft below, 1,000 ft above, 1 SM horizontal',
         ],
-        correctIndex: 1,
+        correctIndex: 2,
         explanation: 'Above 10,000 ft MSL in Class E airspace, VFR minimums are 5 SM visibility and 1,000 ft below, 1,000 ft above, 1 SM horizontal from clouds.',
         reference: '14 CFR 91.155',
         category: 'Airspace',
@@ -993,7 +1044,7 @@ class _ExamScreenState extends State<ExamScreen> {
           '156 KIAS',
         ],
         correctIndex: 1,
-        explanation: '250 KIAS below 10,000 ft MSL per 14 CFR 91.117. Within 4 NM and 2,500 ft of Class B, the limit is 200 KIAS.',
+        explanation: '250 KIAS below 10,000 ft MSL per 14 CFR 91.117. Beneath the lateral limits of Class B airspace, or in a VFR corridor through it, the limit is 200 KIAS.',
         reference: '14 CFR 91.117',
         category: 'Airspace',
       ),
@@ -1058,7 +1109,7 @@ class _ExamScreenState extends State<ExamScreen> {
           'Any altitude above 3,000 ft AGL',
         ],
         correctIndex: 1,
-        explanation: 'VFR cruising altitudes: 0-179° magnetic = odd thousands + 500 ft. 180-359° magnetic = even thousands + 500 ft. Course 185° = even thousands + 500 ft.',
+        explanation: 'VFR cruising altitudes: 0-179° magnetic = odd thousands + 500 ft. 180-359° magnetic = even thousands + 500 ft. Course 185° = even thousands + 500 ft (e.g., 4,500 ft).',
         reference: '14 CFR 91.159',
         category: 'Regulations',
       ),
@@ -1245,5 +1296,4 @@ class _ExamScreenState extends State<ExamScreen> {
         category: 'Operational Procedures',
       ),
     ];
-  }
 }

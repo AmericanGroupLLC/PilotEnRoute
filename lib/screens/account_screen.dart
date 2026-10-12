@@ -1,3 +1,4 @@
+import 'package:agl_ads/agl_ads.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
@@ -23,7 +24,18 @@ const _kRed = Color(0xFFF44336);
 const _kGreen = Color(0xFF4CAF50);
 
 class AccountScreen extends StatefulWidget {
-  const AccountScreen({super.key});
+  const AccountScreen({
+    super.key,
+    this.isPrivacyOptionsRequired = AglConsent.isPrivacyOptionsRequired,
+    this.showPrivacyOptions = AglConsent.showPrivacyOptions,
+  });
+
+  /// Whether UMP requires an in-app way to change the ad-consent choice
+  /// (EEA/UK/Switzerland). Injectable for tests.
+  final Future<bool> Function() isPrivacyOptionsRequired;
+
+  /// Opens Google's privacy-options form. Injectable for tests.
+  final Future<void> Function() showPrivacyOptions;
 
   @override
   State<AccountScreen> createState() => _AccountScreenState();
@@ -46,12 +58,18 @@ class _AccountScreenState extends State<AccountScreen> {
   bool _isSignUp = false;
   bool _obscurePassword = true;
   bool _submitting = false;
+  bool _privacyOptionsRequired = false;
 
   @override
   void initState() {
     super.initState();
     _auth.init();
     _sync.init();
+    widget.isPrivacyOptionsRequired().then((required) {
+      if (mounted && required) {
+        setState(() => _privacyOptionsRequired = true);
+      }
+    });
   }
 
   @override
@@ -246,6 +264,10 @@ class _AccountScreenState extends State<AccountScreen> {
         if (_tab == _AuthTab.social) _socialCard(),
         const SizedBox(height: 16),
         _supportRow(),
+        if (_privacyOptionsRequired) ...[
+          const SizedBox(height: 16),
+          _privacyChoicesRow(),
+        ],
       ],
     );
   }
@@ -449,6 +471,10 @@ class _AccountScreenState extends State<AccountScreen> {
         _syncCard(),
         const SizedBox(height: 16),
         _supportRow(),
+        if (_privacyOptionsRequired) ...[
+          const SizedBox(height: 16),
+          _privacyChoicesRow(),
+        ],
         const SizedBox(height: 16),
         OutlinedButton.icon(
           onPressed: _submitting ? null : _signOut,
@@ -694,6 +720,30 @@ class _AccountScreenState extends State<AccountScreen> {
         ),
         trailing: const Icon(Icons.chevron_right, color: Colors.white38),
         onTap: _contactSupport,
+        ),
+      ),
+    );
+  }
+
+  /// Google UMP: where a GDPR message applies, users must be able to change
+  /// their ad-consent choice at any time. Shown only when UMP says so.
+  Widget _privacyChoicesRow() {
+    return _card(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+      child: Material(
+        type: MaterialType.transparency,
+        child: ListTile(
+          contentPadding: const EdgeInsets.symmetric(horizontal: 8),
+          leading: const Icon(Icons.privacy_tip_outlined, color: _kCyan),
+          title: Text(
+            'Privacy choices',
+            style: GoogleFonts.inter(
+              color: Colors.white,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+          trailing: const Icon(Icons.chevron_right, color: Colors.white38),
+          onTap: () => widget.showPrivacyOptions(),
         ),
       ),
     );

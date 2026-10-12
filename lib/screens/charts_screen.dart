@@ -1,20 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:url_launcher/url_launcher.dart';
-import 'package:webview_flutter/webview_flutter.dart';
 
 import '../services/chart_service.dart';
 
-// Charts & Plates browser — free FAA plates via aviationapi.com (US only).
+// Charts & Plates — opens the FAA's official d-TPP search for an airport in
+// the browser (US only). See chart_service.dart for why it is a link-out.
 //
-// This is the free PDF/plate viewer; a geo-referenced moving-map overlay
-// would need a licensed chart provider (see chart_service.dart).
+// A geo-referenced moving-map overlay would need a licensed chart provider.
 
 const _kBg = Color(0xFF0A1628);
 const _kCard = Color(0xFF112240);
 const _kCyan = Color(0xFF00BCD4);
 const _kAmber = Color(0xFFFFB300);
-const _kGreen = Color(0xFF4CAF50);
 
 class ChartsScreen extends StatefulWidget {
   const ChartsScreen({super.key});
@@ -26,9 +24,6 @@ class ChartsScreen extends StatefulWidget {
 class _ChartsScreenState extends State<ChartsScreen> {
   final ChartService _service = ChartService();
   final TextEditingController _controller = TextEditingController();
-
-  Map<String, List<ChartDoc>> _results = const {};
-  String _resultsFor = '';
 
   @override
   void initState() {
@@ -54,20 +49,22 @@ class _ChartsScreenState extends State<ChartsScreen> {
     if (code.isEmpty) return;
     FocusScope.of(context).unfocus();
     _controller.text = code;
-    final grouped = await _service.fetchCharts(code);
-    if (!mounted) return;
-    setState(() {
-      _results = grouped;
-      _resultsFor = grouped.isEmpty ? '' : code;
-    });
-  }
-
-  void _openChart(ChartDoc doc) {
-    Navigator.of(context).push(
-      MaterialPageRoute<void>(
-        builder: (_) => _ChartViewerScreen(doc: doc),
-      ),
-    );
+    final uri = _service.linkFor(code);
+    if (uri == null) return;
+    final messenger = ScaffoldMessenger.of(context);
+    try {
+      if (await canLaunchUrl(uri)) {
+        await launchUrl(uri, mode: LaunchMode.externalApplication);
+      } else {
+        messenger.showSnackBar(
+          const SnackBar(content: Text('Could not open faa.gov.')),
+        );
+      }
+    } catch (_) {
+      messenger.showSnackBar(
+        const SnackBar(content: Text('Could not open faa.gov.')),
+      );
+    }
   }
 
   @override
@@ -122,7 +119,7 @@ class _ChartsScreenState extends State<ChartsScreen> {
           SizedBox(
             height: 48,
             child: ElevatedButton(
-              onPressed: _service.isLoading ? null : () => _search(),
+              onPressed: () => _search(),
               style: ElevatedButton.styleFrom(
                 backgroundColor: _kCyan,
                 foregroundColor: _kBg,
@@ -131,7 +128,7 @@ class _ChartsScreenState extends State<ChartsScreen> {
                 ),
               ),
               child: Text(
-                'FIND',
+                'OPEN',
                 style: GoogleFonts.orbitron(
                   fontSize: 11,
                   fontWeight: FontWeight.bold,
@@ -190,106 +187,18 @@ class _ChartsScreenState extends State<ChartsScreen> {
   }
 
   Widget _buildBody() {
-    if (_service.isLoading) {
-      return const Center(child: CircularProgressIndicator(color: _kCyan));
-    }
-
     final error = _service.error;
     if (error != null) {
       return _buildMessage(Icons.error_outline, error, _kAmber);
     }
 
-    if (_results.isEmpty) {
-      return _buildMessage(
-        Icons.map_outlined,
-        'Search an airport to browse its FAA charts and plates.',
-        Colors.white38,
-      );
-    }
-
-    final categories = _results.keys.toList();
-    return ListView.builder(
-      padding: const EdgeInsets.fromLTRB(12, 8, 12, 8),
-      itemCount: categories.length + 1,
-      itemBuilder: (context, i) {
-        if (i == 0) return _buildResultsHeader();
-        final category = categories[i - 1];
-        return _buildCategorySection(category, _results[category]!);
-      },
-    );
-  }
-
-  Widget _buildResultsHeader() {
-    final total = _results.values.fold<int>(0, (sum, l) => sum + l.length);
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 8, left: 4),
-      child: Text(
-        '$_resultsFor · $total CHARTS',
-        style: GoogleFonts.orbitron(
-          fontSize: 11,
-          color: _kCyan,
-          letterSpacing: 1.5,
-        ),
-      ),
-    );
-  }
-
-  Widget _buildCategorySection(String category, List<ChartDoc> docs) {
-    return Container(
-      margin: const EdgeInsets.only(bottom: 10),
-      decoration: BoxDecoration(
-        color: _kCard,
-        borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: Colors.white12),
-      ),
-      child: Material(
-        type: MaterialType.transparency,
-        child: ExpansionTile(
-          initiallyExpanded: category == 'Airport Diagram',
-          tilePadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-          childrenPadding: const EdgeInsets.only(bottom: 8),
-          iconColor: _kCyan,
-          collapsedIconColor: Colors.white38,
-          title: Text(
-            category,
-            style: GoogleFonts.orbitron(
-              fontSize: 12,
-              fontWeight: FontWeight.bold,
-              color: Colors.white,
-              letterSpacing: 0.5,
-            ),
-          ),
-          subtitle: Text(
-            '${docs.length} chart${docs.length == 1 ? '' : 's'}',
-            style: GoogleFonts.inter(fontSize: 11, color: Colors.white38),
-          ),
-          children: docs.map(_buildChartRow).toList(),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildChartRow(ChartDoc doc) {
-    return ListTile(
-      dense: true,
-      contentPadding: const EdgeInsets.symmetric(horizontal: 16),
-      leading: const Icon(Icons.description, color: _kGreen, size: 20),
-      title: Text(
-        doc.name,
-        style: GoogleFonts.inter(fontSize: 13, color: Colors.white),
-      ),
-      subtitle: doc.code.isEmpty
-          ? null
-          : Text(
-              doc.code,
-              style: GoogleFonts.orbitron(
-                fontSize: 9,
-                color: Colors.white38,
-                letterSpacing: 1,
-              ),
-            ),
-      trailing: const Icon(Icons.chevron_right, color: Colors.white38),
-      onTap: () => _openChart(doc),
+    return _buildMessage(
+      Icons.map_outlined,
+      'Enter an airport to open its charts and plates — airport diagram, '
+      'approaches, departures, arrivals and minimums — on the FAA\'s official '
+      'd-TPP search (cycle ${dtppCycleFor(DateTime.now())}). Opens in your '
+      'browser.',
+      Colors.white38,
     );
   }
 
@@ -323,95 +232,9 @@ class _ChartsScreenState extends State<ChartsScreen> {
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
       color: _kBg,
       child: Text(
-        'FAA charts via aviationapi.com (free) — US only.',
+        'Official FAA d-TPP charts on faa.gov — US airports only.',
         textAlign: TextAlign.center,
         style: GoogleFonts.inter(fontSize: 10, color: Colors.white30),
-      ),
-    );
-  }
-}
-
-// ─────────────────────────────────────────────────────────────────────────────
-// In-app PDF/plate viewer. Many FAA PDFs render directly in the WebView; when
-// they do not, the user can fall back to the system browser via url_launcher.
-// ─────────────────────────────────────────────────────────────────────────────
-
-class _ChartViewerScreen extends StatefulWidget {
-  const _ChartViewerScreen({required this.doc});
-
-  final ChartDoc doc;
-
-  @override
-  State<_ChartViewerScreen> createState() => _ChartViewerScreenState();
-}
-
-class _ChartViewerScreenState extends State<_ChartViewerScreen> {
-  late final WebViewController _controller;
-  bool _loading = true;
-
-  @override
-  void initState() {
-    super.initState();
-    _controller = WebViewController()
-      ..setJavaScriptMode(JavaScriptMode.unrestricted)
-      ..setNavigationDelegate(
-        NavigationDelegate(
-          onPageStarted: (_) {
-            if (mounted) setState(() => _loading = true);
-          },
-          onPageFinished: (_) {
-            if (mounted) setState(() => _loading = false);
-          },
-          onWebResourceError: (_) {
-            if (mounted) setState(() => _loading = false);
-          },
-        ),
-      )
-      ..loadRequest(Uri.parse(widget.doc.pdfUrl));
-  }
-
-  Future<void> _openInBrowser() async {
-    final messenger = ScaffoldMessenger.of(context);
-    try {
-      final uri = Uri.parse(widget.doc.pdfUrl);
-      if (await canLaunchUrl(uri)) {
-        await launchUrl(uri, mode: LaunchMode.externalApplication);
-      } else {
-        messenger.showSnackBar(
-          const SnackBar(content: Text('Could not open the chart.')),
-        );
-      }
-    } catch (_) {
-      messenger.showSnackBar(
-        const SnackBar(content: Text('Could not open the chart.')),
-      );
-    }
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: _kBg,
-      appBar: AppBar(
-        title: Text(
-          widget.doc.name,
-          style: GoogleFonts.orbitron(fontSize: 13, fontWeight: FontWeight.w600),
-          overflow: TextOverflow.ellipsis,
-        ),
-        actions: [
-          IconButton(
-            tooltip: 'Open in browser',
-            icon: const Icon(Icons.open_in_new),
-            onPressed: _openInBrowser,
-          ),
-        ],
-      ),
-      body: Stack(
-        children: [
-          WebViewWidget(controller: _controller),
-          if (_loading)
-            const Center(child: CircularProgressIndicator(color: _kCyan)),
-        ],
       ),
     );
   }

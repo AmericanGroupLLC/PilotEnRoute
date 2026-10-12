@@ -77,7 +77,7 @@ class IcaraScreen extends StatelessWidget {
               title: 'Application Process',
               icon: Icons.assignment,
               color: const Color(0xFF2196F3),
-              content: '1. Create account at flightschoolcandidates.gov\n'
+              content: '1. Create an account in the TSA Flight Training Security Program portal (fts.tsa.dhs.gov)\n'
                   '2. Submit biometric information (fingerprints)\n'
                   '3. Pay \$130 fee per training event\n'
                   '4. Wait for TSA approval (typically 30-45 days)\n'
@@ -153,7 +153,7 @@ class IcaraScreen extends StatelessWidget {
 
             _sectionTitle('IMPORTANT RESOURCES'),
             const SizedBox(height: 12),
-            _linkCard('TSA Alien Flight Student Program', 'https://www.flightschoolcandidates.gov', Icons.security, const Color(0xFFF44336)),
+            _linkCard('TSA Flight Training Security Program', 'https://www.fts.tsa.dhs.gov/home', Icons.security, const Color(0xFFF44336)),
             _linkCard('FAA International Aviation', 'https://www.faa.gov/about/initiatives/international_aviation', Icons.flight, const Color(0xFF2196F3)),
             _linkCard('ICAO Official Website', 'https://www.icao.int', Icons.public, const Color(0xFF4CAF50)),
             _linkCard('FAA Aviation Medical Examiners', 'https://www.faa.gov/pilots/amelocator', Icons.medical_services, const Color(0xFFFFB300)),

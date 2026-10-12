@@ -1,103 +1,63 @@
 import 'dart:async';
-import 'dart:convert';
 import 'package:flutter/foundation.dart';
-import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 
-// Charts & Plates browser backed by the FREE FAA data mirror at
-// aviationapi.com (no API key required, US airports only).
+// Charts & Plates: the FAA's official digital Terminal Procedures Publication
+// (d-TPP) — airport diagrams, approaches, departures, arrivals, minimums.
 //
-// Endpoint (no key):
-//   https://api.aviationapi.com/v1/charts?apt=KLAX
-// returns, without group=1:
-//   { "KLAX": [ { chart_name, chart_code, pdf_path (full FAA https URL),
-//                 pdf_name, ... } ] }
-//
-// chart_code values observed: APD (airport diagram), MIN (takeoff/alternate
-// minimums), IAP (instrument approach), DP (departure), STAR (arrival),
-// LAH, HOT, etc.
+// This used to call the free mirror api.aviationapi.com, which no longer has
+// any DNS record, so every request failed. The FAA's own per-cycle index
+// (https://aeronav.faa.gov/d-tpp/<cycle>/xml_data/d-tpp_Metafile.xml) is about
+// 16 MB of XML, too much to download on a phone to list one airport's charts.
+// Instead the app opens the FAA's official d-TPP search for the airport in the
+// browser; that page lists every chart for the cycle, each linking to its PDF
+// on aeronav.faa.gov:
+//   https://www.faa.gov/air_traffic/flight_info/aeronav/digital_products/dtpp/search/results/?cycle=2610&ident=KLAX
+// US airports only. Accepts the ICAO (KLAX) or FAA (LAX) identifier.
 //
 // TODO(charts): geo-referenced overlay on the moving map requires a licensed
-// chart provider; this is the free PDF/plate viewer.
+// chart provider.
 
-const String _chartsBase = 'https://api.aviationapi.com/v1/charts';
+/// First day of AIRAC/d-TPP cycle 2601. Cycles are [kDtppCycleDays] long.
+final DateTime kDtppCycleAnchor = DateTime.utc(2026, 1, 22);
+const int kDtppCycleDays = 28;
 
-/// Human-readable chart categories used to group results in the UI.
+/// The d-TPP cycle id (YYNN, e.g. "2610") in effect on [when].
 ///
-/// Ordered by the priority in which they should be displayed.
-const List<String> kChartCategories = <String>[
-  'Airport Diagram',
-  'Approaches (IAP)',
-  'Departures (DP)',
-  'Arrivals (STAR)',
-  'Minimums',
-  'Other',
-];
+/// YY is the year the cycle starts in and NN its number within that year, so
+/// the id rolls over every 28 days without a code change.
+String dtppCycleFor(DateTime when) {
+  final utc = when.toUtc();
+  final day = DateTime.utc(utc.year, utc.month, utc.day);
+  final elapsed = day.difference(kDtppCycleAnchor).inDays;
+  final n = (elapsed / kDtppCycleDays).floor();
+  final start = kDtppCycleAnchor.add(Duration(days: n * kDtppCycleDays));
 
-/// A single FAA chart / plate document.
-class ChartDoc {
-  /// Human title, e.g. "AIRPORT DIAGRAM" or "ILS OR LOC RWY 25L".
-  final String name;
-
-  /// Raw FAA chart_code, e.g. APD / IAP / DP / STAR / MIN.
-  final String code;
-
-  /// Human-readable category bucket (see [kChartCategories]).
-  final String category;
-
-  /// Full https URL to the FAA PDF plate.
-  final String pdfUrl;
-
-  const ChartDoc({
-    required this.name,
-    required this.code,
-    required this.category,
-    required this.pdfUrl,
-  });
-
-  /// Defensively parse a single chart entry. Returns null when the item is
-  /// malformed or has no usable PDF URL.
-  static ChartDoc? fromJson(Object? item) {
-    if (item is! Map) return null;
-    final map = item;
-
-    final pdf = (map['pdf_path'] ?? map['pdf_name'])?.toString().trim() ?? '';
-    if (pdf.isEmpty || !pdf.startsWith('http')) return null;
-
-    final code = (map['chart_code'] ?? '').toString().trim();
-    final name = (map['chart_name'] ?? map['pdf_name'] ?? 'Chart')
-        .toString()
-        .trim();
-
-    return ChartDoc(
-      name: name.isEmpty ? 'Chart' : name,
-      code: code,
-      category: categoryForCode(code),
-      pdfUrl: pdf,
-    );
+  var number = 1;
+  var previous = start.subtract(const Duration(days: kDtppCycleDays));
+  while (previous.year == start.year) {
+    number++;
+    previous = previous.subtract(const Duration(days: kDtppCycleDays));
   }
-
-  /// Map a raw FAA chart_code to a human category bucket.
-  static String categoryForCode(String code) {
-    switch (code.toUpperCase()) {
-      case 'APD':
-        return 'Airport Diagram';
-      case 'IAP':
-        return 'Approaches (IAP)';
-      case 'DP':
-        return 'Departures (DP)';
-      case 'STAR':
-        return 'Arrivals (STAR)';
-      case 'MIN':
-        return 'Minimums';
-      default:
-        return 'Other';
-    }
-  }
+  final yy = (start.year % 100).toString().padLeft(2, '0');
+  return '$yy${number.toString().padLeft(2, '0')}';
 }
 
-/// Fetches FAA charts from the free aviationapi.com mirror and persists a list
-/// of recently-viewed airports.
+/// The FAA's official d-TPP search results page for [ident] in the cycle in
+/// effect on [now] (defaults to the current time).
+Uri dtppSearchUri(String ident, {DateTime? now}) => Uri.https(
+      'www.faa.gov',
+      '/air_traffic/flight_info/aeronav/digital_products/dtpp/search/results/',
+      {
+        'cycle': dtppCycleFor(now ?? DateTime.now()),
+        'ident': ident.trim().toUpperCase(),
+      },
+    );
+
+final RegExp _identPattern = RegExp(r'^[A-Z0-9]{3,4}$');
+
+/// Builds the FAA d-TPP link for an airport and persists a list of
+/// recently-opened airports.
 ///
 /// Instantiate and dispose in the owning screen's [State] — no global provider
 /// registration is required.
@@ -105,17 +65,15 @@ class ChartService extends ChangeNotifier {
   static const String _prefsRecentKey = 'charts_recent';
   static const int _maxRecent = 8;
 
-  bool _isLoading = false;
   String? _error;
   List<String> _recent = const [];
 
-  bool get isLoading => _isLoading;
   String? get error => _error;
 
-  /// Recently-viewed airport ICAO codes, most recent first.
+  /// Recently-opened airport identifiers, most recent first.
   List<String> get recent => List.unmodifiable(_recent);
 
-  /// Load the persisted list of recently-viewed airports.
+  /// Load the persisted list of recently-opened airports.
   Future<void> loadRecent() async {
     try {
       final prefs = await SharedPreferences.getInstance();
@@ -143,86 +101,25 @@ class ChartService extends ChangeNotifier {
     }
   }
 
-  /// Fetch charts for a US airport, grouped by human category.
+  /// The FAA d-TPP search link for [icao], recorded as recent.
   ///
-  /// Returns a map keyed by category name (only non-empty categories are
-  /// present, ordered per [kChartCategories]). On any failure the returned map
-  /// is empty and [error] is set. Never throws.
-  Future<Map<String, List<ChartDoc>>> fetchCharts(String icao) async {
+  /// Returns null and sets [error] when the identifier is empty or is not a
+  /// 3-4 character airport identifier. Never throws.
+  Uri? linkFor(String icao, {DateTime? now}) {
     final code = icao.trim().toUpperCase();
     if (code.isEmpty) {
       _error = 'Enter an airport identifier.';
       notifyListeners();
-      return {};
+      return null;
     }
-
-    _isLoading = true;
+    if (!_identPattern.hasMatch(code)) {
+      _error = '$code is not an airport identifier. Use ICAO (KLAX) or '
+          'FAA (LAX).';
+      notifyListeners();
+      return null;
+    }
     _error = null;
-    notifyListeners();
-
-    Map<String, List<ChartDoc>> grouped = {};
-    try {
-      final docs = await _fetch(code);
-      if (docs.isEmpty) {
-        _error = 'No charts found for $code. US airports only.';
-      } else {
-        grouped = _group(docs);
-        unawaited(_addRecent(code));
-      }
-    } on TimeoutException {
-      _error = 'Request timed out. Check your connection and try again.';
-    } catch (_) {
-      _error = 'Could not load charts for $code. Please try again.';
-    }
-
-    _isLoading = false;
-    notifyListeners();
-    return grouped;
-  }
-
-  /// Core network call. Throws on any failure so [fetchCharts] can report it.
-  Future<List<ChartDoc>> _fetch(String icao) async {
-    final uri = Uri.parse(_chartsBase).replace(queryParameters: {'apt': icao});
-
-    final response = await http
-        .get(uri, headers: {'Accept': 'application/json'})
-        .timeout(const Duration(seconds: 15));
-
-    if (response.statusCode != 200) {
-      throw http.ClientException('Charts API ${response.statusCode}', uri);
-    }
-
-    final decoded = jsonDecode(response.body);
-    if (decoded is! Map) return const [];
-
-    // Response is keyed by ICAO. Accept the requested key, or fall back to the
-    // first list-valued entry to tolerate case / formatting differences.
-    Object? entry = decoded[icao];
-    if (entry is! List) {
-      for (final v in decoded.values) {
-        if (v is List) {
-          entry = v;
-          break;
-        }
-      }
-    }
-    if (entry is! List) return const [];
-
-    final out = <ChartDoc>[];
-    for (final item in entry) {
-      final doc = ChartDoc.fromJson(item);
-      if (doc != null) out.add(doc);
-    }
-    return out;
-  }
-
-  /// Group parsed docs into ordered, non-empty category buckets.
-  Map<String, List<ChartDoc>> _group(List<ChartDoc> docs) {
-    final buckets = <String, List<ChartDoc>>{};
-    for (final category in kChartCategories) {
-      final matches = docs.where((d) => d.category == category).toList();
-      if (matches.isNotEmpty) buckets[category] = matches;
-    }
-    return buckets;
+    unawaited(_addRecent(code));
+    return dtppSearchUri(code, now: now);
   }
 }

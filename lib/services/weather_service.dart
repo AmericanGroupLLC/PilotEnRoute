@@ -126,6 +126,87 @@ class LiveFlight {
   }
 }
 
+/// Airport reference data from the Aviation Weather Center's airport
+/// endpoint (`/api/data/airport`), which republishes FAA data for US airports
+/// (`source: "FAA"`) and carries a smaller international set.
+class AirportReference {
+  final String icao;
+  final String name;
+  final String state;
+  final String country;
+  final String source;
+
+  /// Field elevation as published by AWC, in metres (KLAX reads 39).
+  final int? elevationM;
+  final String magneticVariation;
+
+  /// True when AWC lists a control tower ("T"); false when none is listed.
+  final bool towered;
+
+  /// e.g. ["LCL/P 119.8", "D-ATIS 133.8"]; empty when none is listed.
+  final List<String> frequencies;
+
+  /// e.g. ["06L/24R 8926x150 ft"].
+  final List<String> runways;
+
+  const AirportReference({
+    required this.icao,
+    required this.name,
+    required this.state,
+    required this.country,
+    required this.source,
+    required this.elevationM,
+    required this.magneticVariation,
+    required this.towered,
+    required this.frequencies,
+    required this.runways,
+  });
+
+  int? get elevationFt =>
+      elevationM == null ? null : (elevationM! * 3.28084).round();
+
+  bool get isUs => country == 'US';
+
+  factory AirportReference.fromJson(Map<dynamic, dynamic> json) {
+    String str(String key) => (json[key] ?? '').toString().trim();
+
+    // "LCL/P,119.8;D-ATIS,133.8" — "-" when AWC lists none.
+    final frequencies = <String>[];
+    for (final entry in str('freqs').split(';')) {
+      final parts = entry.split(',').map((p) => p.trim()).toList();
+      if (parts.length == 2 && parts[0].isNotEmpty && parts[1].isNotEmpty) {
+        frequencies.add('${parts[0]} ${parts[1]}');
+      }
+    }
+
+    final runways = <String>[];
+    final rawRunways = json['runways'];
+    if (rawRunways is List) {
+      for (final r in rawRunways) {
+        if (r is! Map) continue;
+        final id = (r['id'] ?? '').toString().trim();
+        if (id.isEmpty) continue;
+        final dim = (r['dimension'] ?? '').toString().trim();
+        runways.add(dim.isEmpty ? id : '$id $dim ft');
+      }
+    }
+
+    final elev = json['elev'];
+    return AirportReference(
+      icao: str('icaoId'),
+      name: str('name'),
+      state: str('state'),
+      country: str('country'),
+      source: str('source'),
+      elevationM: elev is num ? elev.round() : int.tryParse(elev?.toString() ?? ''),
+      magneticVariation: str('magdec'),
+      towered: str('tower').toUpperCase() == 'T',
+      frequencies: frequencies,
+      runways: runways,
+    );
+  }
+}
+
 class WeatherService extends ChangeNotifier {
   bool _isLoading = false;
   String? _error;
@@ -165,6 +246,44 @@ class WeatherService extends ChangeNotifier {
 
     _isLoading = false;
     notifyListeners();
+    return null;
+  }
+
+  /// Airport reference data for [icao] from the Aviation Weather Center.
+  ///
+  /// Returns null when AWC has no record (it answers 204 with an empty body,
+  /// also for IATA codes such as "LAX"). Throws on a network failure, a
+  /// timeout or any other status, so the caller can say the lookup failed
+  /// rather than show an empty card. A 5xx is retried once: the endpoint
+  /// intermittently answers 504 from its gateway.
+  Future<AirportReference?> fetchAirportDetail(String icao) async {
+    final uri = Uri.parse('$_awcBase/airport').replace(queryParameters: {
+      'ids': icao.trim().toUpperCase(),
+      'format': 'json',
+    });
+
+    http.Response response;
+    var attempt = 0;
+    while (true) {
+      response = await http.get(
+        uri,
+        headers: {'Accept': 'application/json'},
+      ).timeout(const Duration(seconds: 15));
+      if (response.statusCode < 500 || ++attempt >= 2) break;
+    }
+
+    if (response.statusCode == 204) return null;
+    if (response.statusCode != 200) {
+      throw http.ClientException('AWC airport ${response.statusCode}', uri);
+    }
+    if (response.body.trim().isEmpty) return null;
+
+    final decoded = jsonDecode(response.body);
+    if (decoded is List) {
+      for (final item in decoded) {
+        if (item is Map) return AirportReference.fromJson(item);
+      }
+    }
     return null;
   }
 

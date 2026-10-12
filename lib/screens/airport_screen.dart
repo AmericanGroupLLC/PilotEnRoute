@@ -1,15 +1,15 @@
-import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:http/http.dart' as http;
 import 'package:url_launcher/url_launcher.dart';
 import '../services/aviation_api_service.dart';
+import '../services/chart_service.dart';
 import '../services/weather_service.dart';
 
-// TODO(airport-data): wire full comm-frequency + runway detail endpoints /
-// licensed provider. aviationapi.com (free, no key) currently surfaces
-// control tower / CTAF / UNICOM plus FAA charts for US airports only.
+// Field details come from the Aviation Weather Center airport endpoint
+// (official NOAA/FAA data: tower, frequencies, runways, elevation). Charts
+// link out to the FAA's official d-TPP search for the airport — see
+// chart_service.dart for why they are not listed in-app.
 
 class AirportScreen extends StatefulWidget {
   const AirportScreen({super.key});
@@ -25,9 +25,8 @@ class _AirportScreenState extends State<AirportScreen> {
   bool _loading = false;
   String? _error;
 
-  // Enriched FAA data fetched directly from aviationapi.com (free, no key).
-  Map<String, dynamic>? _faaDetail;
-  Map<String, List<Map<String, dynamic>>> _charts = {};
+  // Field details from aviationweather.gov (free, no key).
+  AirportReference? _faaDetail;
   bool _faaLoading = false;
   String? _faaError;
 
@@ -45,7 +44,6 @@ class _AirportScreenState extends State<AirportScreen> {
       _airport = null;
       _metar = null;
       _faaDetail = null;
-      _charts = {};
       _faaError = null;
       _faaLoading = false;
     });
@@ -70,73 +68,30 @@ class _AirportScreenState extends State<AirportScreen> {
     if (airport != null) {
       // Prefer the resolved ICAO ident; fall back to the raw search term.
       final apt = airport.icao.isNotEmpty ? airport.icao : code.toUpperCase();
-      await _fetchFaaData(apt);
+      await _fetchFaaData(apt, weatherService);
     }
   }
 
-  /// Fetches enriched airport details + FAA charts directly from
-  /// aviationapi.com (free, no API key). US airports only; other airports
-  /// simply return empty payloads which we surface as an informational note.
-  Future<void> _fetchFaaData(String apt) async {
+  /// Fetches field details from the Aviation Weather Center airport
+  /// endpoint. An airport AWC does not know is reported as such; a failed
+  /// request is reported as a failure — never an empty card.
+  Future<void> _fetchFaaData(String apt, WeatherService weather) async {
     if (apt.isEmpty) return;
     setState(() {
       _faaLoading = true;
       _faaError = null;
       _faaDetail = null;
-      _charts = {};
     });
 
-    Map<String, dynamic>? detail;
-    final charts = <String, List<Map<String, dynamic>>>{};
-
+    AirportReference? detail;
     try {
-      final encoded = Uri.encodeQueryComponent(apt);
-      final responses = await Future.wait([
-        http
-            .get(Uri.parse(
-                'https://api.aviationapi.com/v1/airports?apt=$encoded'))
-            .timeout(const Duration(seconds: 15)),
-        http
-            .get(Uri.parse(
-                'https://api.aviationapi.com/v1/charts?apt=$encoded'))
-            .timeout(const Duration(seconds: 15)),
-      ]);
-
-      // --- Airport details: { "KLAX": [ {..fields..} ] } ---
-      final aptResp = responses[0];
-      if (aptResp.statusCode == 200) {
-        final decoded = jsonDecode(aptResp.body);
-        if (decoded is Map) {
-          for (final value in decoded.values) {
-            if (value is List && value.isNotEmpty && value.first is Map) {
-              detail = Map<String, dynamic>.from(value.first as Map);
-              break;
-            }
-          }
-        }
-      }
-
-      // --- Charts: { "KLAX": [ { chart_name, chart_code, pdf_path } ] } ---
-      final chartResp = responses[1];
-      if (chartResp.statusCode == 200) {
-        final decoded = jsonDecode(chartResp.body);
-        if (decoded is Map) {
-          for (final value in decoded.values) {
-            if (value is! List) continue;
-            for (final item in value) {
-              if (item is! Map) continue;
-              final m = Map<String, dynamic>.from(item);
-              final code = (m['chart_code'] ?? 'OTHER').toString().trim();
-              charts.putIfAbsent(code.isEmpty ? 'OTHER' : code, () => []).add(m);
-            }
-          }
-        }
-      }
+      detail = await weather.fetchAirportDetail(apt);
     } catch (_) {
       if (!mounted) return;
       setState(() {
         _faaLoading = false;
-        _faaError = 'Could not load FAA data. Check your connection.';
+        _faaError = 'Could not load field details from aviationweather.gov. '
+            'Check your connection.';
       });
       return;
     }
@@ -144,28 +99,24 @@ class _AirportScreenState extends State<AirportScreen> {
     if (!mounted) return;
     setState(() {
       _faaDetail = detail;
-      _charts = charts;
       _faaLoading = false;
     });
   }
 
-  Future<void> _openPdf(String rawUrl) async {
-    final url = rawUrl.trim();
-    if (url.isEmpty) return;
-    final uri = Uri.tryParse(url);
-    if (uri == null) return;
+  Future<void> _openDtpp(String ident) async {
+    final uri = dtppSearchUri(ident);
     try {
       if (await canLaunchUrl(uri)) {
         await launchUrl(uri, mode: LaunchMode.externalApplication);
       } else if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Could not open chart')),
+          const SnackBar(content: Text('Could not open faa.gov')),
         );
       }
     } catch (_) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Could not open chart')),
+          const SnackBar(content: Text('Could not open faa.gov')),
         );
       }
     }
@@ -328,13 +279,13 @@ class _AirportScreenState extends State<AirportScreen> {
   }
 
   // ---------------------------------------------------------------------------
-  // Enriched FAA data (aviationapi.com)
+  // Field details (aviationweather.gov) + FAA d-TPP charts link
   // ---------------------------------------------------------------------------
 
   Widget _buildFaaSection() {
     if (_faaLoading) {
       return _buildSectionCard(
-        title: 'FAA DATA',
+        title: 'FIELD DETAILS',
         child: const Padding(
           padding: EdgeInsets.symmetric(vertical: 16),
           child: Center(
@@ -344,83 +295,79 @@ class _AirportScreenState extends State<AirportScreen> {
       );
     }
 
-    if (_faaError != null) {
-      return _buildSectionCard(
-        title: 'FAA DATA',
-        child: Row(
-          children: [
-            const Icon(Icons.cloud_off, color: Color(0xFFFFB300), size: 18),
-            const SizedBox(width: 8),
-            Expanded(
-              child: Text(
-                _faaError!,
-                style: GoogleFonts.inter(fontSize: 12, color: Colors.white54),
-              ),
-            ),
-          ],
-        ),
-      );
-    }
+    final airport = _airport!;
+    final isUs = _faaDetail?.isUs ??
+        const {'US', 'USA', 'United States'}.contains(airport.country);
 
-    if (_faaDetail == null && _charts.isEmpty) {
-      return _buildSectionCard(
-        title: 'FAA DATA',
-        child: Row(
-          children: [
-            const Icon(Icons.public, color: Colors.white38, size: 18),
-            const SizedBox(width: 8),
-            Expanded(
-              child: Text(
-                'Detailed FAA data available for US airports.',
-                style: GoogleFonts.inter(fontSize: 12, color: Colors.white54),
-              ),
-            ),
-          ],
-        ),
-      );
+    Widget details;
+    if (_faaError != null) {
+      details = _buildNoteCard(Icons.cloud_off, const Color(0xFFFFB300),
+          _faaError!);
+    } else if (_faaDetail == null) {
+      details = _buildNoteCard(Icons.public, Colors.white38,
+          'aviationweather.gov has no field details for ${airport.icao}.');
+    } else {
+      details = _buildFieldDetailsCard();
     }
 
     return Column(
       children: [
-        if (_faaDetail != null) _buildFieldDetailsCard(),
-        if (_faaDetail != null && _charts.isNotEmpty)
+        details,
+        if (isUs) ...[
           const SizedBox(height: 16),
-        if (_charts.isNotEmpty) _buildChartsCard(),
+          _buildChartsCard(),
+        ],
       ],
+    );
+  }
+
+  Widget _buildNoteCard(IconData icon, Color color, String text) {
+    return _buildSectionCard(
+      title: 'FIELD DETAILS',
+      child: Row(
+        children: [
+          Icon(icon, color: color, size: 18),
+          const SizedBox(width: 8),
+          Expanded(
+            child: Text(
+              text,
+              style: GoogleFonts.inter(fontSize: 12, color: Colors.white54),
+            ),
+          ),
+        ],
+      ),
     );
   }
 
   Widget _buildFieldDetailsCard() {
     final d = _faaDetail!;
-    String val(String key) {
-      final raw = d[key];
-      if (raw == null) return '—';
-      final s = raw.toString().trim();
-      return s.isEmpty ? '—' : s;
-    }
-
-    String yesNo(String key) {
-      final s = val(key).toUpperCase();
-      if (s == 'Y' || s == 'YES' || s == 'TRUE') return 'Yes';
-      if (s == 'N' || s == 'NO' || s == 'FALSE') return 'No';
-      return s == '—' ? '—' : s;
-    }
-
-    final elevation = val('elevation');
+    String orDash(String s) => s.isEmpty ? '—' : s;
 
     return _buildSectionCard(
       title: 'FIELD DETAILS',
       child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          _buildDetailRow(Icons.location_city, 'Facility',
-              val('facility_name')),
+          _buildDetailRow(Icons.location_city, 'Facility', orDash(d.name)),
           _buildDetailRow(Icons.control_camera, 'Control Tower',
-              yesNo('control_tower')),
-          _buildDetailRow(Icons.record_voice_over, 'CTAF', val('ctaf')),
-          _buildDetailRow(Icons.radio, 'UNICOM', val('unicom')),
+              d.towered ? 'Yes' : 'None listed'),
+          _buildDetailRow(Icons.radio, 'Frequencies',
+              d.frequencies.isEmpty ? 'None listed' : d.frequencies.join('\n')),
           _buildDetailRow(Icons.height, 'Elevation',
-              elevation == '—' ? '—' : '$elevation ft MSL'),
-          _buildDetailRow(Icons.flag, 'Status', val('status')),
+              d.elevationM == null
+                  ? '—'
+                  : '${d.elevationFt} ft (${d.elevationM} m) MSL'),
+          _buildDetailRow(Icons.explore, 'Magnetic Var.',
+              orDash(d.magneticVariation)),
+          _buildDetailRow(Icons.airplanemode_active, 'Runways',
+              d.runways.isEmpty ? '—' : d.runways.join('\n')),
+          const SizedBox(height: 6),
+          Text(
+            d.source == 'FAA'
+                ? 'Source: FAA data via aviationweather.gov'
+                : 'Source: aviationweather.gov',
+            style: GoogleFonts.inter(fontSize: 10, color: Colors.white30),
+          ),
         ],
       ),
     );
@@ -455,80 +402,31 @@ class _AirportScreenState extends State<AirportScreen> {
   }
 
   Widget _buildChartsCard() {
-    const chartOrder = ['APD', 'IAP', 'DP', 'STAR', 'MIN'];
-    const chartLabels = {
-      'APD': 'Airport Diagram',
-      'IAP': 'Instrument Approaches',
-      'DP': 'Departures (SID)',
-      'STAR': 'Arrivals (STAR)',
-      'MIN': 'Takeoff / Alt Minimums',
-      'LAH': 'Land & Hold Short',
-      'HOT': 'Hot Spots',
-      'OTHER': 'Other Charts',
-    };
-
-    final keys = <String>[
-      ...chartOrder.where(_charts.containsKey),
-      ..._charts.keys.where((k) => !chartOrder.contains(k)),
-    ];
-
+    final ident = _airport!.icao.isNotEmpty
+        ? _airport!.icao
+        : _controller.text.trim().toUpperCase();
     return _buildSectionCard(
       title: 'CHARTS & PLATES',
       child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          for (final code in keys)
-            Theme(
-              data: Theme.of(context).copyWith(
-                dividerColor: Colors.transparent,
-              ),
-              child: ExpansionTile(
-                tilePadding: EdgeInsets.zero,
-                childrenPadding: const EdgeInsets.only(bottom: 8),
-                iconColor: const Color(0xFF00BCD4),
-                collapsedIconColor: Colors.white54,
-                title: Text(
-                  '${chartLabels[code] ?? code} (${_charts[code]!.length})',
-                  style: GoogleFonts.orbitron(
-                    fontSize: 11,
-                    color: Colors.white,
-                    letterSpacing: 1,
-                  ),
-                ),
-                children: [
-                  for (final chart in _charts[code]!) _buildChartRow(chart),
-                ],
-              ),
+          Text(
+            'Airport diagram, approaches, departures, arrivals and minimums '
+            'for $ident are published by the FAA in the d-TPP (cycle '
+            '${dtppCycleFor(DateTime.now())}). Opens faa.gov in your browser.',
+            style: GoogleFonts.inter(fontSize: 12, color: Colors.white54),
+          ),
+          const SizedBox(height: 10),
+          OutlinedButton.icon(
+            onPressed: () => _openDtpp(ident),
+            icon: const Icon(Icons.open_in_new, size: 16),
+            label: const Text('Open FAA terminal procedures'),
+            style: OutlinedButton.styleFrom(
+              foregroundColor: const Color(0xFF00BCD4),
+              side: const BorderSide(color: Color(0xFF00BCD4)),
             ),
+          ),
         ],
-      ),
-    );
-  }
-
-  Widget _buildChartRow(Map<String, dynamic> chart) {
-    final name = (chart['chart_name'] ?? 'Chart').toString().trim();
-    final pdf = (chart['pdf_path'] ?? '').toString().trim();
-    final tappable = pdf.isNotEmpty;
-
-    return InkWell(
-      onTap: tappable ? () => _openPdf(pdf) : null,
-      borderRadius: BorderRadius.circular(8),
-      child: Padding(
-        padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 4),
-        child: Row(
-          children: [
-            const Icon(Icons.picture_as_pdf, color: Color(0xFFFFB300),
-                size: 18),
-            const SizedBox(width: 10),
-            Expanded(
-              child: Text(
-                name.isEmpty ? 'Chart' : name,
-                style: GoogleFonts.inter(fontSize: 12, color: Colors.white70),
-              ),
-            ),
-            if (tappable)
-              const Icon(Icons.open_in_new, color: Colors.white38, size: 14),
-          ],
-        ),
       ),
     );
   }

@@ -37,6 +37,8 @@ keys, QA passwords) never appear in any file here.
 | `PRIVACY_URL` · `TERMS_URL` · `SUPPORT_URL` | Legal and support links. Play requires the privacy URL to resolve. |
 | `APP_STORE_URL` · `PLAY_STORE_URL` | "Rate app" targets. |
 | `GOOGLE_SERVER_CLIENT_ID` · `GOOGLE_IOS_CLIENT_ID` | Public OAuth client ids for native sign-in. Optional; empty disables native Google sign-in. |
+| `ADMOB_BANNER_ANDROID` · `ADMOB_BANNER_IOS` · `ADMOB_INTERSTITIAL_ANDROID` · `ADMOB_INTERSTITIAL_IOS` · `ADMOB_REWARDED_ANDROID` · `ADMOB_REWARDED_IOS` | AdMob ad units. **Not in any file here** — CI passes them from `agl-manifest/docs/admob-ids.json` (`scripts/agl_paths.py` `admob_defines`). Empty: debug/profile serve Google's test units; a release build requests no ad. |
+| `SCREENSHOT` | `true` only for store-screenshot builds; no ad SDK, consent form or ad is loaded. |
 | `QA_EMAIL` · `QA_PASSWORD` · `DEV_EMAIL` · `DEV_PASSWORD` · `ADMIN_EMAIL` · `ADMIN_PASSWORD` | **Secrets.** From `env/secrets.json` only. Absent by default, which makes the whole test-account path inert — the "Use test account" button and the credential hint card are not rendered at all. |
 
 ## Commands

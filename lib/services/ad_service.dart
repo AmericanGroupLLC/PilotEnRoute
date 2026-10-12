@@ -5,70 +5,87 @@ import 'package:google_mobile_ads/google_mobile_ads.dart';
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Ad Unit IDs
-// Replace test IDs with real ones from AdMob console before release
+// Real units are never committed. CI passes them at build time from
+// agl-manifest/docs/admob-ids.json (scripts/agl_paths.py admob_defines) as
+//   --dart-define=ADMOB_<BANNER|INTERSTITIAL|REWARDED>_<ANDROID|IOS>=<unit>
 // ─────────────────────────────────────────────────────────────────────────────
 class AdUnitIds {
-  // ── Android ─────────────────────────────────────────────────────────────
-  static const String androidBanner =
-      'ca-app-pub-3940256099942544/6300978111'; // TEST — replace with real
-  static const String androidInterstitial =
-      'ca-app-pub-3940256099942544/1033173712'; // TEST — replace with real
-  static const String androidRewarded =
-      'ca-app-pub-3940256099942544/5224354917'; // TEST — replace with real
-  static const String androidNative =
-      'ca-app-pub-3940256099942544/2247696110'; // TEST — replace with real
+  // ── Build-time units (empty when the define is not passed) ──────────────
+  static const String _androidBanner =
+      String.fromEnvironment('ADMOB_BANNER_ANDROID');
+  static const String _androidInterstitial =
+      String.fromEnvironment('ADMOB_INTERSTITIAL_ANDROID');
+  static const String _androidRewarded =
+      String.fromEnvironment('ADMOB_REWARDED_ANDROID');
+  static const String _iosBanner = String.fromEnvironment('ADMOB_BANNER_IOS');
+  static const String _iosInterstitial =
+      String.fromEnvironment('ADMOB_INTERSTITIAL_IOS');
+  static const String _iosRewarded =
+      String.fromEnvironment('ADMOB_REWARDED_IOS');
 
-  // ── iOS ──────────────────────────────────────────────────────────────────
-  static const String iosBanner =
-      'ca-app-pub-3940256099942544/2934735716'; // TEST — replace with real
-  static const String iosInterstitial =
-      'ca-app-pub-3940256099942544/4411468910'; // TEST — replace with real
-  static const String iosRewarded =
-      'ca-app-pub-3940256099942544/1712485313'; // TEST — replace with real
-  static const String iosNative =
-      'ca-app-pub-3940256099942544/3986624511'; // TEST — replace with real
+  // ── Google's published test units, debug/profile only ───────────────────
+  // https://developers.google.com/admob/android/test-ads
+  // https://developers.google.com/admob/ios/test-ads
+  static const String testAndroidBanner =
+      'ca-app-pub-3940256099942544/6300978111';
+  static const String testAndroidInterstitial =
+      'ca-app-pub-3940256099942544/1033173712';
+  static const String testAndroidRewarded =
+      'ca-app-pub-3940256099942544/5224354917';
+  static const String testIosBanner = 'ca-app-pub-3940256099942544/2934735716';
+  static const String testIosInterstitial =
+      'ca-app-pub-3940256099942544/4411468910';
+  static const String testIosRewarded =
+      'ca-app-pub-3940256099942544/1712485313';
 
-  // ── Getters ──────────────────────────────────────────────────────────────
-  static String get banner =>
-      Platform.isIOS ? iosBanner : androidBanner;
-  static String get interstitial =>
-      Platform.isIOS ? iosInterstitial : androidInterstitial;
-  static String get rewarded =>
-      Platform.isIOS ? iosRewarded : androidRewarded;
-  static String get native =>
-      Platform.isIOS ? iosNative : androidNative;
+  /// `--dart-define=SCREENSHOT=true` marks a store-screenshot build. No ad may
+  /// load in one: a "Test Ad" banner must never reach a store listing.
+  static const bool isScreenshotBuild = bool.fromEnvironment('SCREENSHOT');
 
-  // ── Are these real units? ────────────────────────────────────────────────
-  /// AGL's real AdMob publisher. A unit from any other publisher — Google's
-  /// public test publisher above, or an uppercase `YOUR_…` placeholder — is not
-  /// a real unit and must never be requested outside debug.
+  static bool get _isIos {
+    if (kIsWeb) return false;
+    try {
+      return Platform.isIOS;
+    } catch (_) {
+      return false;
+    }
+  }
+
+  /// The unit to request, or null for "request no ad".
   ///
-  /// THIS IS THE ONE PLACE TO DROP THE REAL IDS: replace the eight constants
-  /// above with the units from AdMob console → Apps → PilotEnRoute → Ad units
-  /// and ads switch on automatically, with no other code change, as soon as
-  /// they are real `ca-app-pub-8528784688453695/...` ids.
-  static const String _realAdPublisher = 'ca-app-pub-8528784688453695';
+  /// A unit passed at build time is used as is. Without one, debug and profile
+  /// builds fall back to Google's test unit so the integration stays testable,
+  /// and a RELEASE build requests nothing: Google's test ads must never be
+  /// served from a store build. A screenshot build never requests an ad.
+  @visibleForTesting
+  static String? resolve({
+    required String define,
+    required String testUnit,
+    bool release = kReleaseMode,
+    bool screenshot = isScreenshotBuild,
+  }) {
+    if (screenshot) return null;
+    if (define.isNotEmpty) return define;
+    return release ? null : testUnit;
+  }
 
-  static bool _isRealUnit(String id) =>
-      id.startsWith('$_realAdPublisher/') && !id.contains('YOUR_');
+  // ── Getters (null = no ad for this format in this build) ────────────────
+  static String? get banner => _isIos
+      ? resolve(define: _iosBanner, testUnit: testIosBanner)
+      : resolve(define: _androidBanner, testUnit: testAndroidBanner);
+  static String? get interstitial => _isIos
+      ? resolve(define: _iosInterstitial, testUnit: testIosInterstitial)
+      : resolve(
+          define: _androidInterstitial, testUnit: testAndroidInterstitial);
+  static String? get rewarded => _isIos
+      ? resolve(define: _iosRewarded, testUnit: testIosRewarded)
+      : resolve(define: _androidRewarded, testUnit: testAndroidRewarded);
 
-  /// True only when every unit this app actually requests is a real one.
-  /// `native` is deliberately excluded: it is declared but never loaded, so
-  /// requiring it would keep ads switched off forever. Add it back here if a
-  /// native placement is ever wired up.
-  static bool get adUnitsAreReal => const [
-        androidBanner,
-        iosBanner,
-        androidInterstitial,
-        iosInterstitial,
-        androidRewarded,
-        iosRewarded,
-      ].every(_isRealUnit);
-
-  /// Whether this build may request an ad at all. Debug builds keep serving the
-  /// test units so the integration stays testable; every other build refuses
-  /// until [adUnitsAreReal], so a test ad cannot reach a real user.
-  static bool get adsAllowedForThisBuild => kDebugMode || adUnitsAreReal;
+  /// Whether this build may touch the ad SDK at all. A screenshot build may
+  /// not — it skips UMP and MobileAds initialisation entirely, so neither a
+  /// consent form nor an ad can appear in a store screenshot. Per-format
+  /// availability is the null check on [banner] / [interstitial] / [rewarded].
+  static bool get adsAllowedForThisBuild => !isScreenshotBuild;
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -92,6 +109,8 @@ class AdService extends ChangeNotifier {
   // ── Initialize MobileAds SDK ─────────────────────────────────────────────
   Future<void> initialize() async {
     if (kIsWeb) return; // AdMob not supported on web
+    // Store-screenshot build: no consent form, no SDK, no ad.
+    if (!AdUnitIds.adsAllowedForThisBuild) return;
     // AdMob policy: in the EEA, the UK and Switzerland an ad may not be
     // *requested* until the user has been asked — a non-personalised ad is
     // not a substitute. UMP decides whether a form is required from the
@@ -117,8 +136,7 @@ class AdService extends ChangeNotifier {
   // ── Check if ads should show ─────────────────────────────────────────────
   bool shouldShowAds() {
     if (kIsWeb) return false;
-    // Serving Google's test units to a real user is an AdMob policy breach and
-    // earns nothing, so a non-debug build declines until real units are in.
+    // A store-screenshot build never shows an ad.
     if (!AdUnitIds.adsAllowedForThisBuild) return false;
     // No ad may be requested until UMP says consent allows it. This is the
     // predicate every caller already checks before createBannerAd(), which
@@ -127,9 +145,13 @@ class AdService extends ChangeNotifier {
   }
 
   // ── Banner Ad Widget ─────────────────────────────────────────────────────
-  BannerAd createBannerAd() {
+  /// Null when this build has no banner unit (a release build without the
+  /// ADMOB_BANNER_* define, or a screenshot build) — request nothing then.
+  BannerAd? createBannerAd() {
+    final unit = AdUnitIds.banner;
+    if (unit == null) return null;
     return BannerAd(
-      adUnitId: AdUnitIds.banner,
+      adUnitId: unit,
       size: AdSize.banner,
       request: const AdRequest(),
       listener: BannerAdListener(
@@ -147,8 +169,10 @@ class AdService extends ChangeNotifier {
     if (!AglConsent.adsAllowed) return;
     if (kIsWeb) return;
     if (!AdUnitIds.adsAllowedForThisBuild) return;
+    final unit = AdUnitIds.interstitial;
+    if (unit == null) return;
     InterstitialAd.load(
-      adUnitId: AdUnitIds.interstitial,
+      adUnitId: unit,
       request: const AdRequest(),
       adLoadCallback: InterstitialAdLoadCallback(
         onAdLoaded: (ad) {
@@ -196,8 +220,10 @@ class AdService extends ChangeNotifier {
     if (!AglConsent.adsAllowed) return;
     if (kIsWeb) return;
     if (!AdUnitIds.adsAllowedForThisBuild) return;
+    final unit = AdUnitIds.rewarded;
+    if (unit == null) return;
     RewardedAd.load(
-      adUnitId: AdUnitIds.rewarded,
+      adUnitId: unit,
       request: const AdRequest(),
       rewardedAdLoadCallback: RewardedAdLoadCallback(
         onAdLoaded: (ad) {

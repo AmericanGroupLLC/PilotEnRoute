@@ -65,7 +65,7 @@ App launch → `main()` inits Hive/tz/notifications/AdMob/auth → `MultiProvide
 | Add a service | `lib/services/x_service.dart`; if stateful add `ChangeNotifierProvider` in `main.dart` |
 | Theme / colors | `_buildTheme()` in `lib/main.dart` (primary `#00BCD4`, secondary `#FFB300`, bg `#0A1628`, Orbitron+Inter fonts) |
 | Backend URL / keys / OAuth IDs | `lib/config/backend_config.dart` |
-| AdMob ad unit IDs | `lib/services/ad_service.dart` |
+| AdMob ad unit IDs | `--dart-define=ADMOB_<FORMAT>_<PLATFORM>` read in `lib/services/ad_service.dart`; app ids in AndroidManifest.xml / Info.plist |
 | AI model/key | `lib/services/ai_service.dart` (`ANTHROPIC_API_KEY` dart-define) |
 | Bundled content | `assets/data/*.json` |
 | App icons | regenerate from `assets/logo/master_1024.png` → iOS `AppIcon.appiconset/*`, Android `mipmap-*/ic_launcher.png` |
@@ -79,7 +79,7 @@ App launch → `main()` inits Hive/tz/notifications/AdMob/auth → `MultiProvide
 - `backend_config.dart` intentionally ships client-public values (anon key, OAuth client IDs, Firebase project id) — no server secrets. Don't add service-role secrets here.
 - `ai_service` runs an honest "offline reference" mode when no API key is supplied; it never fakes a live AI.
 - `cloud_sync_service` is a same-device stub, not real multi-device sync.
-- AdMob still uses placeholder/test IDs — replace before store release (see README checklist).
+- AdMob units come from `--dart-define`; a release build without them requests no ad (it never falls back to Google's test units).
 - Android release currently signs with the debug keystore (TODO in `build.gradle.kts`).
 - Two asset dirs (`assets/icons/`, `assets/lottie/`) exist only as placeholders (`.gitkeep`) to satisfy pubspec declarations.
 

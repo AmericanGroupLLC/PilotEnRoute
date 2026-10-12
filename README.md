@@ -245,21 +245,20 @@ The repository includes automated workflows:
 
 ## 💰 Monetization Setup
 
-### Google AdMob (Replace Test IDs Before Release)
-```dart
-// lib/services/ad_service.dart
-static const String _androidBannerAdUnitId = 'ca-app-pub-XXXXXXXX/XXXXXXXX';
-static const String _iosBannerAdUnitId = 'ca-app-pub-XXXXXXXX/XXXXXXXX';
+### Google AdMob
+App ids are committed: `android/app/src/main/AndroidManifest.xml`
+(`com.google.android.gms.ads.APPLICATION_ID`) and `ios/Runner/Info.plist`
+(`GADApplicationIdentifier`). Ad **unit** ids are not — CI passes them from
+`agl-manifest/docs/admob-ids.json`:
+```sh
+flutter build appbundle --release \
+  --dart-define=ADMOB_BANNER_ANDROID=ca-app-pub-…/… \
+  --dart-define=ADMOB_INTERSTITIAL_ANDROID=ca-app-pub-…/… \
+  --dart-define=ADMOB_REWARDED_ANDROID=ca-app-pub-…/…
 ```
-```groovy
-// android/app/build.gradle
-manifestPlaceholders += [admobAppId: "ca-app-pub-XXXXXXXX~XXXXXXXXXX"]
-```
-```xml
-<!-- ios/Runner/Info.plist -->
-<key>GADApplicationIdentifier</key>
-<string>ca-app-pub-XXXXXXXX~XXXXXXXXXX</string>
-```
+Without a define, debug/profile builds use Google's test units and a release
+build requests no ad (`AdUnitIds.resolve` in `lib/services/ad_service.dart`).
+`--dart-define=SCREENSHOT=true` disables ads entirely.
 
 ### In-App Purchases (Set Real Product IDs)
 ```dart

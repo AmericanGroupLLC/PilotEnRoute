@@ -57,13 +57,13 @@
             </intent-filter>
         </receiver>
 
-        <!-- AdMob application ID. The Google Mobile Ads SDK throws an
-             IllegalStateException from MobileAds.initialize() when this
-             meta-data is missing, which crashed the app on launch. Value is
-             supplied by the admobAppId manifest placeholder in build.gradle. -->
+        <!-- AdMob application ID (PilotEnRoute, Android; from
+             agl-manifest/docs/admob-ids.json). The Google Mobile Ads SDK
+             throws an IllegalStateException from MobileAds.initialize() when
+             this meta-data is missing, which crashed the app on launch. -->
         <meta-data
             android:name="com.google.android.gms.ads.APPLICATION_ID"
-            android:value="${admobAppId}" />
+            android:value="ca-app-pub-8528784688453695~2760007152" />
 
         <meta-data
             android:name="flutterEmbedding"

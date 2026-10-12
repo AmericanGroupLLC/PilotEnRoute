@@ -31,13 +31,6 @@ if (flutterVersionName == null) {
     flutterVersionName = '1.0'
 }
 
-// AdMob application ID, resolved in order: -PadmobAppId, key.properties, then
-// Google's public TEST id. The manifest consumes it as ${admobAppId}; the
-// Google Mobile Ads SDK throws at initialize() if the meta-data is absent.
-def admobAppId = (project.findProperty("admobAppId")
-        ?: keystoreProperties["admobAppId"]
-        ?: "ca-app-pub-3940256099942544~3347511713").toString()
-
 android {
     namespace "com.americangroupllc.pilotenroute"
     compileSdk flutter.compileSdkVersion
@@ -69,11 +62,6 @@ android {
         versionCode flutterVersionCode.toInteger()
         versionName flutterVersionName
         multiDexEnabled true
-        // AdMob App ID. Overridable so a release build carries the real ID
-        // without it living in git: key.properties (admobAppId=...) or
-        // -PadmobAppId=ca-app-pub-XXXX~YYYY. The default is Google's public
-        // TEST app ID, which serves no real ads.
-        manifestPlaceholders += [admobAppId: admobAppId]
     }
 
     signingConfigs {

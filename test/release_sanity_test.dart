@@ -183,23 +183,92 @@ void main() {
           reason: 'this app serves ads but nothing references consent');
     });
 
-    test('a non-debug build cannot request an ad with test unit ids', () {
-      // PilotEnRoute has no real AdMob units yet, so serving an ad at all would
-      // mean serving Google's demo units to real users: no revenue, and an
-      // AdMob policy breach that puts the whole publisher account at risk.
-      expect(AdUnitIds.adUnitsAreReal, isFalse,
-          reason: 'real ad units have landed — update this expectation');
-      expect(AdUnitIds.adsAllowedForThisBuild, isTrue,
-          reason: 'debug builds must keep serving the test units');
+    test('the AdMob application ids are PilotEnRoute\'s real ones', () {
+      // From agl-manifest/docs/admob-ids.json. Google's test app id here
+      // would make every production impression worthless.
+      expect(read('android/app/src/main/AndroidManifest.xml'),
+          contains('ca-app-pub-8528784688453695~2760007152'));
+      expect(read('ios/Runner/Info.plist'),
+          contains('ca-app-pub-8528784688453695~9905754024'));
+    });
 
-      // kDebugMode cannot be flipped from a test, so this checks that the two
-      // places that would otherwise reach the SDK still consult the gate.
-      expect(read('lib/services/ad_service.dart'),
-          contains('adsAllowedForThisBuild'),
-          reason: 'the ad service no longer checks whether the unit ids '
-              'are real before requesting an ad');
+    test('a release build without a unit define requests no ad', () {
+      // Google's test units must never be served from a store build, so an
+      // empty ADMOB_* define in release means "no ad", not "test ad".
+      expect(
+          AdUnitIds.resolve(
+              define: '',
+              testUnit: AdUnitIds.testAndroidBanner,
+              release: true,
+              screenshot: false),
+          isNull);
+      // Debug/profile keep the test unit so the integration stays testable.
+      expect(
+          AdUnitIds.resolve(
+              define: '',
+              testUnit: AdUnitIds.testAndroidBanner,
+              release: false,
+              screenshot: false),
+          AdUnitIds.testAndroidBanner);
+      // A unit passed at build time is used as is.
+      const live = 'ca-app-pub-8528784688453695/9776841645';
+      expect(
+          AdUnitIds.resolve(
+              define: live,
+              testUnit: AdUnitIds.testAndroidBanner,
+              release: true,
+              screenshot: false),
+          live);
+      // A store-screenshot build never requests an ad.
+      expect(
+          AdUnitIds.resolve(
+              define: live,
+              testUnit: AdUnitIds.testAndroidBanner,
+              release: true,
+              screenshot: true),
+          isNull);
+      expect(
+          AdUnitIds.resolve(
+              define: '',
+              testUnit: AdUnitIds.testAndroidBanner,
+              release: false,
+              screenshot: true),
+          isNull);
+
+      // This test binary is a debug build with no defines.
+      expect(AdUnitIds.banner, AdUnitIds.testAndroidBanner);
+      expect(AdUnitIds.adsAllowedForThisBuild, isTrue);
+    });
+
+    test('no ad unit id is hard-coded on a release path', () {
+      // Units arrive as --dart-define=ADMOB_<FORMAT>_<PLATFORM>; the only
+      // literal units allowed are Google's test units, reached solely through
+      // AdUnitIds.resolve's non-release branch.
+      final unit = RegExp(r'ca-app-pub-\d+/\d+');
+      for (final f in Directory('lib')
+          .listSync(recursive: true)
+          .whereType<File>()
+          .where((f) => f.path.endsWith('.dart'))) {
+        for (final m in unit.allMatches(f.readAsStringSync())) {
+          expect(m.group(0), startsWith('ca-app-pub-3940256099942544/'),
+              reason: '${f.path} hard-codes a non-test ad unit');
+        }
+      }
+      final service = read('lib/services/ad_service.dart');
+      for (final key in const [
+        'ADMOB_BANNER_ANDROID',
+        'ADMOB_BANNER_IOS',
+        'ADMOB_INTERSTITIAL_ANDROID',
+        'ADMOB_INTERSTITIAL_IOS',
+        'ADMOB_REWARDED_ANDROID',
+        'ADMOB_REWARDED_IOS',
+      ]) {
+        expect(service, contains("String.fromEnvironment('$key')"));
+      }
+      // The places that would otherwise reach the SDK still consult the gate.
+      expect(service, contains('adsAllowedForThisBuild'));
       expect(read('lib/widgets/ad_banner_widget.dart'),
-          contains('adsAllowedForThisBuild'),
+          contains('AdUnitIds.banner == null'),
           reason: 'the banner slot would reserve 52px for an ad that is '
               'never requested');
     });

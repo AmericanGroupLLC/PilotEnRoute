@@ -122,6 +122,16 @@ void main() {
       'ANTHROPIC_API_KEY',
       'GOOGLE_IOS_CLIENT_ID',
       'GOOGLE_SERVER_CLIENT_ID',
+      // AdMob units, passed by CI from agl-manifest/docs/admob-ids.json and
+      // deliberately absent from env/*.json (see env/README.md).
+      'ADMOB_BANNER_ANDROID',
+      'ADMOB_BANNER_IOS',
+      'ADMOB_INTERSTITIAL_ANDROID',
+      'ADMOB_INTERSTITIAL_IOS',
+      'ADMOB_REWARDED_ANDROID',
+      'ADMOB_REWARDED_IOS',
+      // Store-screenshot builds (agl-manifest scripts/screenshots.py).
+      'SCREENSHOT',
     };
     expect(
       keys.difference(known),

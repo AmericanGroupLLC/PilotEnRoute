@@ -5,6 +5,7 @@ library;
 import 'dart:io';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:pilot_enroute/core/minimums/minimums_check.dart';
 import 'package:pilot_enroute/ui/status_tag.dart';
@@ -92,6 +93,41 @@ void main() {
         expect(src.contains('RadialGradient'), isFalse, reason: f.path);
       }
     });
+  });
+
+  group('chips', () {
+    for (final b in Brightness.values) {
+      testWidgets('chip labels are readable on the ${b.name} theme',
+          (tester) async {
+        final theme = buildRbfTheme(b);
+        await tester.pumpWidget(MaterialApp(
+          theme: theme,
+          home: Scaffold(
+            body: Wrap(children: [
+              ChoiceChip(
+                  label: const Text('ASEL'), selected: false, onSelected: (_) {}),
+              ChoiceChip(
+                  label: const Text('AMEL'), selected: true, onSelected: (_) {}),
+            ]),
+          ),
+        ));
+        for (final label in ['ASEL', 'AMEL']) {
+          final style = DefaultTextStyle.of(tester.element(find.text(label)))
+              .style
+              .merge(tester.widget<Text>(find.text(label)).style);
+          final rendered = tester
+              .renderObject<RenderParagraph>(find.text(label))
+              .text
+              .style!;
+          final color = rendered.color ?? style.color!;
+          // The label must differ clearly from the page surface.
+          final l1 = color.computeLuminance();
+          final l2 = theme.colorScheme.surface.computeLuminance();
+          final contrast = (l1 > l2 ? (l1 + .05) / (l2 + .05) : (l2 + .05) / (l1 + .05));
+          expect(contrast, greaterThan(4.5), reason: '$label on ${b.name}');
+        }
+      });
+    }
   });
 
   group('status tags', () {

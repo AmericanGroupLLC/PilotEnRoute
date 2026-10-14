@@ -250,10 +250,9 @@ ThemeData buildRbfTheme(Brightness brightness, {TargetPlatform? platform}) {
     textButtonTheme: TextButtonThemeData(
       style: TextButton.styleFrom(shape: shape),
     ),
-    chipTheme: base.chipTheme.copyWith(
-      shape: shape,
-      labelStyle: const TextStyle(fontFamily: AppFonts.body),
-    ),
+    // Only the shape changes: replacing labelStyle wholesale dropped its
+    // colour, and on the simulator the chip labels rendered white on white.
+    chipTheme: base.chipTheme.copyWith(shape: shape),
     floatingActionButtonTheme: FloatingActionButtonThemeData(
       shape: shape,
       backgroundColor: scheme.primary,

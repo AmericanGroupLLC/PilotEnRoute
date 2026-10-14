@@ -6,8 +6,7 @@ import 'package:pilot_enroute/app_env.dart';
 
 /// Build-time guard for the environment configuration.
 ///
-/// AppEnv.validate() deliberately does not throw in release, so this is where
-/// a bad `env/*.json` is actually caught. It runs in CI on every push.
+/// A bad `env/*.json` is caught here. It runs in CI on every push.
 void main() {
   Map<String, dynamic> load(String env) =>
       jsonDecode(File('env/$env.json').readAsStringSync())
@@ -20,8 +19,6 @@ void main() {
   // gitignored env/secrets.json and must never appear in a committed env file.
   const required = [
     'APP_ENV',
-    'SUPABASE_URL',
-    'SUPABASE_ANON_KEY',
     'PRIVACY_URL',
     'TERMS_URL',
     'SUPPORT_URL',
@@ -150,31 +147,17 @@ void main() {
     expect(AppEnv.banner, isEmpty);
   });
 
-  test('validate() rejects a non-https or empty backend URL', () {
-    expect(
-      () => AppEnv.validate(
-        supabaseUrl: 'http://insecure.example',
-        supabaseAnonKey: 'k',
-      ),
-      throwsStateError,
-    );
-    expect(
-      () => AppEnv.validate(
-        supabaseUrl: '',
-        supabaseAnonKey: 'k',
-      ),
-      throwsStateError,
-    );
-  });
-
-  test('validate() accepts a sound configuration', () {
-    expect(
-      AppEnv.validate(
-        supabaseUrl: 'https://ok.supabase.co',
-        supabaseAnonKey: 'k',
-      ),
-      isEmpty,
-    );
+  test('the app reads no Supabase configuration: there is no backend', () {
+    // PilotEnRoute keeps everything on the device; the AppEnv.validate()
+    // Supabase check and its two tests were removed with the backend.
+    for (final f
+        in Directory('lib')
+            .listSync(recursive: true)
+            .whereType<File>()
+            .where((f) => f.path.endsWith('.dart'))) {
+      expect(f.readAsStringSync(), isNot(contains('SUPABASE_')),
+          reason: f.path);
+    }
   });
 
   test('no committed source ships a literal test credential', () {

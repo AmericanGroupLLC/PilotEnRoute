@@ -1,147 +1,90 @@
-# PilotEnRoute — Architecture & Design
+# PilotEnRoute — design
 
-Companion to `AGENTS.md`. This is the human-readable architecture reference.
+## Product
+One job, end to end: log each flight with what 14 CFR part 61 counts; before
+the next flight, see on one card whether you are legal for it and whether the
+live weather at your airport is inside your own personal minimums — each item
+with its number, its limit and the date it lapses. Ground tool only; nothing
+here is for use in flight. No account: logbook, profile, minimums and check
+history live on the device.
 
-## 1. Overview
-PilotEnRoute is a cross-platform (iOS / Android / Web) Flutter application delivering an aviation
-training and utility suite: FAA education, exams/flashcards, a Flame-powered 2D flight simulator,
-digital logbook, flight planner, live weather and flight tracking, drone (Part 107) education,
-E6B/weight-and-balance/fuel calculators, pilot notifications, and monetization (AdMob + in-app
-purchases). It relies primarily on free public aviation APIs and on-device storage, with an optional
-AmericanGroupLLC backend for authentication and a hosted AI assistant.
+## Layers
+| Layer | Contents | Rule |
+|---|---|---|
+| `lib/core/` | legality engine, AWC decoding, minimums/Go verdict, logbook query/CSV/validation, reminder plan | Pure Dart, no Flutter import, dates injected — all unit-tested |
+| `lib/data/` | SQLite schema and migrations, in-memory store | `sqflite` only |
+| `lib/services/` | `ChangeNotifier`s the UI watches; the AWC HTTP client; notification plugin seams | Thin |
+| `lib/screens/`, `lib/ui/` | Widgets, theme | No business rules |
 
-- **Framework:** Flutter 3.44.x, Dart 3 (`sdk: '>=3.0.0 <4.0.0'`)
-- **State management:** `provider` (`ChangeNotifier`)
-- **Package name:** `pilot_enroute`, version `1.0.0+1`
+## Legality engine (`lib/core/legality/legality_engine.dart`)
+Inputs: entries, `PilotProfile`, `PlannedFlight` (date, category/class,
+tailwheel, passengers, night, IFR). Output: one `RuleStatus` per rule with
+state, `validThrough` / `lapsedOn`, summary, shortfall, notes and cite.
 
-## 2. Layers
-The codebase is a pragmatic 3-layer structure (no strict DDD/clean-architecture boundaries):
+| Rule | Computation |
+|---|---|
+| 61.57(a) | 3 T/O + 3 landings (day + night) on or after F−90 days, same category/class; tailwheel flight counts full stops in tailwheel only |
+| 61.57(b) | 3 night T/O + 3 night full-stop landings, same window and class |
+| 61.57(c)/(d) | each task in month T good through end of T+6; current-month tasks count; grace to end of 6 calendar months after the lapse month, then IPC; IPC entry resets; tasks after the grace window do not restore currency |
+| 61.56 | latest of profile date, entries flagged flight review or practical test; through end of the 24th calendar month; 61.56(g) student exemption |
+| 61.23(d) | the full table for first/second/third class × privileges × under-40/40+ (age unknown → shorter duration, stated) |
+| 61.23(c)(3) | BasicMed: CMEC 48 and course 24 calendar months; third-class privileges only |
+| 61.87(n), 61.89(a)(1) | student solo endorsement 90 days; no passengers |
 
-1. **Presentation** — `lib/screens/*` (one screen per route) and `lib/widgets/*` (shared UI).
-   Screens are `StatefulWidget`/`StatelessWidget` that read services through `Provider`.
-2. **Domain / services** — `lib/services/*`. Business logic, API clients, persistence, and
-   monetization. Stateful services extend `ChangeNotifier` and are provided app-wide.
-3. **Config / data** — `lib/config/backend_config.dart` for backend endpoints and client-public
-   keys; `assets/data/*.json` for bundled content.
+Not checked (stated on the card): type ratings, other endorsements, simulator
+credit rules, 61.57(e), BasicMed operating limits.
 
-Wiring happens in `lib/main.dart`: it initializes platform subsystems, constructs the
-`MultiProvider`, defines the `MaterialApp` theme, and maps ~45 named routes to screens.
+## Minimums (`lib/core/minimums/`)
+Ceiling = lowest BKN/OVC/OVX base (none reported ≠ 0). Visibility handles
+`"10+"`/`"6+"`/fractions. Crosswind: every runway end from AWC true
+`alignment`, smallest steady crosswind wins (ties → more headwind); gust
+component compared with the limit; VRB = full crosswind; calm = 0. TAF: every
+group overlapping departure ±1 h. Stale: METAR older than 90 min. Near =
+within 80 % of a limit. Wording never says "safe"; every result carries "Your
+decision, not the app's. Check an official briefing (1800wxbrief.com) before
+flight."
 
-## 3. Modules (feature screens)
-Grouped roughly as the drawer presents them:
+## Persistence
+- `pilot_logbook.db` schema v2: `logbook_entries` (v1 columns + category_class,
+  tailwheel, route, solo_time, day_full_stop_landings, holding, tracking,
+  flight_review, ipc, practical_test, night_flight) and `go_checks`.
+  v1 rows are kept with honest defaults (no category/class).
+- SharedPreferences: profile, minimums, home airport, reminder switches,
+  onboarding flag, documents metadata, scheduled reminder ids.
 
-- **Training:** simulation (Flame), education hub, checklists, emergency trainer, drone, quiz,
-  flashcards, FAA exam, endorsements, regulations, career, ICARA (international students).
-- **Live data:** weather, airport lookup, aviation news, flight tracker, NOTAMs, alerts, charts.
-- **Tools:** flight plan, map, E6B, weight & balance, fuel, wind, radio, nav DB, documents.
-- **Account / platform:** profile, account, notifications, integrations (Garmin/ForeFlight),
-  AI assistant, debrief, premium, store.
+## Reminders
+`lapseItemsFrom` evaluates a generic flight today (home class, passengers at
+night, IFR if rated) and takes each valid rule's `validThrough`; documents add
+their expiry. Reminders at 09:00 local 30 and 7 days before; stable ids
+(`reminderId`); `ReminderService` reschedules on any logbook/profile/document
+change and cancels the previous ids first.
 
-Each screen has a matching route in `main.dart` and typically a corresponding service.
+## Identity — "Remove Before Flight" placard
+- Light: placard white `#F7F7F4`, panel black `#1B1D1F`, RBF red `#C1121F`
+  (primary), panel grey `#3A3F44`, go green `#2B8A3E`, caution amber `#E09F00`.
+  Dark: `#15181B` / `#ECEDEE` / `#FF5A5F`. Hand-built `ColorScheme`.
+- Kit tools always render on the dark instrument panel (`PanelTheme`).
+- Fonts bundled: Sofia Sans Condensed (headings, tabs, result), Sofia Sans
+  (body), Fira Mono (METAR/TAF, times, hours, ICAO). All SIL OFL 1.1, from
+  github.com/lettersoup/Sofia-Sans and github.com/google/fonts (ofl/firamono).
+- 6 px radius, punched-tag status chips (`TagPainter`), ruled ledger rows, no
+  gradients. Every status = word + icon + colour.
+- Flight-category colours keep their meaning: VFR green, MVFR blue, IFR red,
+  LIFR magenta.
+- Icon/mark: `assets/logo/pilot_enroute_icon.svg` (tag on panel black) and
+  `pilot_enroute_mark.svg` (tag alone). Rendered with
+  `rsvg-convert -w 1024 -h 1024 <svg> -o <png>`, then resized with PIL to every
+  iOS AppIcon size (RGB, no alpha) and Android mipmap (adaptive foreground at
+  66/108 of the canvas). Launch: placard white + mark on both platforms.
 
-## 4. Data & persistence
-Three local stores are used deliberately:
+## Ads
+AdMob banner only, behind UMP consent: one in-list slot in Logbook (after the
+5th row) and one in Weather. Never on Today, the Go result or the entry form.
 
-- **shared_preferences** — the dominant store (~22 files): flags, JWTs (see security note), flashcard
-  progress, premium state, chat history, cloud-sync snapshot.
-- **sqflite** — relational data: `logbook_service` (FAA logbook entries) and `navdb_service`.
-- **Hive** — initialized in `main.dart`; used by `navdb_service` and `cloud_sync_service`.
-
-Remote data comes from free public APIs (Aviation Weather Center, OpenSky, RotatePilot, RSS feeds)
-and the optional AmericanGroupLLC backend (auth, AI chat). `cloud_sync_service` ships a same-device
-stub behind a swappable `BackendClient` seam — it is not real multi-device sync.
-
-**Security note:** `auth_service` currently stores JWTs in shared_preferences with a TODO to move to
-secure storage (Keychain/Keystore). `backend_config.dart` holds only client-public values
-(API gateway URL, Supabase anon/publishable key, OAuth client IDs, Firebase project id) — never
-server/service-role secrets.
-
-## 5. Navigation & flow
-- **Routing:** `MaterialApp.routes` (Navigator 1.0 named routes). `initialRoute` is `/` (`HomeScreen`).
-  Navigation uses `Navigator.pushNamed(context, '/route')`, mostly from `AppDrawer` and home cards.
-  Note: `go_router` is a declared dependency but is **not** used.
-- **Launch sequence** (`main()`): `WidgetsFlutterBinding.ensureInitialized()` → `Hive.initFlutter()`
-  → `tz.initializeTimeZones()` → `NotificationService.initialize()` → `AdService().initialize()`
-  → `AuthService.instance.init()` (restore session) → lock orientations → set system UI overlay
-  → `runApp(PilotEnRouteApp())`.
-- **Home:** `HomeScreen` uses a sliver app bar, a bottom navigation index, and the `AppDrawer`; a
-  post-frame callback fetches the daily quote, quiz-of-day, and news.
-
-## 6. Models
-Models are lightweight Dart classes co-located with their service (no shared `models/` folder),
-each with `toJson`/`fromJson` for persistence. Examples: `LogbookEntry` (logbook_service),
-`MetarData` (weather_service), `Flashcard` (flashcard_service), `ChatMessage`/`ChatRole` and
-`UserRole` (ai_service/auth_service), `PremiumTier`/`PremiumFeature` (premium_service),
-`PilotLevel`/`NotificationCategory` (notification_service).
-
-## 7. Theme
-Defined in `_buildTheme()` in `main.dart`: Material 3, dark brightness.
-- Scaffold background `#0A1628`; primary `#00BCD4` (cyan), secondary `#FFB300` (amber),
-  surface `#112240`, error `#F44336`.
-- Typography via `google_fonts`: **Orbitron** for display/headline/app-bar/tab labels,
-  **Inter** for body/titles/buttons.
-- Rounded inputs/cards (12–16px radius), transparent status bar, dark system nav bar.
-
-Brand assets live in `assets/logo/`: `pilot_enroute_icon.svg` (square opaque gradient + ascending
-jet/compass glyph) and `pilot_enroute_logo.svg` (icon + "PilotEnRoute" wordmark + tagline). App
-icons are generated from `assets/logo/master_1024.png` (opaque, 1024²).
-
-## 8. Services & configuration
-See the "Key services" table in `AGENTS.md` for the full list. Configuration surfaces:
-- `lib/config/backend_config.dart` — backend base URL, auth endpoints, Supabase/Firebase/OAuth IDs.
-- `lib/services/premium_service.dart` — IAP product IDs and premium feature gates.
-- `lib/services/ad_service.dart` — AdMob unit IDs (placeholder/test until release).
-- `lib/services/ai_service.dart` — Anthropic model + `ANTHROPIC_API_KEY` via `--dart-define`; falls
-  back to an honest offline reference mode when no key is present.
-
-## 9. Platform
-- **Android** (`android/`): `applicationId` / namespace `com.americangroupllc.pilot_enroute`;
-  Kotlin `MainActivity` under `com/americangroupllc/pilot_enroute`; adaptive launcher icons in
-  `res/mipmap-*`; permissions for internet, notifications/exact-alarms, location, legacy storage.
-  Release build currently signs with the debug keystore (TODO).
-- **iOS** (`ios/`): `PRODUCT_BUNDLE_IDENTIFIER` `com.americangroupllc.pilotenroute` (no underscore —
-  matches IAP product IDs and appleClientId); `CFBundleDisplayName` "PilotEnRoute"; custom URL scheme
-  `pilotenroute` for OAuth redirect; `AppIcon.appiconset` with a full opaque icon set.
-- **Web** (`web/`): PWA build. Separately, `web_marketing/` is a standalone static marketing site.
-
-Platform bundle IDs intentionally differ in spelling and should not be "unified" — the iOS form is
-tied to store IAP product IDs and OAuth configuration.
-
-## 10. Testing
-`test/` contains widget tests (`widget_test.dart`, `screens/*`, `widgets/*`) and service unit tests
-(`services/*` — weather, flashcard, logbook, premium, flight_plan). Run with `flutter test`.
-CI (`.github/workflows/`) runs analyze/test and builds. **Always run `flutter pub get` before
-analyze/test**: a stale `package_config.json` produces thousands of false "uri_does_not_exist"
-errors. A clean analyze reports 0 errors / 0 warnings and ~33 informational lints.
-
----
-
-## Authentication & Backend (Supabase) — current
-
-The app authenticates against the org's **Supabase** backend.
-
-- **Config**: `lib/services/supabase_config.dart` (`SupabaseConfig`) holds the
-  `url`, `anonKey` (publishable), and the shared `qaEmail`/`qaPassword` +
-  `devEmail`/`devPassword` test accounts. The publishable key is client-safe.
-- **Init**: `main()` calls `await Supabase.initialize(url: SupabaseConfig.url,
-  anonKey: SupabaseConfig.anonKey)` inside a `try/catch` **before** `runApp`, so
-  a misconfigured/offline start can never block launch.
-- **Email/password**: `AuthService.loginEmail()` uses
-  `Supabase.instance.client.auth.signInWithPassword(...)`. Supabase persists and
-  auto-restores its own session; `AuthService.init()` adopts a live Supabase
-  session on startup (it takes precedence over any local/legacy session).
-- **One-tap test account**: the login screen's "Use test account" button calls
-  `signInWithTestAccount()` → `loginEmail(SupabaseConfig.qaEmail,
-  SupabaseConfig.qaPassword)`.
-- **Offline fallback (dev/CI)**: on a **network/socket error** (couldn't reach
-  Supabase) *and* only when the entered credentials match a `SupabaseConfig`
-  QA/Dev test account, `AuthService` falls back to a **persisted local demo
-  session** (`shared_preferences`). A genuine Supabase `AuthException` (bad
-  credentials, etc.) is returned to the UI and **never** falls back. A networked
-  device always uses the real Supabase backend.
-- **Sign-out**: `AuthService.signOut()` clears **both** sessions — it calls
-  `Supabase...auth.signOut()` and wipes the persisted local demo session (and any
-  legacy backend token).
-- **Social / phone**: Google/Apple/Facebook (OAuth start URL + WebView) and
-  Firebase Phone OTP still go through the AmericanGroupLLC API gateway
-  (`lib/config/backend_config.dart`); these paths are unchanged.
+## Testing
+`test/core` (engine, decoding, minimums, logbook depth), `test/data` (real
+SQLite migration), `test/services`, `test/screens` (Go Card with recorded AWC
+fixtures and a fake HTTP client, entry form, logbook, onboarding, settings),
+`test/foldable_layout_test.dart` (every screen at fold geometries and 1.6×
+text), `test/ui/theme_test.dart`, `test/services/honest_entry_points_test.dart`
+(scope/grep checks).

@@ -32,7 +32,8 @@ class _RemindersScreenState extends State<RemindersScreen> {
     final svc = context.read<ReminderService?>();
     if (svc == null) return;
     setState(() => _busy = true);
-    await svc.reschedule(ask: ask);
+    // Opening this screen re-reads the real state from the OS.
+    await svc.reschedule(ask: ask, force: true);
     if (mounted) setState(() => _busy = false);
   }
 

@@ -12,13 +12,15 @@ import 'package:pilot_enroute/services/weather_service.dart';
 import 'package:pilot_enroute/ui/theme.dart';
 
 class Harness {
-  Harness({SettingsStore? settings, LogbookService? logbook})
+  Harness(
+      {SettingsStore? settings, LogbookService? logbook, WeatherService? weather})
       : settings = settings ?? SettingsStore(onboardingDone: true),
-        logbook = logbook ?? LogbookService(store: MemoryLogbookStore());
+        logbook = logbook ?? LogbookService(store: MemoryLogbookStore()),
+        weather = weather ?? WeatherService();
 
   final SettingsStore settings;
   final LogbookService logbook;
-  final WeatherService weather = WeatherService();
+  final WeatherService weather;
 
   Widget wrap(Widget child, {double textScale = 1.0, Brightness brightness = Brightness.light}) {
     return MultiProvider(

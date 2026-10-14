@@ -6,6 +6,7 @@ import '../core/legality/legality_engine.dart';
 import '../core/minimums/go_check.dart';
 import '../core/minimums/go_record.dart';
 import '../core/minimums/minimums_check.dart';
+import '../services/error_reporter.dart';
 import '../services/logbook_service.dart';
 import '../services/settings_store.dart';
 import '../services/weather_service.dart';
@@ -43,6 +44,7 @@ class _TodayScreenState extends State<TodayScreen> {
 
   WeatherSnapshot? _weather;
   bool _loadingWeather = false;
+  String? _checkError;
   bool _autoChecked = false;
   DateTime? _checkedAt;
 
@@ -91,22 +93,42 @@ class _TodayScreenState extends State<TodayScreen> {
     final weather = context.read<WeatherService>();
     final logbook = context.read<LogbookService>();
     final settings = context.read<SettingsStore>();
-    setState(() => _loadingWeather = true);
-    final snap = await weather.fetchSnapshot(station, clock: _now);
-    if (!mounted) return;
     setState(() {
-      _weather = snap;
-      _loadingWeather = false;
-      _checkedAt = _now();
+      _loadingWeather = true;
+      _checkError = null;
     });
-    final result = _result(logbook.entries, settings);
-    await logbook.saveCheck(GoCheckRecord.fromResult(
-      result: result,
-      departure: station,
-      destination: _dest.text.trim().toUpperCase(),
-      plannedAt: _departure,
-      createdAt: _now(),
-    ));
+    var fetched = false;
+    try {
+      final snap = await weather.fetchSnapshot(station, clock: _now);
+      fetched = true;
+      if (!mounted) return;
+      setState(() {
+        _weather = snap;
+        _loadingWeather = false;
+        _checkedAt = _now();
+      });
+      final result = _result(logbook.entries, settings);
+      await logbook.saveCheck(GoCheckRecord.fromResult(
+        result: result,
+        departure: station,
+        destination: _dest.text.trim().toUpperCase(),
+        plannedAt: _departure,
+        createdAt: _now(),
+      ));
+    } catch (e, st) {
+      // Shown on the card, and recorded: a failed check must never leave
+      // Today on "Checking…".
+      ErrorReporter.report(e, st, context: 'Go check');
+      if (mounted) {
+        setState(() => _checkError = fetched
+            ? 'The check was not saved to history. Tap "Check again".'
+            : 'The live weather could not be fetched. Tap "Check again".');
+      }
+    } finally {
+      if (mounted && _loadingWeather) {
+        setState(() => _loadingWeather = false);
+      }
+    }
   }
 
   GoResult _result(List<LogbookEntry> entries, SettingsStore s) {
@@ -339,6 +361,15 @@ class _TodayScreenState extends State<TodayScreen> {
               child: Text(_loadingWeather ? 'Checking…' : 'Check this flight'),
             ),
           ),
+          if (_checkError != null)
+            Padding(
+              padding: const EdgeInsets.only(top: 6),
+              child: NoticeLine(
+                key: const Key('go-check-error'),
+                icon: Icons.report_problem_outlined,
+                text: _checkError!,
+              ),
+            ),
           if (_checkedAt != null)
             Padding(
               padding: const EdgeInsets.only(top: 6),

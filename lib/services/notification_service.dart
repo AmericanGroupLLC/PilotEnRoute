@@ -100,17 +100,24 @@ class NotificationService {
     Iterable<int> previousIds = const [],
     bool ask = false,
   }) async {
-    final cancel = <int>{
-      ...previousIds,
-      for (final p in plans) p.id,
-    };
-    for (final id in cancel) {
-      try {
-        await reminderCanceller(id);
-      } catch (e) {
-        debugPrint('Cancelling reminder $id failed: $e');
+    Future<void> cancelAll(Iterable<int> ids) async {
+      for (final id in ids) {
+        try {
+          await reminderCanceller(id);
+        } catch (e) {
+          debugPrint('Cancelling reminder $id failed: $e');
+        }
       }
     }
+
+    // Only ids this app really scheduled are cancelled, and nothing else is
+    // sent to the OS until permission is known. Cancelling ids that were
+    // never scheduled called UNUserNotificationCenter on every launch; on the
+    // iOS 27 simulator the main thread was seen to stop right after such a
+    // call while the first Go check was in flight (Today stuck on
+    // "Checking…").
+    final previous = previousIds.toSet();
+    await cancelAll(previous);
     if (plans.isEmpty) return const ReminderSyncResult([]);
 
     bool granted;
@@ -123,6 +130,8 @@ class NotificationService {
     if (!granted) {
       return const ReminderSyncResult([], permissionDenied: true);
     }
+    // A stale request under a reused id is replaced, never left behind.
+    await cancelAll(plans.map((p) => p.id).where((id) => !previous.contains(id)));
 
     final scheduled = <PlannedReminder>[];
     for (final plan in plans) {

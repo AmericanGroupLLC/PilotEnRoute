@@ -273,6 +273,35 @@ void main() {
       expect(asked, 0);
       expect(result.scheduled, isEmpty);
     });
+
+    // iOS 27 freeze (QA 2026-10-14): the old sync cancelled every planned id
+    // on every launch, so UNUserNotificationCenter was called even though
+    // nothing had ever been scheduled.
+    test('permission not granted and nothing scheduled before: no call '
+        'reaches the notification system except the permission check',
+        () async {
+      final cancelled = <int>[];
+      var checked = 0;
+      NotificationService.permissionChecker = () async {
+        checked++;
+        return false;
+      };
+      NotificationService.reminderCanceller = (id) async => cancelled.add(id);
+      NotificationService.reminderScheduler = (_) async {};
+      final result = await NotificationService.sync(plans);
+      expect(cancelled, isEmpty);
+      expect(checked, 1);
+      expect(result.permissionDenied, isTrue);
+    });
+
+    test('previously scheduled ids are cancelled even when permission is now '
+        'off', () async {
+      final cancelled = <int>[];
+      NotificationService.permissionChecker = () async => false;
+      NotificationService.reminderCanceller = (id) async => cancelled.add(id);
+      await NotificationService.sync(plans, previousIds: const [4030]);
+      expect(cancelled, [4030]);
+    });
   });
 
   group('ReminderService', () {
@@ -354,6 +383,38 @@ void main() {
           svc.scheduled.where((r) => r.kind == ReminderKind.document).toList();
       expect(docs.map((r) => r.id), [7030, 7007]);
       expect(docs.first.title, "Renter's insurance: 30 days left");
+    });
+
+    test('an ordinary launch with an unchanged plan sends nothing to the OS',
+        () async {
+      var checked = 0;
+      NotificationService.permissionChecker = () async {
+        checked++;
+        return true;
+      };
+      final svc = await build(seed: entries);
+      await svc.reschedule();
+      expect(checked, 1);
+      scheduled.clear();
+      cancelled.clear();
+
+      // Same entries, same profile: the next launch's reschedule.
+      final result = await svc.reschedule();
+      expect(checked, 1);
+      expect(scheduled, isEmpty);
+      expect(cancelled, isEmpty);
+      expect(result.scheduled, hasLength(10));
+      expect(svc.scheduled, hasLength(10));
+      expect(svc.permissionDenied, isFalse);
+    });
+
+    test('"force" (the Reminders screen) re-syncs an unchanged plan',
+        () async {
+      final svc = await build(seed: entries);
+      await svc.reschedule();
+      scheduled.clear();
+      await svc.reschedule(force: true);
+      expect(scheduled, hasLength(10));
     });
 
     test('a refused permission is remembered for Settings to show', () async {

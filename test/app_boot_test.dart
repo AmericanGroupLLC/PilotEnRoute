@@ -7,6 +7,7 @@
 /// login wall: a fresh install opens onboarding, then Today.
 library;
 
+import 'dart:convert';
 import 'dart:io';
 
 import 'package:flutter/material.dart';
@@ -14,6 +15,8 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 
+import 'package:pilot_enroute/core/legality/pilot_profile.dart';
+import 'package:pilot_enroute/core/minimums/personal_minimums.dart';
 import 'package:pilot_enroute/data/logbook_store.dart';
 import 'package:pilot_enroute/main.dart';
 import 'package:pilot_enroute/screens/app_shell.dart';
@@ -107,6 +110,63 @@ void main() {
       }, awcClient);
       expect(find.byType(OnboardingScreen), findsNothing);
       expect(find.byType(TodayScreen), findsOneWidget);
+    });
+
+    // Regression for the iOS 27 QA freeze (2026-10-14): onboarding done with
+    // KPAO, ASEL, a flight review date and day minimums. Today must finish
+    // its first check, and opening the app must not touch the notification
+    // system beyond one permission check (and nothing on a relaunch).
+    testWidgets('launch with a flight review and day minimums: Today '
+        'finishes the check and no reminder call blocks the way',
+        (tester) async {
+      final cancelled = <int>[];
+      var checked = 0;
+      NotificationService.reminderCanceller = (id) async => cancelled.add(id);
+      NotificationService.permissionChecker = () async {
+        checked++;
+        return false;
+      };
+      SharedPreferences.setMockInitialValues({
+        SettingsStore.kOnboarding: true,
+        SettingsStore.kHomeAirport: 'KPAO',
+        SettingsStore.kProfile: jsonEncode(PilotProfile(
+          flightReviewDate: DateTime(2026, 10, 14),
+          homeCategoryClass: 'ASEL',
+        ).toJson()),
+        SettingsStore.kMinimums: jsonEncode(const PersonalMinimums(
+            day: MinimumsSet(
+                ceilingFt: 2000,
+                visibilitySm: 5,
+                maxWindKt: 20,
+                maxGustKt: 25,
+                maxCrosswindKt: 10)).toJson()),
+      });
+      await http.runWithClient(() async {
+        await pumpApp(tester, await SettingsStore.load());
+        await settle(tester);
+      }, awcClient);
+      expect(find.byType(TodayScreen), findsOneWidget);
+      expect(find.text('Checking…'), findsNothing);
+      expect(find.text('Not legal: medical not on record'), findsOneWidget);
+      await tester.scrollUntilVisible(find.text('Your limit ≥ 2000 ft'), 300,
+          scrollable: find
+              .descendant(
+                  of: find.byType(TodayScreen),
+                  matching: find.byType(Scrollable))
+              .first);
+      expect(find.text('Your limit ≥ 2000 ft'), findsOneWidget);
+      expect(cancelled, isEmpty);
+      expect(checked, 1);
+
+      // Relaunch with the same data: nothing reaches the OS at all.
+      await http.runWithClient(() async {
+        await pumpApp(tester, await SettingsStore.load());
+        await settle(tester);
+      }, awcClient);
+      expect(find.text('Checking…'), findsNothing);
+      expect(cancelled, isEmpty);
+      expect(checked, 1);
+      expect(tester.takeException(), isNull);
     });
 
     testWidgets('screen 1 cannot be skipped without an airport and a class',

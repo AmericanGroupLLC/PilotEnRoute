@@ -10,12 +10,14 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import 'package:pilot_enroute/core/legality/pilot_profile.dart';
 import 'package:pilot_enroute/core/minimums/go_check.dart';
+import 'package:pilot_enroute/core/minimums/go_record.dart';
 import 'package:pilot_enroute/core/minimums/personal_minimums.dart';
 import 'package:pilot_enroute/data/logbook_store.dart';
 import 'package:pilot_enroute/screens/logbook_entry_screen.dart';
 import 'package:pilot_enroute/screens/today_screen.dart';
 import 'package:pilot_enroute/services/logbook_service.dart';
 import 'package:pilot_enroute/services/settings_store.dart';
+import 'package:pilot_enroute/services/weather_service.dart';
 import 'package:pilot_enroute/widgets/ad_banner_widget.dart';
 
 import '../support/awc_fixtures.dart';
@@ -50,6 +52,8 @@ Future<Harness> openToday(
   PersonalMinimums minimums =
       const PersonalMinimums(day: MinimumsSet(maxCrosswindKt: 5)),
   http.Client Function()? client,
+  LogbookStore? store,
+  WeatherService? weather,
 }) async {
   tester.view.physicalSize = const Size(1200, 3600);
   tester.view.devicePixelRatio = 1.0;
@@ -61,7 +65,8 @@ Future<Harness> openToday(
         homeAirport: home,
         profile: profile,
         minimums: minimums),
-    logbook: LogbookService(store: MemoryLogbookStore(entries)),
+    logbook: LogbookService(store: store ?? MemoryLogbookStore(entries)),
+    weather: weather,
   );
   await http.runWithClient(() async {
     await tester.pumpWidget(h.wrap(const TodayScreen(clock: clock)));
@@ -184,4 +189,68 @@ void main() {
     await openToday(tester, entries: [flight(DateTime(2026, 10, 1))]);
     expect(find.byType(AdBannerWidget), findsNothing);
   });
+
+  // Regression for the iOS 27 QA run (2026-10-14): day minimums set exactly
+  // as onboarding asks for them, home KPAO, ASEL. The check must finish, the
+  // limits must render, and the card must leave "Checking…".
+  testWidgets('KPAO with day minimums 2000 ft / 5 sm / 20 / 25 / 10 kt: the '
+      'check finishes and every line shows its limit', (tester) async {
+    final h = await openToday(tester,
+        home: 'KPAO',
+        minimums: const PersonalMinimums(
+            day: MinimumsSet(
+                ceilingFt: 2000,
+                visibilitySm: 5,
+                maxWindKt: 20,
+                maxGustKt: 25,
+                maxCrosswindKt: 10)));
+    expect(find.text('Checking…'), findsNothing);
+    expect(find.text('Check this flight'), findsOneWidget);
+    expect(find.text('Your limit ≥ 2000 ft'), findsOneWidget);
+    expect(find.text('Your limit ≥ 5 sm'), findsOneWidget);
+    expect(find.text('Your limit ≤ 20 kt'), findsOneWidget);
+    expect(find.text('Your limit ≤ 25 kt'), findsOneWidget);
+    expect(find.text('Your limit ≤ 10 kt'), findsOneWidget);
+    expect(find.text('INSIDE'), findsWidgets);
+    expect(h.logbook.checks, hasLength(1));
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('a fetch that throws never leaves Today on "Checking…"',
+      (tester) async {
+    await openToday(tester, weather: _ThrowingWeather());
+    expect(find.text('Checking…'), findsNothing);
+    expect(find.text('Check this flight'), findsOneWidget);
+    expect(find.byKey(const Key('go-check-error')), findsOneWidget);
+    expect(find.textContaining('could not be fetched'), findsOneWidget);
+    // Legal still answers without weather.
+    expect(find.textContaining('Third-class medical'), findsOneWidget);
+  });
+
+  testWidgets('a history write that throws still ends the check',
+      (tester) async {
+    await openToday(tester,
+        entries: [flight(DateTime(2026, 10, 1))],
+        store: _FailingCheckStore([flight(DateTime(2026, 10, 1))]));
+    expect(find.text('Checking…'), findsNothing);
+    expect(find.text('Check this flight'), findsOneWidget);
+    expect(find.textContaining('not saved to history'), findsOneWidget);
+    // The weather that did arrive is still shown.
+    expect(find.text('4 kt, gust 6 kt on 24'), findsOneWidget);
+  });
+}
+
+class _ThrowingWeather extends WeatherService {
+  @override
+  Future<WeatherSnapshot> fetchSnapshot(String station,
+          {DateTime Function() clock = DateTime.now}) async =>
+      throw StateError('simulated failure');
+}
+
+class _FailingCheckStore extends MemoryLogbookStore {
+  _FailingCheckStore(super.seed);
+
+  @override
+  Future<int> insertCheck(GoCheckRecord r) async =>
+      throw StateError('disk full');
 }

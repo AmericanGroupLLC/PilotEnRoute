@@ -83,10 +83,26 @@ class ReminderService extends ChangeNotifier {
     return items;
   }
 
+  /// The plan last handed to the OS, as `id@time` pairs.
+  static const kPlanSignature = 'reminder_plan_signature_v1';
+
+  static String signatureOf(List<PlannedReminder> plans) =>
+      plans.map((p) => '${p.id}@${p.at.toIso8601String()}').join(',');
+
   /// Recomputes and replaces the reminders. [ask] shows the system
   /// notification prompt if permission was never given; it is only set from
   /// the Reminders screen.
-  Future<ReminderSyncResult> reschedule({bool ask = false}) async {
+  ///
+  /// When the plan is the same as the one last synced (every ordinary
+  /// launch) nothing is sent to the notification system at all, unless
+  /// [ask] or [force] is set. Opening the app must never wait on the OS
+  /// notification service: on the iOS 27 simulator a launch-time
+  /// UNUserNotificationCenter call was seen to block the main thread for
+  /// good.
+  Future<ReminderSyncResult> reschedule({
+    bool ask = false,
+    bool force = false,
+  }) async {
     final now = _clock();
     final items = [
       ...lapseItemsFrom(
@@ -104,11 +120,22 @@ class ReminderService extends ChangeNotifier {
     final prefs = await SharedPreferences.getInstance();
     final previous = (prefs.getStringList(kScheduledIds) ?? const [])
         .map(int.tryParse)
-        .whereType<int>();
+        .whereType<int>()
+        .toSet();
+    final signature = signatureOf(plans);
+    if (!ask && !force && prefs.getString(kPlanSignature) == signature) {
+      _planned = plans;
+      _scheduled = [for (final p in plans) if (previous.contains(p.id)) p];
+      _permissionDenied = plans.isNotEmpty && _scheduled.isEmpty;
+      notifyListeners();
+      return ReminderSyncResult(_scheduled,
+          permissionDenied: _permissionDenied);
+    }
     final result =
         await NotificationService.sync(plans, previousIds: previous, ask: ask);
     await prefs.setStringList(
         kScheduledIds, result.scheduled.map((r) => '${r.id}').toList());
+    await prefs.setString(kPlanSignature, signature);
     _planned = plans;
     _scheduled = result.scheduled;
     _permissionDenied = result.permissionDenied;

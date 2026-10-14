@@ -88,10 +88,25 @@ void main() {
     debugPrint('[shots] captured $name');
   }
 
+  /// Scrolls the page's main vertical list until [f] is built and on screen.
+  /// Lists build lazily, so a widget far down does not exist until then.
+  Future<void> reveal(WidgetTester tester, Finder f) async {
+    if (f.evaluate().isEmpty) {
+      final list = find
+          .byWidgetPredicate((w) =>
+              w is Scrollable && w.axisDirection == AxisDirection.down)
+          .hitTestable()
+          .first;
+      await tester.scrollUntilVisible(f, 250, scrollable: list);
+    }
+    await tester.ensureVisible(f);
+    await tester.pump();
+  }
+
   Future<void> tapKey(WidgetTester tester, String key) async {
     final f = find.byKey(Key(key));
+    await reveal(tester, f);
     await waitFor(tester, f, key);
-    await tester.ensureVisible(f);
     await tester.pump();
     await tester.tap(f);
     await settle(tester);
@@ -99,8 +114,8 @@ void main() {
 
   Future<void> typeKey(WidgetTester tester, String key, String text) async {
     final f = find.byKey(Key(key));
+    await reveal(tester, f);
     await waitFor(tester, f, key);
-    await tester.ensureVisible(f);
     await tester.enterText(f, text);
     await tester.pump();
   }
@@ -150,7 +165,7 @@ void main() {
 
     // ── Log this flight, from the Go Card.
     final logIt = find.text('Log this flight');
-    await tester.ensureVisible(logIt);
+    await reveal(tester, logIt);
     await tester.tap(logIt);
     await settle(tester);
     await typeKey(tester, 'entry-type', 'C172S');
@@ -159,10 +174,8 @@ void main() {
     await typeKey(tester, 'entry-pic', '1.2');
     await typeKey(tester, 'entry-dayTo', '3');
     await typeKey(tester, 'entry-dayLdg', '3');
-    await typeKey(tester, 'entry-remarks', 'Pattern work');
-    await tester.drag(find.byType(Scrollable).last, const Offset(0, 2000));
-    await settle(tester);
     await shot(tester, '04_entry_form');
+    await typeKey(tester, 'entry-remarks', 'Pattern work');
     await tapKey(tester, 'entry-save');
 
     // ── Logbook with a search.

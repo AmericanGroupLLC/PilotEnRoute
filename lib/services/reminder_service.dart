@@ -83,7 +83,10 @@ class ReminderService extends ChangeNotifier {
     return items;
   }
 
-  Future<ReminderSyncResult> reschedule() async {
+  /// Recomputes and replaces the reminders. [ask] shows the system
+  /// notification prompt if permission was never given; it is only set from
+  /// the Reminders screen.
+  Future<ReminderSyncResult> reschedule({bool ask = false}) async {
     final now = _clock();
     final items = [
       ...lapseItemsFrom(
@@ -102,7 +105,8 @@ class ReminderService extends ChangeNotifier {
     final previous = (prefs.getStringList(kScheduledIds) ?? const [])
         .map(int.tryParse)
         .whereType<int>();
-    final result = await NotificationService.sync(plans, previousIds: previous);
+    final result =
+        await NotificationService.sync(plans, previousIds: previous, ask: ask);
     await prefs.setStringList(
         kScheduledIds, result.scheduled.map((r) => '${r.id}').toList());
     _planned = plans;

@@ -60,9 +60,28 @@ class NotificationService {
     return await android?.requestNotificationsPermission() ?? false;
   }
 
+  /// Whether alerts may be posted right now, without asking. Never shows the
+  /// system prompt.
+  static Future<bool> currentPermission() async {
+    try {
+      final ios = _plugin.resolvePlatformSpecificImplementation<
+          IOSFlutterLocalNotificationsPlugin>();
+      if (ios != null) {
+        return (await ios.checkPermissions())?.isEnabled ?? false;
+      }
+      final android = _plugin.resolvePlatformSpecificImplementation<
+          AndroidFlutterLocalNotificationsPlugin>();
+      return await android?.areNotificationsEnabled() ?? false;
+    } catch (_) {
+      return false;
+    }
+  }
+
   /// Seams so tests can observe scheduling without the platform plugin.
   @visibleForTesting
   static Future<bool> Function() permissionRequester = requestPermissions;
+  @visibleForTesting
+  static Future<bool> Function() permissionChecker = currentPermission;
   @visibleForTesting
   static Future<void> Function(PlannedReminder reminder) reminderScheduler =
       _schedule;
@@ -71,12 +90,15 @@ class NotificationService {
       (id) => _plugin.cancel(id);
 
   /// Replaces every reminder this app scheduled before ([previousIds]) with
-  /// [plans]. Asks for permission only when there is something to schedule.
-  /// Returns what was really scheduled, so the UI never lists a reminder
-  /// that does not exist.
+  /// [plans]. Shows the system permission prompt only when [ask] is true —
+  /// i.e. when the pilot asked for reminders on the Reminders screen — never
+  /// as a side effect of logging a flight or finishing onboarding. Returns
+  /// what was really scheduled, so the UI never lists a reminder that does
+  /// not exist.
   static Future<ReminderSyncResult> sync(
     List<PlannedReminder> plans, {
     Iterable<int> previousIds = const [],
+    bool ask = false,
   }) async {
     final cancel = <int>{
       ...previousIds,
@@ -93,7 +115,7 @@ class NotificationService {
 
     bool granted;
     try {
-      granted = await permissionRequester();
+      granted = ask ? await permissionRequester() : await permissionChecker();
     } catch (e) {
       debugPrint('Notification permission request failed: $e');
       granted = false;

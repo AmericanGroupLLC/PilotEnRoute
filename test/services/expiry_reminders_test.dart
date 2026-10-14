@@ -55,6 +55,8 @@ void main() {
   void resetSeams() {
     NotificationService.permissionRequester =
         NotificationService.requestPermissions;
+    NotificationService.permissionChecker =
+        NotificationService.currentPermission;
   }
 
   tearDown(resetSeams);
@@ -190,7 +192,7 @@ void main() {
         () async {
       final scheduled = <int>[];
       final cancelled = <int>[];
-      NotificationService.permissionRequester = () async => true;
+      NotificationService.permissionChecker = () async => true;
       NotificationService.reminderScheduler = (r) async => scheduled.add(r.id);
       NotificationService.reminderCanceller = (id) async => cancelled.add(id);
 
@@ -211,7 +213,7 @@ void main() {
       NotificationService.reminderScheduler = (r) async => scheduled.add(r.id);
       NotificationService.reminderCanceller = (_) async {};
 
-      final result = await NotificationService.sync(plans);
+      final result = await NotificationService.sync(plans, ask: true);
       expect(scheduled, isEmpty);
       expect(result.scheduled, isEmpty);
       expect(result.permissionDenied, isTrue);
@@ -219,7 +221,7 @@ void main() {
 
     test('a platform failure is not reported as a scheduled reminder',
         () async {
-      NotificationService.permissionRequester = () async => true;
+      NotificationService.permissionChecker = () async => true;
       NotificationService.reminderScheduler =
           (_) async => throw StateError('plugin missing');
       NotificationService.reminderCanceller = (_) async {};
@@ -227,6 +229,37 @@ void main() {
       final result = await NotificationService.sync(plans);
       expect(result.scheduled, isEmpty);
       expect(result.permissionDenied, isFalse);
+    });
+
+    test('a reschedule without "ask" never shows the system prompt', () async {
+      var asked = 0;
+      NotificationService.permissionRequester = () async {
+        asked++;
+        return true;
+      };
+      NotificationService.permissionChecker = () async => false;
+      NotificationService.reminderScheduler = (_) async {};
+      NotificationService.reminderCanceller = (_) async {};
+      final result = await NotificationService.sync(plans);
+      expect(asked, 0);
+      expect(result.scheduled, isEmpty);
+      expect(result.permissionDenied, isTrue);
+    });
+
+    test('"ask" (from the Reminders screen) prompts and then schedules',
+        () async {
+      var asked = 0;
+      final scheduled = <int>[];
+      NotificationService.permissionRequester = () async {
+        asked++;
+        return true;
+      };
+      NotificationService.reminderScheduler = (r) async => scheduled.add(r.id);
+      NotificationService.reminderCanceller = (_) async {};
+      final result = await NotificationService.sync(plans, ask: true);
+      expect(asked, 1);
+      expect(scheduled, [2030, 2007]);
+      expect(result.scheduled, hasLength(2));
     });
 
     test('nothing to schedule never asks for permission', () async {
@@ -249,7 +282,7 @@ void main() {
     setUp(() {
       scheduled = [];
       cancelled = [];
-      NotificationService.permissionRequester = () async => true;
+      NotificationService.permissionChecker = () async => true;
       NotificationService.reminderScheduler = (r) async => scheduled.add(r.id);
       NotificationService.reminderCanceller = (id) async => cancelled.add(id);
     });
@@ -324,7 +357,7 @@ void main() {
     });
 
     test('a refused permission is remembered for Settings to show', () async {
-      NotificationService.permissionRequester = () async => false;
+      NotificationService.permissionChecker = () async => false;
       final svc = await build(seed: entries);
       await svc.reschedule();
       expect(svc.permissionDenied, isTrue);

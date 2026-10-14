@@ -53,6 +53,7 @@ void main() {
   setUp(() {
     SharedPreferences.setMockInitialValues({});
     NotificationService.permissionRequester = () async => false;
+    NotificationService.permissionChecker = () async => false;
     NotificationService.reminderCanceller = (_) async {};
   });
 

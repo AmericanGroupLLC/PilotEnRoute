@@ -20,11 +20,19 @@ class RemindersScreen extends StatefulWidget {
 class _RemindersScreenState extends State<RemindersScreen> {
   bool _busy = false;
 
-  Future<void> _refresh() async {
+  @override
+  void initState() {
+    super.initState();
+    // Show the real state on open, without prompting.
+    WidgetsBinding.instance
+        .addPostFrameCallback((_) => mounted ? _refresh(ask: false) : null);
+  }
+
+  Future<void> _refresh({bool ask = true}) async {
     final svc = context.read<ReminderService?>();
     if (svc == null) return;
     setState(() => _busy = true);
-    await svc.reschedule();
+    await svc.reschedule(ask: ask);
     if (mounted) setState(() => _busy = false);
   }
 
@@ -62,11 +70,16 @@ class _RemindersScreenState extends State<RemindersScreen> {
             const NoticeLine(
                 icon: Icons.info_outline, text: 'Reminders are not available.')
           else if (svc.permissionDenied)
-            const NoticeLine(
+            NoticeLine(
               icon: Icons.notifications_off_outlined,
-              text: 'Notifications are turned off for PilotEnRoute, so no '
-                  'reminder is scheduled. Turn them on in the system '
-                  'Settings app.',
+              text: 'Notifications are not allowed for PilotEnRoute yet, so '
+                  'no reminder is scheduled. If you turned them off before, '
+                  'turn them back on in the system Settings app.',
+              action: FilledButton(
+                key: const Key('allow-notifications'),
+                onPressed: _busy ? null : _refresh,
+                child: const Text('Allow notifications'),
+              ),
             )
           else if (svc.scheduled.isEmpty)
             const NoticeLine(

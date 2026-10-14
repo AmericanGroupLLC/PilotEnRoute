@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" width="1024" height="1024">
+  <!-- PilotEnRoute mark: a red Remove-Before-Flight tag with a punched
+       grommet and a white check mark. Hand-specified, no gradients. -->
+  <defs>
+    <mask id="punch">
+      <rect width="1024" height="1024" fill="#fff"/>
+      <circle cx="262" cy="512" r="46" fill="#000"/>
+    </mask>
+  </defs>
+  <g transform="rotate(-14 512 512)">
+    <path mask="url(#punch)" fill="#C1121F"
+      d="M 300 322 L 842 322 Q 878 322 878 358 L 878 666 Q 878 702 842 702 L 300 702 L 150 512 Z"/>
+    <circle cx="262" cy="512" r="62" fill="none" stroke="#ECEDEE" stroke-width="20"/>
+    <polyline points="430,512 535,612 742,402" fill="none" stroke="#FFFFFF"
+      stroke-width="74" stroke-linecap="round" stroke-linejoin="round"/>
+  </g>
+</svg>

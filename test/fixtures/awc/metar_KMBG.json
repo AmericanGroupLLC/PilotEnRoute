@@ -1,0 +1,37 @@
+{
+ "_captured_utc": "2026-10-14T13:03:13Z",
+ "_request": "GET https://aviationweather.gov/api/data/metar?ids=KMBG&format=json",
+ "_http_status": 200,
+ "response": [
+  {
+   "icaoId": "KMBG",
+   "receiptTime": "2026-10-14T12:56:32.676Z",
+   "obsTime": 1791982320,
+   "reportTime": "2026-10-14T13:00:00.000Z",
+   "temp": 2.2,
+   "dewp": 1.7,
+   "wdir": 0,
+   "wspd": 0,
+   "visib": 0.25,
+   "altim": 1022.4,
+   "slp": 1023.5,
+   "qcField": 6,
+   "wxString": "FG",
+   "vertVis": 1,
+   "metarType": "METAR",
+   "rawOb": "METAR KMBG 141252Z AUTO 00000KT 1/4SM FG VV001 02/02 A3019 RMK AO2 SLP235 T00220017",
+   "lat": 45.543,
+   "lon": -100.404,
+   "elev": 515,
+   "name": "Mobridge Muni, SD, US",
+   "cover": "OVX",
+   "clouds": [
+    {
+     "cover": "OVX",
+     "base": 100
+    }
+   ],
+   "fltCat": "LIFR"
+  }
+ ]
+}

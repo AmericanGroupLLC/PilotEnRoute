@@ -1,0 +1,31 @@
+{
+ "_captured_utc": "2026-10-14T13:03:13Z",
+ "_request": "GET https://aviationweather.gov/api/data/metar?ids=KACK&format=json",
+ "_http_status": 200,
+ "response": [
+  {
+   "icaoId": "KACK",
+   "receiptTime": "2026-10-14T12:56:25.742Z",
+   "obsTime": 1791982380,
+   "reportTime": "2026-10-14T13:00:00.000Z",
+   "temp": 19.4,
+   "dewp": 17.2,
+   "wdir": 240,
+   "wspd": 15,
+   "wgst": 23,
+   "visib": 7,
+   "altim": 1009.9,
+   "slp": 1009.7,
+   "qcField": 4,
+   "metarType": "METAR",
+   "rawOb": "METAR KACK 141253Z 24015G23KT 7SM CLR 19/17 A2982 RMK AO2 SLP097 T01940172",
+   "lat": 41.2541,
+   "lon": -70.0589,
+   "elev": 12,
+   "name": "Nantucket Mem Arpt, MA, US",
+   "cover": "CLR",
+   "clouds": [],
+   "fltCat": "VFR"
+  }
+ ]
+}

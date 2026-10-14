@@ -1,0 +1,133 @@
+{
+ "_captured_utc": "2026-10-14T13:03:13Z",
+ "_request": "GET https://aviationweather.gov/api/data/taf?ids=KSJC&format=json",
+ "_http_status": 200,
+ "response": [
+  {
+   "icaoId": "KSJC",
+   "dbPopTime": "2026-10-14T11:38:30.937Z",
+   "bulletinTime": "2026-10-14T11:38:00.000Z",
+   "issueTime": "2026-10-14T11:38:00.000Z",
+   "validTimeFrom": 1791979200,
+   "validTimeTo": 1792065600,
+   "rawTAF": "TAF KSJC 141138Z 1412/1512 15004KT P6SM SKC FM141900 33010KT P6SM SKC FM150300 27003KT P6SM SKC FM150600 VRB03KT P6SM SKC",
+   "mostRecent": 1,
+   "remarks": "",
+   "lat": 37.35938,
+   "lon": -121.92444,
+   "elev": 13,
+   "prior": 4,
+   "name": "San Jose Intl Arpt",
+   "fcsts": [
+    {
+     "timeFrom": 1791979200,
+     "timeTo": 1792004400,
+     "timeBec": null,
+     "fcstChange": null,
+     "probability": null,
+     "wdir": 150,
+     "wspd": 4,
+     "wgst": null,
+     "wshearHgt": null,
+     "wshearDir": null,
+     "wshearSpd": null,
+     "visib": "6+",
+     "altim": null,
+     "vertVis": null,
+     "wxString": null,
+     "notDecoded": null,
+     "clouds": [
+      {
+       "cover": "SKC",
+       "base": null,
+       "type": null
+      }
+     ],
+     "icgTurb": [],
+     "temp": []
+    },
+    {
+     "timeFrom": 1792004400,
+     "timeTo": 1792033200,
+     "timeBec": null,
+     "fcstChange": "FM",
+     "probability": null,
+     "wdir": 330,
+     "wspd": 10,
+     "wgst": null,
+     "wshearHgt": null,
+     "wshearDir": null,
+     "wshearSpd": null,
+     "visib": "6+",
+     "altim": null,
+     "vertVis": null,
+     "wxString": null,
+     "notDecoded": null,
+     "clouds": [
+      {
+       "cover": "SKC",
+       "base": null,
+       "type": null
+      }
+     ],
+     "icgTurb": [],
+     "temp": []
+    },
+    {
+     "timeFrom": 1792033200,
+     "timeTo": 1792044000,
+     "timeBec": null,
+     "fcstChange": "FM",
+     "probability": null,
+     "wdir": 270,
+     "wspd": 3,
+     "wgst": null,
+     "wshearHgt": null,
+     "wshearDir": null,
+     "wshearSpd": null,
+     "visib": "6+",
+     "altim": null,
+     "vertVis": null,
+     "wxString": null,
+     "notDecoded": null,
+     "clouds": [
+      {
+       "cover": "SKC",
+       "base": null,
+       "type": null
+      }
+     ],
+     "icgTurb": [],
+     "temp": []
+    },
+    {
+     "timeFrom": 1792044000,
+     "timeTo": 1792065600,
+     "timeBec": null,
+     "fcstChange": "FM",
+     "probability": null,
+     "wdir": "VRB",
+     "wspd": 3,
+     "wgst": null,
+     "wshearHgt": null,
+     "wshearDir": null,
+     "wshearSpd": null,
+     "visib": "6+",
+     "altim": null,
+     "vertVis": null,
+     "wxString": null,
+     "notDecoded": null,
+     "clouds": [
+      {
+       "cover": "SKC",
+       "base": null,
+       "type": null
+      }
+     ],
+     "icgTurb": [],
+     "temp": []
+    }
+   ]
+  }
+ ]
+}

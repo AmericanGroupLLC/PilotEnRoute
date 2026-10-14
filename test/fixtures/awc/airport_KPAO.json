@@ -1,0 +1,39 @@
+{
+ "_captured_utc": "2026-10-14T13:03:13Z",
+ "_request": "GET https://aviationweather.gov/api/data/airport?ids=KPAO&format=json",
+ "_http_status": 200,
+ "response": [
+  {
+   "icaoId": "KPAO",
+   "iataId": "PAO",
+   "faaId": "PAO",
+   "name": "PALO ALTO/PALO ALTO ",
+   "state": "CA",
+   "country": "US",
+   "source": "FAA",
+   "type": "ARP",
+   "lat": 37.4611,
+   "lon": -122.115,
+   "elev": 2,
+   "magdec": "15E",
+   "owner": "P",
+   "rwyNum": "1",
+   "rwyLength": "M",
+   "rwyType": "A",
+   "services": "S",
+   "tower": "T",
+   "beacon": "B",
+   "operations": "0",
+   "freqs": "LCL/P,118.6;ATIS,135.275",
+   "priority": "5",
+   "runways": [
+    {
+     "id": "13/31",
+     "dimension": "2441x70",
+     "surface": "A",
+     "alignment": 142
+    }
+   ]
+  }
+ ]
+}

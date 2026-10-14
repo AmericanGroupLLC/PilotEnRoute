@@ -1,18 +1,23 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:url_launcher/url_launcher.dart';
-import '../services/aviation_api_service.dart';
+
+import '../core/legality/date_text.dart';
 import '../services/chart_service.dart';
+import '../services/settings_store.dart';
 import '../services/weather_service.dart';
+import '../ui/theme.dart';
+import '../ui/widgets.dart';
 
 // Field details come from the Aviation Weather Center airport endpoint
-// (official NOAA/FAA data: tower, frequencies, runways, elevation). Charts
-// link out to the FAA's official d-TPP search for the airport — see
-// chart_service.dart for why they are not listed in-app.
+// (official NOAA/FAA data: tower, frequencies, runways with true alignment,
+// elevation), with the latest METAR from the same service. Charts link out to
+// the FAA's official d-TPP search for the airport — see chart_service.dart.
 
 class AirportScreen extends StatefulWidget {
-  const AirportScreen({super.key});
+  const AirportScreen({super.key, this.initialIcao});
+
+  final String? initialIcao;
 
   @override
   State<AirportScreen> createState() => _AirportScreenState();
@@ -20,694 +25,229 @@ class AirportScreen extends StatefulWidget {
 
 class _AirportScreenState extends State<AirportScreen> {
   final _controller = TextEditingController();
-  AirportInfo? _airport;
-  MetarData? _metar;
+  String? _ident;
+  AirportReference? _detail;
+  MetarObservation? _metar;
   bool _loading = false;
   String? _error;
+  bool _notFound = false;
 
-  // Field details from aviationweather.gov (free, no key).
-  AirportReference? _faaDetail;
-  bool _faaLoading = false;
-  String? _faaError;
-
-  static const List<String> _popularAirports = [
-    'KJFK', 'KLAX', 'KORD', 'KATL', 'KDFW',
-    'KSFO', 'KDEN', 'KLAS', 'KMIA', 'KBOS',
-    'EGLL', 'LFPG', 'EDDF', 'RJTT', 'YSSY',
-  ];
-
-  Future<void> _lookup(String code) async {
-    if (code.isEmpty) return;
-    setState(() {
-      _loading = true;
-      _error = null;
-      _airport = null;
-      _metar = null;
-      _faaDetail = null;
-      _faaError = null;
-      _faaLoading = false;
-    });
-
-    final apiService = context.read<AviationApiService>();
-    final weatherService = context.read<WeatherService>();
-
-    final airport = await apiService.fetchAirport(code.toUpperCase());
-    MetarData? metar;
-    if (airport != null) {
-      metar = await weatherService.fetchMetar(airport.icao);
-    }
-
-    if (!mounted) return;
-    setState(() {
-      _airport = airport;
-      _metar = metar;
-      _loading = false;
-      _error = airport == null ? 'Airport not found: $code' : null;
-    });
-
-    if (airport != null) {
-      // Prefer the resolved ICAO ident; fall back to the raw search term.
-      final apt = airport.icao.isNotEmpty ? airport.icao : code.toUpperCase();
-      await _fetchFaaData(apt, weatherService);
+  @override
+  void initState() {
+    super.initState();
+    final start = widget.initialIcao ?? '';
+    _controller.text = start;
+    if (start.trim().length >= 3) {
+      WidgetsBinding.instance.addPostFrameCallback((_) => _lookup(start));
     }
   }
 
-  /// Fetches field details from the Aviation Weather Center airport
-  /// endpoint. An airport AWC does not know is reported as such; a failed
-  /// request is reported as a failure — never an empty card.
-  Future<void> _fetchFaaData(String apt, WeatherService weather) async {
-    if (apt.isEmpty) return;
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  Future<void> _lookup(String code) async {
+    final id = code.trim().toUpperCase();
+    if (id.isEmpty) return;
+    final weather = context.read<WeatherService>();
     setState(() {
-      _faaLoading = true;
-      _faaError = null;
-      _faaDetail = null;
+      _ident = id;
+      _loading = true;
+      _error = null;
+      _notFound = false;
+      _detail = null;
+      _metar = null;
     });
-
     AirportReference? detail;
+    String? error;
     try {
-      detail = await weather.fetchAirportDetail(apt);
+      detail = await weather.fetchAirportDetail(id);
     } catch (_) {
-      if (!mounted) return;
-      setState(() {
-        _faaLoading = false;
-        _faaError = 'Could not load field details from aviationweather.gov. '
-            'Check your connection.';
-      });
-      return;
+      error = 'Could not load field details from aviationweather.gov. '
+          'Check your connection.';
     }
-
+    final metar = await weather.fetchMetar(id);
     if (!mounted) return;
     setState(() {
-      _faaDetail = detail;
-      _faaLoading = false;
+      _detail = detail;
+      _metar = metar.$2;
+      _error = error;
+      _notFound = error == null && detail == null;
+      _loading = false;
     });
   }
 
   Future<void> _openDtpp(String ident) async {
     final uri = dtppSearchUri(ident);
+    final messenger = ScaffoldMessenger.of(context);
     try {
-      if (await canLaunchUrl(uri)) {
-        await launchUrl(uri, mode: LaunchMode.externalApplication);
-      } else if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Could not open faa.gov')),
-        );
+      final ok = await launchUrl(uri, mode: LaunchMode.externalApplication);
+      if (!ok) {
+        messenger.showSnackBar(
+            const SnackBar(content: Text('Could not open faa.gov')));
       }
     } catch (_) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Could not open faa.gov')),
-        );
-      }
+      messenger.showSnackBar(
+          const SnackBar(content: Text('Could not open faa.gov')));
     }
   }
 
   @override
   Widget build(BuildContext context) {
+    final home = context.watch<SettingsStore>().homeAirport;
     return Scaffold(
-      backgroundColor: const Color(0xFF0A1628),
-      appBar: AppBar(title: const Text('AIRPORT LOOKUP')),
-      body: Column(
+      appBar: AppBar(title: const Text('Airport')),
+      body: ListView(
+        padding: const EdgeInsets.all(16),
         children: [
-          _buildSearchBar(),
-          _buildPopularAirports(),
-          Expanded(child: _buildContent()),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildSearchBar() {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      color: const Color(0xFF0D1B2A),
-      child: Row(
-        children: [
-          Expanded(
-            child: TextField(
-              controller: _controller,
-              style: GoogleFonts.orbitron(
-                color: Colors.white,
-                fontSize: 14,
-                letterSpacing: 3,
-              ),
-              textCapitalization: TextCapitalization.characters,
-              decoration: InputDecoration(
-                hintText: 'ICAO or IATA code (e.g. KJFK)',
-                prefixIcon: const Icon(Icons.local_airport, color: Color(0xFF00BCD4)),
-                hintStyle: GoogleFonts.inter(color: Colors.white38, fontSize: 13),
-              ),
-              onSubmitted: _lookup,
-            ),
-          ),
-          const SizedBox(width: 12),
-          ElevatedButton(
-            onPressed: () => _lookup(_controller.text.trim()),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFF00BCD4),
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-            ),
-            child: const Icon(Icons.search, color: Colors.black),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildPopularAirports() {
-    return Container(
-      height: 44,
-      color: const Color(0xFF0D1B2A),
-      child: ListView.builder(
-        scrollDirection: Axis.horizontal,
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-        itemCount: _popularAirports.length,
-        itemBuilder: (context, i) {
-          return GestureDetector(
-            onTap: () {
-              _controller.text = _popularAirports[i];
-              _lookup(_popularAirports[i]);
-            },
-            child: Container(
-              margin: const EdgeInsets.only(right: 8),
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-              decoration: BoxDecoration(
-                color: const Color(0xFF112240),
-                borderRadius: BorderRadius.circular(16),
-                border: Border.all(color: Colors.white24),
-              ),
-              child: Text(
-                _popularAirports[i],
-                style: GoogleFonts.orbitron(
-                  fontSize: 10,
-                  color: Colors.white70,
-                  letterSpacing: 1,
+          Row(children: [
+            Expanded(
+              child: TextField(
+                key: const Key('airport-ident'),
+                controller: _controller,
+                textCapitalization: TextCapitalization.characters,
+                style: const TextStyle(fontFamily: AppFonts.mono),
+                decoration: const InputDecoration(
+                  labelText: 'Airport (ICAO)',
+                  hintText: 'e.g. KPAO',
                 ),
+                onSubmitted: _lookup,
               ),
             ),
-          );
-        },
-      ),
-    );
-  }
-
-  Widget _buildContent() {
-    if (_loading) {
-      return const Center(
-        child: CircularProgressIndicator(color: Color(0xFF00BCD4)),
-      );
-    }
-
-    if (_error != null) {
-      return Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            const Icon(Icons.error_outline, color: Colors.red, size: 48),
-            const SizedBox(height: 12),
-            Text(_error!, style: GoogleFonts.inter(color: Colors.white54)),
-          ],
-        ),
-      );
-    }
-
-    if (_airport == null) {
-      return Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            const Icon(Icons.local_airport, color: Colors.white38, size: 64),
-            const SizedBox(height: 16),
-            Text(
-              'Search for any airport',
-              style: GoogleFonts.orbitron(
-                fontSize: 16,
-                color: Colors.white54,
-              ),
+            const SizedBox(width: 8),
+            FilledButton(
+              key: const Key('airport-lookup'),
+              onPressed: () => _lookup(_controller.text),
+              child: const Text('Look up'),
             ),
-            const SizedBox(height: 8),
-            Text(
-              'Enter ICAO (KJFK) or IATA (JFK) code\nPowered by Rotate Pilot API',
-              style: GoogleFonts.inter(
-                fontSize: 12,
-                color: Colors.white30,
-                height: 1.5,
-              ),
-              textAlign: TextAlign.center,
+          ]),
+          if (home.isNotEmpty && _ident == null)
+            Padding(
+              padding: const EdgeInsets.only(top: 8),
+              child: Wrap(children: [
+                ActionChip(
+                  avatar: const Icon(Icons.home_outlined, size: 18),
+                  label: Text(home),
+                  onPressed: () {
+                    _controller.text = home;
+                    _lookup(home);
+                  },
+                ),
+              ]),
             ),
-          ],
-        ),
-      );
-    }
-
-    return SingleChildScrollView(
-      padding: const EdgeInsets.all(16),
-      child: Column(
-        children: [
-          _buildAirportHeader(),
           const SizedBox(height: 16),
-          if (_metar != null) _buildWeatherCard(),
-          const SizedBox(height: 16),
-          _buildInfoGrid(),
-          const SizedBox(height: 16),
-          _buildFaaSection(),
-          const SizedBox(height: 16),
-          if (_airport!.description.isNotEmpty) _buildDescriptionCard(),
+          if (_loading)
+            const Center(child: CircularProgressIndicator())
+          else if (_ident != null) ..._content(context),
         ],
       ),
     );
   }
 
-  // ---------------------------------------------------------------------------
-  // Field details (aviationweather.gov) + FAA d-TPP charts link
-  // ---------------------------------------------------------------------------
-
-  Widget _buildFaaSection() {
-    if (_faaLoading) {
-      return _buildSectionCard(
-        title: 'FIELD DETAILS',
-        child: const Padding(
-          padding: EdgeInsets.symmetric(vertical: 16),
-          child: Center(
-            child: CircularProgressIndicator(color: Color(0xFF00BCD4)),
-          ),
-        ),
-      );
-    }
-
-    final airport = _airport!;
-    final isUs = _faaDetail?.isUs ??
-        const {'US', 'USA', 'United States'}.contains(airport.country);
-
-    Widget details;
-    if (_faaError != null) {
-      details = _buildNoteCard(Icons.cloud_off, const Color(0xFFFFB300),
-          _faaError!);
-    } else if (_faaDetail == null) {
-      details = _buildNoteCard(Icons.public, Colors.white38,
-          'aviationweather.gov has no field details for ${airport.icao}.');
-    } else {
-      details = _buildFieldDetailsCard();
-    }
-
-    return Column(
-      children: [
-        details,
-        if (isUs) ...[
-          const SizedBox(height: 16),
-          _buildChartsCard(),
-        ],
-      ],
-    );
-  }
-
-  Widget _buildNoteCard(IconData icon, Color color, String text) {
-    return _buildSectionCard(
-      title: 'FIELD DETAILS',
-      child: Row(
-        children: [
-          Icon(icon, color: color, size: 18),
-          const SizedBox(width: 8),
-          Expanded(
-            child: Text(
-              text,
-              style: GoogleFonts.inter(fontSize: 12, color: Colors.white54),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildFieldDetailsCard() {
-    final d = _faaDetail!;
+  List<Widget> _content(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    final d = _detail;
     String orDash(String s) => s.isEmpty ? '—' : s;
+    final out = <Widget>[const SectionHeader('Field details')];
+    if (_error != null) {
+      out.add(NoticeLine(icon: Icons.cloud_off, text: _error!));
+    } else if (_notFound || d == null) {
+      out.add(NoticeLine(
+          icon: Icons.public,
+          text: 'aviationweather.gov has no field details for $_ident. Use '
+              'the ICAO identifier (KLAX, not LAX).'));
+    } else {
+      out.addAll([
+        Text(orDash(d.name), style: Theme.of(context).textTheme.titleLarge),
+        _row('Control tower', d.towered ? 'Yes' : 'None listed'),
+        _row('Frequencies',
+            d.frequencies.isEmpty ? 'None listed' : d.frequencies.join('\n')),
+        _row(
+            'Elevation',
+            d.elevationM == null
+                ? '—'
+                : '${d.elevationFt} ft (${d.elevationM} m) MSL'),
+        _row('Magnetic var.', orDash(d.magneticVariation)),
+        _row(
+          'Runways',
+          d.runwayInfo.isEmpty
+              ? (d.runways.isEmpty ? '—' : d.runways.join('\n'))
+              : d.runwayInfo
+                  .map((r) =>
+                      '${r.id}${r.dimension.isEmpty ? '' : ' ${r.dimension} ft'}'
+                      '${r.alignmentTrue == null ? '' : ' · ${r.alignmentTrue}° true'}')
+                  .join('\n'),
+        ),
+        const SizedBox(height: 6),
+        Text(
+          d.source == 'FAA'
+              ? 'Source: FAA data via aviationweather.gov'
+              : 'Source: aviationweather.gov',
+          style: TextStyle(fontSize: 12, color: scheme.onSurfaceVariant),
+        ),
+      ]);
+    }
 
-    return _buildSectionCard(
-      title: 'FIELD DETAILS',
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          _buildDetailRow(Icons.location_city, 'Facility', orDash(d.name)),
-          _buildDetailRow(Icons.control_camera, 'Control Tower',
-              d.towered ? 'Yes' : 'None listed'),
-          _buildDetailRow(Icons.radio, 'Frequencies',
-              d.frequencies.isEmpty ? 'None listed' : d.frequencies.join('\n')),
-          _buildDetailRow(Icons.height, 'Elevation',
-              d.elevationM == null
-                  ? '—'
-                  : '${d.elevationFt} ft (${d.elevationM} m) MSL'),
-          _buildDetailRow(Icons.explore, 'Magnetic Var.',
-              orDash(d.magneticVariation)),
-          _buildDetailRow(Icons.airplanemode_active, 'Runways',
-              d.runways.isEmpty ? '—' : d.runways.join('\n')),
-          const SizedBox(height: 6),
-          Text(
-            d.source == 'FAA'
-                ? 'Source: FAA data via aviationweather.gov'
-                : 'Source: aviationweather.gov',
-            style: GoogleFonts.inter(fontSize: 10, color: Colors.white30),
+    if (_metar != null) {
+      out.addAll([
+        const SizedBox(height: 16),
+        const SectionHeader('Latest METAR'),
+        MonoBlock(_metar!.raw),
+        if (_metar!.observedUtc != null)
+          Padding(
+            padding: const EdgeInsets.only(top: 4),
+            child: Text('Observed ${zuluTime(_metar!.observedUtc!)}',
+                style: TextStyle(fontSize: 12, color: scheme.onSurfaceVariant)),
           ),
-        ],
-      ),
-    );
-  }
+      ]);
+    }
 
-  Widget _buildDetailRow(IconData icon, String label, String value) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 6),
-      child: Row(
-        children: [
-          Icon(icon, color: const Color(0xFF00BCD4), size: 18),
-          const SizedBox(width: 10),
-          Text(
-            label,
-            style: GoogleFonts.inter(fontSize: 12, color: Colors.white54),
-          ),
-          const Spacer(),
-          Flexible(
-            child: Text(
-              value,
-              textAlign: TextAlign.right,
-              style: GoogleFonts.inter(
-                fontSize: 13,
-                fontWeight: FontWeight.w600,
-                color: Colors.white,
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildChartsCard() {
-    final ident = _airport!.icao.isNotEmpty
-        ? _airport!.icao
-        : _controller.text.trim().toUpperCase();
-    return _buildSectionCard(
-      title: 'CHARTS & PLATES',
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            'Airport diagram, approaches, departures, arrivals and minimums '
-            'for $ident are published by the FAA in the d-TPP (cycle '
-            '${dtppCycleFor(DateTime.now())}). Opens faa.gov in your browser.',
-            style: GoogleFonts.inter(fontSize: 12, color: Colors.white54),
-          ),
-          const SizedBox(height: 10),
-          OutlinedButton.icon(
-            onPressed: () => _openDtpp(ident),
+    // Charts are FAA (US) only. When the lookup failed we cannot tell, so the
+    // link is offered and labelled US-only.
+    if (d == null ? _error != null : d.isUs) {
+      out.addAll([
+        const SizedBox(height: 16),
+        const SectionHeader('Charts & plates'),
+        Text(
+          'Airport diagram, approaches, departures, arrivals and minimums for '
+          '$_ident are published by the FAA in the d-TPP (cycle '
+          '${dtppCycleFor(DateTime.now())}, US airports only). Opens faa.gov '
+          'in your browser.',
+        ),
+        const SizedBox(height: 8),
+        Align(
+          alignment: Alignment.centerLeft,
+          child: OutlinedButton.icon(
+            onPressed: () => _openDtpp(_ident!),
             icon: const Icon(Icons.open_in_new, size: 16),
             label: const Text('Open FAA terminal procedures'),
-            style: OutlinedButton.styleFrom(
-              foregroundColor: const Color(0xFF00BCD4),
-              side: const BorderSide(color: Color(0xFF00BCD4)),
-            ),
           ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildSectionCard({required String title, required Widget child}) {
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: const Color(0xFF112240),
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: Colors.white12),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            title,
-            style: GoogleFonts.orbitron(
-              fontSize: 10,
-              color: const Color(0xFF00BCD4),
-              letterSpacing: 2,
-            ),
-          ),
-          const SizedBox(height: 12),
-          child,
-        ],
-      ),
-    );
-  }
-
-  Widget _buildAirportHeader() {
-    final airport = _airport!;
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        gradient: const LinearGradient(
-          colors: [Color(0xFF1565C0), Color(0xFF0D47A1)],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
         ),
-        borderRadius: BorderRadius.circular(16),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Text(
-                airport.icao,
-                style: GoogleFonts.orbitron(
-                  fontSize: 32,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.white,
-                  letterSpacing: 4,
-                ),
-              ),
-              if (airport.iata.isNotEmpty) ...[
-                const SizedBox(width: 12),
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                  decoration: BoxDecoration(
-                    color: const Color(0xFFFFB300),
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  child: Text(
-                    airport.iata,
-                    style: GoogleFonts.orbitron(
-                      fontSize: 14,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.black,
-                    ),
-                  ),
-                ),
-              ],
-            ],
-          ),
-          const SizedBox(height: 8),
-          Text(
-            airport.name,
-            style: GoogleFonts.inter(
-              fontSize: 18,
-              fontWeight: FontWeight.w700,
-              color: Colors.white,
-            ),
-          ),
-          const SizedBox(height: 4),
-          Row(
-            children: [
-              const Icon(Icons.location_on, color: Colors.white60, size: 14),
-              const SizedBox(width: 4),
-              Text(
-                '${airport.city}, ${airport.country}',
-                style: GoogleFonts.inter(fontSize: 13, color: Colors.white70),
-              ),
-            ],
-          ),
-          if (airport.hasTraining) ...[
-            const SizedBox(height: 8),
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-              decoration: BoxDecoration(
-                color: const Color(0xFF4CAF50).withValues(alpha: 0.2),
-                borderRadius: BorderRadius.circular(8),
-                border: Border.all(color: const Color(0xFF4CAF50)),
-              ),
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  const Icon(Icons.school, color: Color(0xFF4CAF50), size: 14),
-                  const SizedBox(width: 4),
-                  Text(
-                    'Flight Training Available',
-                    style: GoogleFonts.inter(
-                      fontSize: 11,
-                      color: const Color(0xFF4CAF50),
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ],
-        ],
-      ),
-    );
+      ]);
+    }
+    return out;
   }
 
-  Widget _buildWeatherCard() {
-    final metar = _metar!;
-    final colors = {
-      'VFR': const Color(0xFF4CAF50),
-      'MVFR': const Color(0xFF2196F3),
-      'IFR': const Color(0xFFF44336),
-      'LIFR': const Color(0xFF9C27B0),
-    };
-    final color = colors[metar.category] ?? Colors.grey;
-
+  Widget _row(String label, String value) {
+    final scheme = Theme.of(context).colorScheme;
     return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.symmetric(vertical: 8),
       decoration: BoxDecoration(
-        color: color.withValues(alpha: 0.1),
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: color.withValues(alpha: 0.5)),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              const Icon(Icons.cloud, color: Colors.white70, size: 18),
-              const SizedBox(width: 8),
-              Text(
-                'CURRENT WEATHER',
-                style: GoogleFonts.orbitron(
-                  fontSize: 10,
-                  color: Colors.white70,
-                  letterSpacing: 1,
-                ),
-              ),
-              const Spacer(),
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                decoration: BoxDecoration(
-                  color: color,
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: Text(
-                  metar.category,
-                  style: GoogleFonts.orbitron(
-                    fontSize: 12,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.white,
-                  ),
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 8),
-          Text(
-            metar.raw,
-            style: GoogleFonts.robotoMono(
-              fontSize: 11,
-              color: Colors.white70,
-              height: 1.5,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildInfoGrid() {
-    final airport = _airport!;
-    return GridView.count(
-      shrinkWrap: true,
-      physics: const NeverScrollableScrollPhysics(),
-      crossAxisCount: 2,
-      childAspectRatio: 2.0,
-      crossAxisSpacing: 10,
-      mainAxisSpacing: 10,
-      children: [
-        _buildInfoTile('ELEVATION', '${airport.elevation} ft MSL', Icons.height),
-        _buildInfoTile('RUNWAYS', '${airport.runways}', Icons.airplanemode_active),
-        _buildInfoTile('LATITUDE', airport.lat.toStringAsFixed(4), Icons.my_location),
-        _buildInfoTile('LONGITUDE', airport.lon.toStringAsFixed(4), Icons.explore),
-      ],
-    );
-  }
-
-  Widget _buildInfoTile(String label, String value, IconData icon) {
-    return Container(
-      padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        color: const Color(0xFF112240),
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Colors.white12),
-      ),
+          border: Border(bottom: BorderSide(color: scheme.outlineVariant))),
       child: Row(
-        children: [
-          Icon(icon, color: const Color(0xFF00BCD4), size: 20),
-          const SizedBox(width: 8),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Text(
-                  label,
-                  style: GoogleFonts.orbitron(
-                    fontSize: 8,
-                    color: Colors.white54,
-                    letterSpacing: 1,
-                  ),
-                ),
-                Text(
-                  value,
-                  style: GoogleFonts.inter(
-                    fontSize: 13,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.white,
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildDescriptionCard() {
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: const Color(0xFF112240),
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Colors.white12),
-      ),
-      child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            'ABOUT',
-            style: GoogleFonts.orbitron(
-              fontSize: 10,
-              color: const Color(0xFF00BCD4),
-              letterSpacing: 2,
-            ),
+          SizedBox(
+            width: 120,
+            child: Text(label,
+                style: const TextStyle(
+                    fontFamily: AppFonts.heading, fontWeight: FontWeight.w700)),
           ),
-          const SizedBox(height: 8),
-          Text(
-            _airport!.description,
-            style: GoogleFonts.inter(
-              fontSize: 13,
-              color: Colors.white70,
-              height: 1.6,
-            ),
+          Expanded(
+            child: Text(value,
+                style: const TextStyle(fontFamily: AppFonts.mono, fontSize: 13)),
           ),
         ],
       ),

@@ -1,16 +1,17 @@
-// This is a basic Flutter widget test.
-//
-// To perform an interaction with a widget in your test, use the WidgetTester
-// utility in the flutter_test package. For example, you can send tap and scroll
-// gestures. You can also use WidgetTester to find child widgets in the widget
-// tree, read text, and verify that the values of widget properties are correct.
+// Smoke test: the real app widget builds with its default dependencies.
 
 import 'package:flutter_test/flutter_test.dart';
+import 'package:pilot_enroute/data/logbook_store.dart';
 import 'package:pilot_enroute/main.dart';
+import 'package:pilot_enroute/services/logbook_service.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 void main() {
   testWidgets('PilotEnRoute smoke test', (WidgetTester tester) async {
-    await tester.pumpWidget(const PilotEnRouteApp());
+    SharedPreferences.setMockInitialValues({});
+    await tester.pumpWidget(PilotEnRouteApp(
+        logbook: LogbookService(store: MemoryLogbookStore())));
     expect(find.byType(PilotEnRouteApp), findsOneWidget);
+    expect(find.byType(RootGate), findsOneWidget);
   });
 }

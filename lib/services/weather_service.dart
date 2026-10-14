@@ -1,252 +1,122 @@
+import 'dart:async';
 import 'dart:convert';
+
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart' show Color;
 import 'package:http/http.dart' as http;
 
-// Aviation Weather Center API — Free, no auth required
-// https://aviationweather.gov/data/api/
-// RotatePilot METAR proxy (CORS-enabled) — https://rotatepilot.com/api/v1/metar
-const String _awcBase = 'https://aviationweather.gov/api/data';
-const String _rotatePilotMetar = 'https://rotatepilot.com/api/v1/metar';
+import '../core/minimums/go_check.dart';
+import '../core/weather/awc_models.dart';
 
-// OpenSky Network — Free, anonymous access
-// https://opensky-network.org/api
-const String _openSkyBase = 'https://opensky-network.org/api';
+export '../core/minimums/go_check.dart' show FetchStatus, WeatherSnapshot;
+export '../core/weather/awc_models.dart';
 
-class MetarData {
-  final String icao;
-  final String raw;
-  final String category; // VFR/MVFR/IFR/LIFR
-  final int? ceilingFt;
-  final int? windDir;
-  final int? windSpeedKt;
-  final int? windGustKt;
-  final double? temperatureC;
-  final double? dewpointC;
-  final double? altimeterInHg;
-  final double? visibilitySm;
-  final String? tafRaw;
+/// Aviation Weather Center data API — free, keyless, run by NOAA.
+/// https://aviationweather.gov/data/api/
+///
+/// Every METAR, TAF and airport the app shows comes straight from here. (It
+/// used to go through a third-party METAR proxy; that is gone.)
+const String awcBase = 'https://aviationweather.gov/api/data';
 
-  MetarData({
-    required this.icao,
-    required this.raw,
-    required this.category,
-    this.ceilingFt,
-    this.windDir,
-    this.windSpeedKt,
-    this.windGustKt,
-    this.temperatureC,
-    this.dewpointC,
-    this.altimeterInHg,
-    this.visibilitySm,
-    this.tafRaw,
-  });
-
-  factory MetarData.fromJson(Map<String, dynamic> json) {
-    final taf = json['taf'] as Map<String, dynamic>?;
-    // Visibility may arrive under several keys / types depending on source.
-    // Guard nulls and non-numeric strings (e.g. "10+") with tryParse.
-    final visRaw = json['visibilitySm'] ?? json['visibility'] ?? json['visib'];
-    double? vis;
-    if (visRaw is num) {
-      vis = visRaw.toDouble();
-    } else if (visRaw != null) {
-      vis = double.tryParse(visRaw.toString().replaceAll(RegExp(r'[^0-9.]'), ''));
-    }
-    return MetarData(
-      icao: json['icao']?.toString() ?? '',
-      raw: json['raw']?.toString() ?? '',
-      category: json['category']?.toString() ?? 'VFR',
-      ceilingFt: (json['ceilingFt'] as num?)?.toInt(),
-      windDir: (json['windDir'] as num?)?.toInt(),
-      windSpeedKt: (json['windSpeedKt'] as num?)?.toInt(),
-      windGustKt: (json['windGustKt'] as num?)?.toInt(),
-      temperatureC: (json['temperatureC'] as num?)?.toDouble(),
-      dewpointC: (json['dewpointC'] as num?)?.toDouble(),
-      altimeterInHg: (json['altimeterInHg'] as num?)?.toDouble(),
-      visibilitySm: vis,
-      tafRaw: taf?['raw']?.toString(),
-    );
-  }
-
-  Color get categoryColor {
-    switch (category) {
-      case 'VFR':
-        return const Color(0xFF4CAF50);
-      case 'MVFR':
-        return const Color(0xFF2196F3);
-      case 'IFR':
-        return const Color(0xFFF44336);
-      case 'LIFR':
-        return const Color(0xFF9C27B0);
-      default:
-        return const Color(0xFF9E9E9E);
-    }
-  }
+/// One AWC answer: how it ended and, if it worked, the decoded JSON.
+class AwcAnswer {
+  final FetchStatus status;
+  final Object? json;
+  final int? httpStatus;
+  const AwcAnswer(this.status, {this.json, this.httpStatus});
 }
 
-class LiveFlight {
-  final String icao24;
-  final String? callsign;
-  final String? country;
-  final double? longitude;
-  final double? latitude;
-  final double? altitude;
-  final bool onGround;
-  final double? velocity;
-  final double? heading;
-  final double? verticalRate;
-
-  LiveFlight({
-    required this.icao24,
-    this.callsign,
-    this.country,
-    this.longitude,
-    this.latitude,
-    this.altitude,
-    required this.onGround,
-    this.velocity,
-    this.heading,
-    this.verticalRate,
-  });
-
-  factory LiveFlight.fromStateVector(List<dynamic> state) {
-    return LiveFlight(
-      icao24: state[0]?.toString() ?? '',
-      callsign: state[1]?.toString().trim(),
-      country: state[2]?.toString(),
-      longitude: (state[5] as num?)?.toDouble(),
-      latitude: (state[6] as num?)?.toDouble(),
-      altitude: (state[7] as num?)?.toDouble(),
-      onGround: state[8] as bool? ?? false,
-      velocity: (state[9] as num?)?.toDouble(),
-      heading: (state[10] as num?)?.toDouble(),
-      verticalRate: (state[11] as num?)?.toDouble(),
-    );
-  }
-}
-
-/// Airport reference data from the Aviation Weather Center's airport
-/// endpoint (`/api/data/airport`), which republishes FAA data for US airports
-/// (`source: "FAA"`) and carries a smaller international set.
-class AirportReference {
-  final String icao;
-  final String name;
-  final String state;
-  final String country;
-  final String source;
-
-  /// Field elevation as published by AWC, in metres (KLAX reads 39).
-  final int? elevationM;
-  final String magneticVariation;
-
-  /// True when AWC lists a control tower ("T"); false when none is listed.
-  final bool towered;
-
-  /// e.g. ["LCL/P 119.8", "D-ATIS 133.8"]; empty when none is listed.
-  final List<String> frequencies;
-
-  /// e.g. ["06L/24R 8926x150 ft"].
-  final List<String> runways;
-
-  const AirportReference({
-    required this.icao,
-    required this.name,
-    required this.state,
-    required this.country,
-    required this.source,
-    required this.elevationM,
-    required this.magneticVariation,
-    required this.towered,
-    required this.frequencies,
-    required this.runways,
-  });
-
-  int? get elevationFt =>
-      elevationM == null ? null : (elevationM! * 3.28084).round();
-
-  bool get isUs => country == 'US';
-
-  factory AirportReference.fromJson(Map<dynamic, dynamic> json) {
-    String str(String key) => (json[key] ?? '').toString().trim();
-
-    // "LCL/P,119.8;D-ATIS,133.8" — "-" when AWC lists none.
-    final frequencies = <String>[];
-    for (final entry in str('freqs').split(';')) {
-      final parts = entry.split(',').map((p) => p.trim()).toList();
-      if (parts.length == 2 && parts[0].isNotEmpty && parts[1].isNotEmpty) {
-        frequencies.add('${parts[0]} ${parts[1]}');
-      }
-    }
-
-    final runways = <String>[];
-    final rawRunways = json['runways'];
-    if (rawRunways is List) {
-      for (final r in rawRunways) {
-        if (r is! Map) continue;
-        final id = (r['id'] ?? '').toString().trim();
-        if (id.isEmpty) continue;
-        final dim = (r['dimension'] ?? '').toString().trim();
-        runways.add(dim.isEmpty ? id : '$id $dim ft');
-      }
-    }
-
-    final elev = json['elev'];
-    return AirportReference(
-      icao: str('icaoId'),
-      name: str('name'),
-      state: str('state'),
-      country: str('country'),
-      source: str('source'),
-      elevationM: elev is num ? elev.round() : int.tryParse(elev?.toString() ?? ''),
-      magneticVariation: str('magdec'),
-      towered: str('tower').toUpperCase() == 'T',
-      frequencies: frequencies,
-      runways: runways,
-    );
+/// The colour a flight category keeps everywhere: VFR green, MVFR blue, IFR
+/// red, LIFR magenta. It is never shown on its own — the category text and
+/// an icon always go with it.
+Color flightCategoryColor(String category) {
+  switch (category.toUpperCase()) {
+    case 'VFR':
+      return const Color(0xFF2B8A3E);
+    case 'MVFR':
+      return const Color(0xFF1C64C8);
+    case 'IFR':
+      return const Color(0xFFC1121F);
+    case 'LIFR':
+      return const Color(0xFFB0158F);
+    default:
+      return const Color(0xFF6B7178);
   }
 }
 
 class WeatherService extends ChangeNotifier {
-  bool _isLoading = false;
-  String? _error;
-  MetarData? _currentMetar;
-  List<LiveFlight> _liveFlights = [];
-  bool _flightsLoading = false;
+  /// Station the Weather tab last showed.
+  String? lastStation;
 
-  bool get isLoading => _isLoading;
-  String? get error => _error;
-  MetarData? get currentMetar => _currentMetar;
-  List<LiveFlight> get liveFlights => _liveFlights;
-  bool get flightsLoading => _flightsLoading;
-
-  /// Fetch METAR + TAF via RotatePilot (CORS-enabled proxy)
-  Future<MetarData?> fetchMetar(String icao, {bool includeTaf = true}) async {
-    _isLoading = true;
-    _error = null;
-    notifyListeners();
-
+  /// GET one AWC product. 204 / empty list is "no data", a network failure
+  /// is "offline", anything else non-200 is "failed". A 5xx is retried once:
+  /// the AWC gateway intermittently answers 504 (seen 2026-10-14).
+  Future<AwcAnswer> get(String product, Map<String, String> query) async {
+    final uri = Uri.parse('$awcBase/$product').replace(queryParameters: query);
+    http.Response response;
+    var attempt = 0;
     try {
-      final tafParam = includeTaf ? '&taf=1' : '';
-      final url = '$_rotatePilotMetar?icao=${icao.toUpperCase()}$tafParam';
-      final response = await http.get(Uri.parse(url));
-      if (response.statusCode == 200) {
-        final data = jsonDecode(response.body);
-        _currentMetar = MetarData.fromJson(data);
-        _isLoading = false;
-        notifyListeners();
-        return _currentMetar;
-      } else {
-        _error = 'METAR not available for $icao';
+      while (true) {
+        response = await http.get(uri, headers: {
+          'Accept': 'application/json'
+        }).timeout(const Duration(seconds: 15));
+        if (response.statusCode < 500 || ++attempt >= 2) break;
       }
-    } catch (e) {
-      _error = 'Weather fetch failed: $e';
-      debugPrint(_error);
+    } catch (_) {
+      // Timeout, no route, DNS, TLS: the server was never reached.
+      return const AwcAnswer(FetchStatus.offline);
     }
+    if (response.statusCode == 204) {
+      return const AwcAnswer(FetchStatus.noData, httpStatus: 204);
+    }
+    if (response.statusCode != 200) {
+      return AwcAnswer(FetchStatus.failed, httpStatus: response.statusCode);
+    }
+    if (response.body.trim().isEmpty) {
+      return const AwcAnswer(FetchStatus.noData, httpStatus: 200);
+    }
+    try {
+      final decoded = jsonDecode(response.body);
+      if (decoded is List && decoded.isEmpty) {
+        return const AwcAnswer(FetchStatus.noData, httpStatus: 200);
+      }
+      return AwcAnswer(FetchStatus.ok, json: decoded, httpStatus: 200);
+    } on FormatException {
+      return const AwcAnswer(FetchStatus.failed, httpStatus: 200);
+    }
+  }
 
-    _isLoading = false;
-    notifyListeners();
+  static Map<dynamic, dynamic>? _first(Object? json) {
+    if (json is List) {
+      for (final item in json) {
+        if (item is Map) return item;
+      }
+    }
     return null;
+  }
+
+  /// Latest METAR for [station] (ICAO).
+  Future<(FetchStatus, MetarObservation?)> fetchMetar(String station) async {
+    final a = await get('metar', {
+      'ids': station.trim().toUpperCase(),
+      'format': 'json',
+    });
+    if (a.status != FetchStatus.ok) return (a.status, null);
+    final m = _first(a.json);
+    if (m == null) return (FetchStatus.noData, null);
+    return (FetchStatus.ok, MetarObservation.fromJson(m));
+  }
+
+  /// Current TAF for [station]. Many fields (KPAO among them) issue none.
+  Future<(FetchStatus, TafReport?)> fetchTaf(String station) async {
+    final a = await get('taf', {
+      'ids': station.trim().toUpperCase(),
+      'format': 'json',
+    });
+    if (a.status != FetchStatus.ok) return (a.status, null);
+    final m = _first(a.json);
+    if (m == null) return (FetchStatus.noData, null);
+    return (FetchStatus.ok, TafReport.fromJson(m));
   }
 
   /// Airport reference data for [icao] from the Aviation Weather Center.
@@ -254,10 +124,9 @@ class WeatherService extends ChangeNotifier {
   /// Returns null when AWC has no record (it answers 204 with an empty body,
   /// also for IATA codes such as "LAX"). Throws on a network failure, a
   /// timeout or any other status, so the caller can say the lookup failed
-  /// rather than show an empty card. A 5xx is retried once: the endpoint
-  /// intermittently answers 504 from its gateway.
+  /// rather than show an empty card. A 5xx is retried once.
   Future<AirportReference?> fetchAirportDetail(String icao) async {
-    final uri = Uri.parse('$_awcBase/airport').replace(queryParameters: {
+    final uri = Uri.parse('$awcBase/airport').replace(queryParameters: {
       'ids': icao.trim().toUpperCase(),
       'format': 'json',
     });
@@ -279,64 +148,65 @@ class WeatherService extends ChangeNotifier {
     if (response.body.trim().isEmpty) return null;
 
     final decoded = jsonDecode(response.body);
-    if (decoded is List) {
-      for (final item in decoded) {
-        if (item is Map) return AirportReference.fromJson(item);
-      }
-    }
-    return null;
+    final m = _first(decoded);
+    return m == null ? null : AirportReference.fromJson(m);
   }
 
-  /// Fetch live flights over a bounding box from OpenSky Network
-  /// Anonymous access: 400 credits/day, 10s resolution
-  Future<void> fetchLiveFlights({
-    double lamin = 24.0,
-    double lomin = -125.0,
-    double lamax = 50.0,
-    double lomax = -66.0,
-  }) async {
-    _flightsLoading = true;
-    notifyListeners();
+  /// METAR, TAF and airport (for runway alignments) together, each with its
+  /// own status so one failing does not hide the others.
+  Future<WeatherSnapshot> fetchSnapshot(String station,
+      {DateTime Function() clock = DateTime.now}) async {
+    final id = station.trim().toUpperCase();
+    final results = await Future.wait([
+      fetchMetar(id),
+      fetchTaf(id),
+      _airportStatus(id),
+    ]);
+    final metar = results[0] as (FetchStatus, MetarObservation?);
+    final taf = results[1] as (FetchStatus, TafReport?);
+    final apt = results[2] as (FetchStatus, AirportReference?);
+    return WeatherSnapshot(
+      station: id,
+      metarStatus: metar.$1,
+      metar: metar.$2,
+      tafStatus: taf.$1,
+      taf: taf.$2,
+      airportStatus: apt.$1,
+      airport: apt.$2,
+      fetchedAt: clock(),
+    );
+  }
 
+  Future<(FetchStatus, AirportReference?)> _airportStatus(String id) async {
     try {
-      final url =
-          '$_openSkyBase/states/all?lamin=$lamin&lomin=$lomin&lamax=$lamax&lomax=$lomax';
-      final response = await http.get(
-        Uri.parse(url),
-        headers: {'Accept': 'application/json'},
-      ).timeout(const Duration(seconds: 15));
-
-      if (response.statusCode == 200) {
-        final data = jsonDecode(response.body);
-        final states = data['states'] as List? ?? [];
-        _liveFlights = states
-            .where((s) => s != null && (s as List).length > 10)
-            .map((s) => LiveFlight.fromStateVector(s as List))
-            .where((f) => f.latitude != null && f.longitude != null)
-            .take(200)
-            .toList();
-      } else if (response.statusCode == 429) {
-        _error = 'Rate limit reached. Try again in a few minutes.';
-      }
-    } catch (e) {
-      debugPrint('Live flights error: $e');
-      // Silently fail — live flights are optional
+      final a = await fetchAirportDetail(id);
+      return (a == null ? FetchStatus.noData : FetchStatus.ok, a);
+    } on http.ClientException catch (e) {
+      return (
+        e.message.startsWith('AWC airport') ? FetchStatus.failed : FetchStatus.offline,
+        null
+      );
+    } catch (_) {
+      return (FetchStatus.offline, null);
     }
-
-    _flightsLoading = false;
-    notifyListeners();
   }
 
-  /// Fetch PIREP (Pilot Reports) from Aviation Weather Center
+  /// PIREPs (pilot reports) from AWC, newest first, at most ten.
   Future<List<Map<String, dynamic>>> fetchPireps({String? icao}) async {
     try {
-      String url = '$_awcBase/pirep?format=json&age=2';
+      String url = '$awcBase/pirep?format=json&age=2';
       if (icao != null) url += '&id=$icao';
-      final response = await http.get(Uri.parse(url));
+      final response = await http
+          .get(Uri.parse(url))
+          .timeout(const Duration(seconds: 15));
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
         if (data is List) {
-          return data.cast<Map<String, dynamic>>().take(10).toList();
+          return data
+              .whereType<Map>()
+              .map((e) => e.cast<String, dynamic>())
+              .take(10)
+              .toList();
         }
       }
     } catch (e) {
@@ -345,15 +215,21 @@ class WeatherService extends ChangeNotifier {
     return [];
   }
 
-  /// Fetch SIGMETs from Aviation Weather Center
+  /// International SIGMETs from AWC.
   Future<List<Map<String, dynamic>>> fetchSigmets() async {
     try {
-      const url = '$_awcBase/isigmet?format=json';
-      final response = await http.get(Uri.parse(url));
+      const url = '$awcBase/isigmet?format=json';
+      final response = await http
+          .get(Uri.parse(url))
+          .timeout(const Duration(seconds: 15));
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
         if (data is List) {
-          return data.cast<Map<String, dynamic>>().take(10).toList();
+          return data
+              .whereType<Map>()
+              .map((e) => e.cast<String, dynamic>())
+              .take(10)
+              .toList();
         }
       }
     } catch (e) {
@@ -362,10 +238,10 @@ class WeatherService extends ChangeNotifier {
     return [];
   }
 
-  /// Fetch G-AIRMETs (graphical AIRMETs) from Aviation Weather Center
+  /// G-AIRMETs (graphical AIRMETs) from AWC.
   Future<List<Map<String, dynamic>>> fetchAirmets() async {
     try {
-      const url = '$_awcBase/airmet?format=json';
+      const url = '$awcBase/airmet?format=json';
       final response = await http
           .get(Uri.parse(url))
           .timeout(const Duration(seconds: 15));
@@ -385,13 +261,12 @@ class WeatherService extends ChangeNotifier {
     return [];
   }
 
-  /// Fetch winds/temperatures aloft from Aviation Weather Center.
-  // TODO(weather): confirm winds-aloft endpoint/shape; fallback to raw FB text.
+  /// Winds and temperatures aloft. AWC serves the FB text product; a JSON
+  /// form is tried first and the raw text is the fallback.
   Future<List<Map<String, dynamic>>> fetchWindsAloft({String? region}) async {
     final reg = region ?? 'all';
-    // Primary attempt: structured JSON winds/temps aloft.
     try {
-      final url = '$_awcBase/windtemp?format=json&region=$reg&level=low';
+      final url = '$awcBase/windtemp?format=json&region=$reg&level=low';
       final response = await http
           .get(Uri.parse(url))
           .timeout(const Duration(seconds: 15));
@@ -409,9 +284,8 @@ class WeatherService extends ChangeNotifier {
       debugPrint('Winds aloft (json) fetch error: $e');
     }
 
-    // Fallback: fetch the FB text product and return as a single raw entry.
     try {
-      final url = '$_awcBase/windtemp?region=$reg&level=low';
+      final url = '$awcBase/windtemp?region=$reg&level=low';
       final response = await http
           .get(Uri.parse(url))
           .timeout(const Duration(seconds: 15));

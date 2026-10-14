@@ -2,18 +2,18 @@ import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:google_fonts/google_fonts.dart';
+import '../ui/theme.dart';
 import 'package:intl/intl.dart' hide TextDirection;
 
 import '../services/weight_balance_service.dart';
 
 // App palette.
-const _kBg = Color(0xFF0A1628);
-const _kCard = Color(0xFF112240);
-const _kCyan = Color(0xFF00BCD4);
-const _kAmber = Color(0xFFFFB300);
-const _kRed = Color(0xFFF44336);
-const _kGreen = Color(0xFF4CAF50);
+const _kBg = Color(0xFF15181B);
+const _kCard = Color(0xFF1E2226);
+const _kCyan = Color(0xFFFF5A5F);
+const _kAmber = Color(0xFFE09F00);
+const _kRed = Color(0xFFFF5A5F);
+const _kGreen = Color(0xFF5CC277);
 
 class WeightBalanceScreen extends StatefulWidget {
   const WeightBalanceScreen({super.key});
@@ -149,7 +149,7 @@ class _WeightBalanceScreenState extends State<WeightBalanceScreen> {
             child: Text(
               'Representative data — always verify against your aircraft '
               'POH/AFM before flight.',
-              style: GoogleFonts.inter(
+              style: AppType.sans(
                 fontSize: 11,
                 color: _kAmber,
                 height: 1.4,
@@ -182,7 +182,7 @@ class _WeightBalanceScreenState extends State<WeightBalanceScreen> {
                 dropdownColor: _kCard,
                 value: profile.id,
                 icon: const Icon(Icons.arrow_drop_down, color: _kCyan),
-                style: GoogleFonts.inter(fontSize: 13, color: Colors.white),
+                style: AppType.sans(fontSize: 13, color: Colors.white),
                 items: _service.profiles
                     .map(
                       (p) => DropdownMenuItem(
@@ -240,7 +240,7 @@ class _WeightBalanceScreenState extends State<WeightBalanceScreen> {
                     onPressed: () => _openEditor(profile),
                     icon: const Icon(Icons.edit, size: 16),
                     label: Text('EDIT',
-                        style: GoogleFonts.orbitron(fontSize: 10)),
+                        style: AppType.condensed(fontSize: 10)),
                   ),
                 ),
                 const SizedBox(width: 8),
@@ -253,7 +253,7 @@ class _WeightBalanceScreenState extends State<WeightBalanceScreen> {
                     onPressed: () => _confirmDelete(profile),
                     icon: const Icon(Icons.delete_outline, size: 16),
                     label: Text('DELETE',
-                        style: GoogleFonts.orbitron(fontSize: 10)),
+                        style: AppType.condensed(fontSize: 10)),
                   ),
                 ),
               ],
@@ -307,7 +307,7 @@ class _WeightBalanceScreenState extends State<WeightBalanceScreen> {
               children: [
                 Text(
                   s.name,
-                  style: GoogleFonts.inter(
+                  style: AppType.sans(
                     fontSize: 13,
                     color: Colors.white,
                     fontWeight: FontWeight.w500,
@@ -316,7 +316,7 @@ class _WeightBalanceScreenState extends State<WeightBalanceScreen> {
                 const SizedBox(height: 2),
                 Text(
                   subtitle,
-                  style: GoogleFonts.inter(
+                  style: AppType.sans(
                     fontSize: 10,
                     color: warn ? _kRed : Colors.white54,
                   ),
@@ -335,7 +335,7 @@ class _WeightBalanceScreenState extends State<WeightBalanceScreen> {
                 FilteringTextInputFormatter.allow(RegExp(r'[0-9.]')),
               ],
               textAlign: TextAlign.right,
-              style: GoogleFonts.orbitron(
+              style: AppType.condensed(
                 fontSize: 14,
                 color: warn ? _kRed : _kCyan,
                 fontWeight: FontWeight.bold,
@@ -344,7 +344,7 @@ class _WeightBalanceScreenState extends State<WeightBalanceScreen> {
                 isDense: true,
                 suffixText: isFuel ? 'gal' : 'lb',
                 suffixStyle:
-                    GoogleFonts.inter(fontSize: 10, color: Colors.white38),
+                    AppType.sans(fontSize: 10, color: Colors.white38),
                 contentPadding:
                     const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
                 filled: true,
@@ -441,7 +441,7 @@ class _WeightBalanceScreenState extends State<WeightBalanceScreen> {
               children: [
                 Text(
                   label,
-                  style: GoogleFonts.orbitron(
+                  style: AppType.condensed(
                     fontSize: 10,
                     color: color,
                     letterSpacing: 1,
@@ -451,14 +451,14 @@ class _WeightBalanceScreenState extends State<WeightBalanceScreen> {
                 const SizedBox(height: 2),
                 Text(
                   detail,
-                  style: GoogleFonts.inter(fontSize: 11, color: Colors.white70),
+                  style: AppType.sans(fontSize: 11, color: Colors.white70),
                 ),
               ],
             ),
           ),
           Text(
             ok ? 'PASS' : 'FAIL',
-            style: GoogleFonts.orbitron(
+            style: AppType.condensed(
               fontSize: 14,
               color: color,
               fontWeight: FontWeight.bold,
@@ -479,7 +479,7 @@ class _WeightBalanceScreenState extends State<WeightBalanceScreen> {
           const SizedBox(height: 8),
           Text(
             'Weight (lb) vs. CG (in aft of datum)',
-            style: GoogleFonts.inter(fontSize: 10, color: Colors.white54),
+            style: AppType.sans(fontSize: 10, color: Colors.white54),
           ),
           const SizedBox(height: 12),
           AspectRatio(
@@ -516,7 +516,7 @@ class _WeightBalanceScreenState extends State<WeightBalanceScreen> {
           color: c, shape: BoxShape.circle)),
         const SizedBox(width: 6),
         Text(label,
-            style: GoogleFonts.inter(fontSize: 10, color: Colors.white54)),
+            style: AppType.sans(fontSize: 10, color: Colors.white54)),
       ],
     );
   }
@@ -537,7 +537,7 @@ class _WeightBalanceScreenState extends State<WeightBalanceScreen> {
           const SizedBox(height: 4),
           Text(
             'Rough approximation only — not a POH performance chart.',
-            style: GoogleFonts.inter(fontSize: 10, color: Colors.white54),
+            style: AppType.sans(fontSize: 10, color: Colors.white54),
           ),
           const SizedBox(height: 12),
           Row(
@@ -574,7 +574,7 @@ class _WeightBalanceScreenState extends State<WeightBalanceScreen> {
             'Est. ground roll ~$pct% longer than a sea-level standard day '
             '(rule of thumb: +10% per 1,000 ft density altitude). Always use '
             'the takeoff/landing charts in your POH.',
-            style: GoogleFonts.inter(
+            style: AppType.sans(
                 fontSize: 10, color: Colors.white54, height: 1.4),
           ),
         ],
@@ -588,7 +588,7 @@ class _WeightBalanceScreenState extends State<WeightBalanceScreen> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(label,
-            style: GoogleFonts.orbitron(
+            style: AppType.condensed(
                 fontSize: 9, color: Colors.white54, letterSpacing: 1)),
         const SizedBox(height: 6),
         TextField(
@@ -599,12 +599,12 @@ class _WeightBalanceScreenState extends State<WeightBalanceScreen> {
             FilteringTextInputFormatter.allow(
                 RegExp(allowNegative ? r'[0-9.\-]' : r'[0-9.]')),
           ],
-          style: GoogleFonts.orbitron(
+          style: AppType.condensed(
               fontSize: 15, color: _kAmber, fontWeight: FontWeight.bold),
           decoration: InputDecoration(
             isDense: true,
             suffixText: suffix,
-            suffixStyle: GoogleFonts.inter(fontSize: 10, color: Colors.white38),
+            suffixStyle: AppType.sans(fontSize: 10, color: Colors.white38),
             contentPadding:
                 const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
             filled: true,
@@ -640,7 +640,7 @@ class _WeightBalanceScreenState extends State<WeightBalanceScreen> {
   Widget _sectionLabel(String text, Color color) {
     return Text(
       text,
-      style: GoogleFonts.orbitron(
+      style: AppType.condensed(
         fontSize: 11,
         color: color,
         letterSpacing: 2,
@@ -661,12 +661,12 @@ class _WeightBalanceScreenState extends State<WeightBalanceScreen> {
         child: Column(
           children: [
             Text(label,
-                style: GoogleFonts.orbitron(
+                style: AppType.condensed(
                     fontSize: 8, color: Colors.white38, letterSpacing: 1)),
             const SizedBox(height: 4),
             FittedBox(
               child: Text(value,
-                  style: GoogleFonts.orbitron(
+                  style: AppType.condensed(
                       fontSize: 12,
                       color: color,
                       fontWeight: FontWeight.bold)),
@@ -690,14 +690,14 @@ class _WeightBalanceScreenState extends State<WeightBalanceScreen> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(label,
-                style: GoogleFonts.orbitron(
+                style: AppType.condensed(
                     fontSize: 8, color: Colors.white38, letterSpacing: 1)),
             const SizedBox(height: 6),
             FittedBox(
               fit: BoxFit.scaleDown,
               alignment: Alignment.centerLeft,
               child: Text(value,
-                  style: GoogleFonts.orbitron(
+                  style: AppType.condensed(
                       fontSize: 16,
                       color: color,
                       fontWeight: FontWeight.bold)),
@@ -715,14 +715,14 @@ class _WeightBalanceScreenState extends State<WeightBalanceScreen> {
       builder: (ctx) => AlertDialog(
         backgroundColor: _kCard,
         title: Text('Delete aircraft?',
-            style: GoogleFonts.orbitron(fontSize: 14, color: Colors.white)),
+            style: AppType.condensed(fontSize: 14, color: Colors.white)),
         content: Text('Remove "${profile.name}"? This cannot be undone.',
-            style: GoogleFonts.inter(fontSize: 13, color: Colors.white70)),
+            style: AppType.sans(fontSize: 13, color: Colors.white70)),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx),
             child: Text('CANCEL',
-                style: GoogleFonts.orbitron(fontSize: 11, color: Colors.white54)),
+                style: AppType.condensed(fontSize: 11, color: Colors.white54)),
           ),
           TextButton(
             onPressed: () {
@@ -730,7 +730,7 @@ class _WeightBalanceScreenState extends State<WeightBalanceScreen> {
               Navigator.pop(ctx);
             },
             child: Text('DELETE',
-                style: GoogleFonts.orbitron(fontSize: 11, color: _kRed)),
+                style: AppType.condensed(fontSize: 11, color: _kRed)),
           ),
         ],
       ),
@@ -914,7 +914,7 @@ class _EnvelopePainter extends CustomPainter {
     final tp = TextPainter(
       text: TextSpan(
         text: s,
-        style: GoogleFonts.inter(fontSize: size, color: color),
+        style: AppType.sans(fontSize: size, color: color),
       ),
       textDirection: TextDirection.ltr,
     )..layout();
@@ -1056,7 +1056,7 @@ class _ProfileEditorDialogState extends State<_ProfileEditorDialog> {
       backgroundColor: _kCard,
       title: Text(
         widget.existing == null ? 'NEW AIRCRAFT' : 'EDIT AIRCRAFT',
-        style: GoogleFonts.orbitron(
+        style: AppType.condensed(
             fontSize: 14, color: _kCyan, letterSpacing: 1),
       ),
       content: SizedBox(
@@ -1092,12 +1092,12 @@ class _ProfileEditorDialogState extends State<_ProfileEditorDialog> {
           onPressed: () => Navigator.pop(context),
           child: Text('CANCEL',
               style:
-                  GoogleFonts.orbitron(fontSize: 11, color: Colors.white54)),
+                  AppType.condensed(fontSize: 11, color: Colors.white54)),
         ),
         TextButton(
           onPressed: _save,
           child: Text('SAVE',
-              style: GoogleFonts.orbitron(fontSize: 11, color: _kCyan)),
+              style: AppType.condensed(fontSize: 11, color: _kCyan)),
         ),
       ],
     );
@@ -1107,7 +1107,7 @@ class _ProfileEditorDialogState extends State<_ProfileEditorDialog> {
     return Padding(
       padding: const EdgeInsets.only(top: 14, bottom: 4),
       child: Text(label,
-          style: GoogleFonts.orbitron(
+          style: AppType.condensed(
               fontSize: 9, color: _kAmber, letterSpacing: 1.5)),
     );
   }
@@ -1123,10 +1123,10 @@ class _ProfileEditorDialogState extends State<_ProfileEditorDialog> {
         inputFormatters: text
             ? null
             : [FilteringTextInputFormatter.allow(RegExp(r'[0-9.]'))],
-        style: GoogleFonts.inter(fontSize: 13, color: Colors.white),
+        style: AppType.sans(fontSize: 13, color: Colors.white),
         decoration: InputDecoration(
           labelText: label,
-          labelStyle: GoogleFonts.inter(fontSize: 12, color: Colors.white54),
+          labelStyle: AppType.sans(fontSize: 12, color: Colors.white54),
           isDense: true,
           contentPadding:
               const EdgeInsets.symmetric(horizontal: 10, vertical: 10),

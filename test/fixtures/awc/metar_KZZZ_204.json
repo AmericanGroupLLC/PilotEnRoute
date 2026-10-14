@@ -1,0 +1,6 @@
+{
+ "_captured_utc": "2026-10-14T13:03:13Z",
+ "_request": "GET https://aviationweather.gov/api/data/metar?ids=KZZZ&format=json",
+ "_http_status": 204,
+ "response": null
+}

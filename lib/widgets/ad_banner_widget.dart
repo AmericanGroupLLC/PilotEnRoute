@@ -1,6 +1,6 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
+import '../ui/theme.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
 import '../services/ad_service.dart';
 
@@ -79,22 +79,22 @@ class _AdBannerWidgetState extends State<AdBannerWidget> {
       height: 52,
       margin: const EdgeInsets.symmetric(vertical: 2),
       decoration: BoxDecoration(
-        color: const Color(0xFF0F1629),
+        color: Theme.of(context).colorScheme.surfaceContainer,
         border: Border.symmetric(
           horizontal: BorderSide(
-            color: const Color(0xFF1E3A5F).withAlpha(100),
+            color: Theme.of(context).colorScheme.outlineVariant,
           ),
         ),
       ),
       child: Row(
         children: [
           const SizedBox(width: 10),
-          _adLabel(),
+          _adLabel(context),
           const SizedBox(width: 10),
           Expanded(
             child: Text(
               'Advertisement',
-              style: GoogleFonts.inter(color: Colors.white38, fontSize: 11),
+              style: AppType.sans(color: Theme.of(context).colorScheme.onSurfaceVariant, fontSize: 11),
               overflow: TextOverflow.ellipsis,
             ),
           ),
@@ -108,22 +108,22 @@ class _AdBannerWidgetState extends State<AdBannerWidget> {
       height: 52,
       margin: const EdgeInsets.symmetric(vertical: 2),
       decoration: BoxDecoration(
-        color: const Color(0xFF0F1629),
+        color: Theme.of(context).colorScheme.surfaceContainer,
         border: Border.symmetric(
           horizontal: BorderSide(
-            color: const Color(0xFF1E3A5F).withAlpha(100),
+            color: Theme.of(context).colorScheme.outlineVariant,
           ),
         ),
       ),
       child: Row(
         children: [
           const SizedBox(width: 10),
-          _adLabel(),
+          _adLabel(context),
           const SizedBox(width: 10),
           Expanded(
             child: Text(
               'Advertisement',
-              style: GoogleFonts.inter(color: Colors.white38, fontSize: 11),
+              style: AppType.sans(color: Theme.of(context).colorScheme.onSurfaceVariant, fontSize: 11),
               overflow: TextOverflow.ellipsis,
             ),
           ),
@@ -132,7 +132,7 @@ class _AdBannerWidgetState extends State<AdBannerWidget> {
     );
   }
 
-  Widget _adLabel() {
+  Widget _adLabel(BuildContext context) {
     return Semantics(
       container: true,
       label: 'Advertisement',
@@ -140,13 +140,13 @@ class _AdBannerWidgetState extends State<AdBannerWidget> {
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 2),
         decoration: BoxDecoration(
-          color: const Color(0xFF1E3A5F),
+          color: Theme.of(context).colorScheme.outlineVariant,
           borderRadius: BorderRadius.circular(3),
         ),
         child: Text(
           'AD',
-          style: GoogleFonts.inter(
-            color: Colors.white54,
+          style: AppType.sans(
+            color: Theme.of(context).colorScheme.onSurfaceVariant,
             fontSize: 9,
             fontWeight: FontWeight.bold,
           ),

@@ -1,7 +1,7 @@
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
+import '../ui/theme.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 // NOTE: The checklists below are REPRESENTATIVE / for demonstration only.
@@ -171,12 +171,12 @@ class _ChecklistScreenState extends State<ChecklistScreen> {
         context: context,
         builder: (ctx) {
           return AlertDialog(
-            backgroundColor: const Color(0xFF112240),
+            backgroundColor: const Color(0xFF1E2226),
             title: Text(
               'ADD ITEM',
-              style: GoogleFonts.orbitron(
+              style: AppType.condensed(
                 fontSize: 14,
-                color: const Color(0xFF00BCD4),
+                color: const Color(0xFFFF5A5F),
                 letterSpacing: 2,
               ),
             ),
@@ -186,30 +186,30 @@ class _ChecklistScreenState extends State<ChecklistScreen> {
                 TextField(
                   controller: actionController,
                   autofocus: true,
-                  style: GoogleFonts.inter(color: Colors.white, fontSize: 13),
+                  style: AppType.sans(color: Colors.white, fontSize: 13),
                   decoration: InputDecoration(
                     labelText: 'Action (required)',
-                    labelStyle: GoogleFonts.inter(color: Colors.white54, fontSize: 12),
+                    labelStyle: AppType.sans(color: Colors.white54, fontSize: 12),
                     enabledBorder: const UnderlineInputBorder(
                       borderSide: BorderSide(color: Colors.white24),
                     ),
                     focusedBorder: const UnderlineInputBorder(
-                      borderSide: BorderSide(color: Color(0xFF00BCD4)),
+                      borderSide: BorderSide(color: Color(0xFFFF5A5F)),
                     ),
                   ),
                 ),
                 const SizedBox(height: 8),
                 TextField(
                   controller: valueController,
-                  style: GoogleFonts.inter(color: Colors.white, fontSize: 13),
+                  style: AppType.sans(color: Colors.white, fontSize: 13),
                   decoration: InputDecoration(
                     labelText: 'Value (optional)',
-                    labelStyle: GoogleFonts.inter(color: Colors.white54, fontSize: 12),
+                    labelStyle: AppType.sans(color: Colors.white54, fontSize: 12),
                     enabledBorder: const UnderlineInputBorder(
                       borderSide: BorderSide(color: Colors.white24),
                     ),
                     focusedBorder: const UnderlineInputBorder(
-                      borderSide: BorderSide(color: Color(0xFF00BCD4)),
+                      borderSide: BorderSide(color: Color(0xFFFF5A5F)),
                     ),
                   ),
                 ),
@@ -218,11 +218,11 @@ class _ChecklistScreenState extends State<ChecklistScreen> {
             actions: [
               TextButton(
                 onPressed: () => Navigator.of(ctx).pop(false),
-                child: Text('CANCEL', style: GoogleFonts.inter(color: Colors.white54)),
+                child: Text('CANCEL', style: AppType.sans(color: Colors.white54)),
               ),
               TextButton(
                 onPressed: () => Navigator.of(ctx).pop(true),
-                child: Text('ADD', style: GoogleFonts.inter(color: const Color(0xFF00BCD4))),
+                child: Text('ADD', style: AppType.sans(color: const Color(0xFFFF5A5F))),
               ),
             ],
           );
@@ -284,7 +284,7 @@ class _ChecklistScreenState extends State<ChecklistScreen> {
         checkableItems.where((it) => _checked[it['key']] == true).length;
 
     return Scaffold(
-      backgroundColor: const Color(0xFF0A1628),
+      backgroundColor: const Color(0xFF15181B),
       appBar: AppBar(
         title: const Text('CHECKLISTS'),
         actions: [
@@ -296,7 +296,7 @@ class _ChecklistScreenState extends State<ChecklistScreen> {
         ],
       ),
       floatingActionButton: FloatingActionButton(
-        backgroundColor: const Color(0xFF00BCD4),
+        backgroundColor: const Color(0xFFFF5A5F),
         onPressed: _addCustomItem,
         tooltip: 'Add custom item',
         child: const Icon(Icons.add, color: Colors.black),
@@ -329,15 +329,15 @@ class _ChecklistScreenState extends State<ChecklistScreen> {
                     margin: const EdgeInsets.only(right: 8),
                     padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 4),
                     decoration: BoxDecoration(
-                      color: selected ? const Color(0xFF00BCD4) : const Color(0xFF112240),
+                      color: selected ? const Color(0xFFFF5A5F) : const Color(0xFF1E2226),
                       borderRadius: BorderRadius.circular(20),
                       border: Border.all(
-                        color: selected ? const Color(0xFF00BCD4) : Colors.white24,
+                        color: selected ? const Color(0xFFFF5A5F) : Colors.white24,
                       ),
                     ),
                     child: Text(
                       ac,
-                      style: GoogleFonts.inter(
+                      style: AppType.sans(
                         fontSize: 11,
                         fontWeight: FontWeight.w600,
                         color: selected ? Colors.black : Colors.white70,
@@ -376,7 +376,7 @@ class _ChecklistScreenState extends State<ChecklistScreen> {
                     margin: const EdgeInsets.only(right: 8),
                     padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 4),
                     decoration: BoxDecoration(
-                      color: selected ? color.withValues(alpha: 0.2) : const Color(0xFF112240),
+                      color: selected ? color.withValues(alpha: 0.2) : const Color(0xFF1E2226),
                       borderRadius: BorderRadius.circular(20),
                       border: Border.all(
                         color: selected ? color : Colors.white12,
@@ -388,7 +388,7 @@ class _ChecklistScreenState extends State<ChecklistScreen> {
                         const SizedBox(width: 4),
                         Text(
                           phase['name'] as String,
-                          style: GoogleFonts.inter(
+                          style: AppType.sans(
                             fontSize: 11,
                             fontWeight: FontWeight.w600,
                             color: selected ? color : Colors.white54,
@@ -415,7 +415,7 @@ class _ChecklistScreenState extends State<ChecklistScreen> {
                 children: [
                   Text(
                     '$doneCount / ${checkableItems.length}',
-                    style: GoogleFonts.orbitron(
+                    style: AppType.condensed(
                         fontSize: 11, color: Colors.white54),
                   ),
                   const SizedBox(width: 12),
@@ -428,7 +428,7 @@ class _ChecklistScreenState extends State<ChecklistScreen> {
                             : doneCount / checkableItems.length,
                         backgroundColor: Colors.white12,
                         valueColor:
-                            const AlwaysStoppedAnimation(Color(0xFF4CAF50)),
+                            const AlwaysStoppedAnimation(Color(0xFF5CC277)),
                         minHeight: 4,
                       ),
                     ),
@@ -442,7 +442,7 @@ class _ChecklistScreenState extends State<ChecklistScreen> {
             padding: const EdgeInsets.fromLTRB(16, 0, 16, 2),
             child: Text(
               'Representative only — always verify against your aircraft POH/AFM.',
-              style: GoogleFonts.inter(fontSize: 9, color: Colors.white38),
+              style: AppType.sans(fontSize: 9, color: Colors.white38),
             ),
           ),
           // Checklist items
@@ -464,9 +464,9 @@ class _ChecklistScreenState extends State<ChecklistScreen> {
                       padding: const EdgeInsets.fromLTRB(0, 16, 0, 8),
                       child: Text(
                         item['text'] as String,
-                        style: GoogleFonts.orbitron(
+                        style: AppType.condensed(
                           fontSize: 10,
-                          color: const Color(0xFF00BCD4),
+                          color: const Color(0xFFFF5A5F),
                           letterSpacing: 2,
                         ),
                       ),
@@ -487,12 +487,12 @@ class _ChecklistScreenState extends State<ChecklistScreen> {
                     padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
                     decoration: BoxDecoration(
                       color: isChecked
-                          ? const Color(0xFF4CAF50).withValues(alpha: 0.1)
-                          : const Color(0xFF112240),
+                          ? const Color(0xFF5CC277).withValues(alpha: 0.1)
+                          : const Color(0xFF1E2226),
                       borderRadius: BorderRadius.circular(12),
                       border: Border.all(
                         color: isChecked
-                            ? const Color(0xFF4CAF50).withValues(alpha: 0.5)
+                            ? const Color(0xFF5CC277).withValues(alpha: 0.5)
                             : Colors.white12,
                       ),
                     ),
@@ -504,12 +504,12 @@ class _ChecklistScreenState extends State<ChecklistScreen> {
                           height: 24,
                           decoration: BoxDecoration(
                             color: isChecked
-                                ? const Color(0xFF4CAF50)
+                                ? const Color(0xFF5CC277)
                                 : Colors.transparent,
                             borderRadius: BorderRadius.circular(6),
                             border: Border.all(
                               color: isChecked
-                                  ? const Color(0xFF4CAF50)
+                                  ? const Color(0xFF5CC277)
                                   : Colors.white38,
                               width: 2,
                             ),
@@ -526,7 +526,7 @@ class _ChecklistScreenState extends State<ChecklistScreen> {
                             children: [
                               Text(
                                 item['action'] as String,
-                                style: GoogleFonts.inter(
+                                style: AppType.sans(
                                   fontSize: 13,
                                   fontWeight: FontWeight.w600,
                                   color: isChecked ? Colors.white54 : Colors.white,
@@ -536,11 +536,11 @@ class _ChecklistScreenState extends State<ChecklistScreen> {
                               if (item['value'] != null)
                                 Text(
                                   item['value'] as String,
-                                  style: GoogleFonts.orbitron(
+                                  style: AppType.condensed(
                                     fontSize: 10,
                                     color: isChecked
                                         ? Colors.white24
-                                        : const Color(0xFF00BCD4),
+                                        : const Color(0xFFFF5A5F),
                                     letterSpacing: 1,
                                   ),
                                 ),
@@ -554,14 +554,14 @@ class _ChecklistScreenState extends State<ChecklistScreen> {
                             margin: const EdgeInsets.only(right: 4),
                             padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                             decoration: BoxDecoration(
-                              color: const Color(0xFF00BCD4).withValues(alpha: 0.15),
+                              color: const Color(0xFFFF5A5F).withValues(alpha: 0.15),
                               borderRadius: BorderRadius.circular(4),
                             ),
                             child: Text(
                               'CUSTOM',
-                              style: GoogleFonts.orbitron(
+                              style: AppType.condensed(
                                 fontSize: 7,
-                                color: const Color(0xFF00BCD4),
+                                color: const Color(0xFFFF5A5F),
                                 letterSpacing: 1,
                               ),
                             ),
@@ -572,14 +572,14 @@ class _ChecklistScreenState extends State<ChecklistScreen> {
                           child: Container(
                             padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                             decoration: BoxDecoration(
-                              color: const Color(0xFFF44336).withValues(alpha: 0.15),
+                              color: const Color(0xFFFF5A5F).withValues(alpha: 0.15),
                               borderRadius: BorderRadius.circular(4),
                             ),
                             child: Text(
                               'CRITICAL',
-                              style: GoogleFonts.orbitron(
+                              style: AppType.condensed(
                                 fontSize: 7,
-                                color: const Color(0xFFF44336),
+                                color: const Color(0xFFFF5A5F),
                                 letterSpacing: 1,
                               ),
                             ),
@@ -609,14 +609,14 @@ class _ChecklistScreenState extends State<ChecklistScreen> {
   List<Map<String, dynamic>> _getPhases(String aircraft) {
     return [
       {'name': 'Preflight', 'icon': Icons.search, 'color': const Color(0xFF2196F3)},
-      {'name': 'Before Start', 'icon': Icons.power_settings_new, 'color': const Color(0xFFFFB300)},
+      {'name': 'Before Start', 'icon': Icons.power_settings_new, 'color': const Color(0xFFE09F00)},
       {'name': 'Engine Start', 'icon': Icons.settings, 'color': const Color(0xFFFF9800)},
       {'name': 'Before Taxi', 'icon': Icons.directions_car, 'color': const Color(0xFF9C27B0)},
-      {'name': 'Run-Up', 'icon': Icons.speed, 'color': const Color(0xFF4CAF50)},
-      {'name': 'Before Takeoff', 'icon': Icons.flight_takeoff, 'color': const Color(0xFF00BCD4)},
+      {'name': 'Run-Up', 'icon': Icons.speed, 'color': const Color(0xFF5CC277)},
+      {'name': 'Before Takeoff', 'icon': Icons.flight_takeoff, 'color': const Color(0xFFFF5A5F)},
       {'name': 'Cruise', 'icon': Icons.flight, 'color': const Color(0xFF3F51B5)},
       {'name': 'Descent', 'icon': Icons.flight_land, 'color': const Color(0xFFFF5722)},
-      {'name': 'Landing', 'icon': Icons.flight_land, 'color': const Color(0xFFF44336)},
+      {'name': 'Landing', 'icon': Icons.flight_land, 'color': const Color(0xFFFF5A5F)},
       {'name': 'Shutdown', 'icon': Icons.power_off, 'color': const Color(0xFF607D8B)},
     ];
   }

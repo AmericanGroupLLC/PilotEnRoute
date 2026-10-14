@@ -3,68 +3,57 @@ import 'package:pilot_enroute/services/weather_service.dart';
 
 void main() {
   group('WeatherService', () {
-    late WeatherService service;
-
-    setUp(() {
-      service = WeatherService();
+    test('starts with no station', () {
+      expect(WeatherService().lastStation, isNull);
     });
 
-    test('initializes with correct default state', () {
-      expect(service.isLoading, isFalse);
-      expect(service.currentMetar, isNull);
-      expect(service.liveFlights, isEmpty);
-      expect(service.flightsLoading, isFalse);
+    test('talks to aviationweather.gov directly', () {
+      expect(awcBase, 'https://aviationweather.gov/api/data');
     });
   });
 
-  group('MetarData model', () {
-    test('creates MetarData with required fields', () {
-      final metar = MetarData(
-        icao: 'KLAX',
-        raw: 'KLAX 011853Z 26010KT 10SM FEW025 22/12 A2995',
-        category: 'VFR',
-        windDir: 260,
-        windSpeedKt: 10,
-        temperatureC: 22.0,
-        dewpointC: 12.0,
-        altimeterInHg: 29.95,
-      );
-
-      expect(metar.icao, equals('KLAX'));
-      expect(metar.category, equals('VFR'));
-      expect(metar.temperatureC, equals(22.0));
-      expect(metar.windSpeedKt, equals(10));
-      expect(metar.altimeterInHg, equals(29.95));
+  group('MetarObservation model', () {
+    test('decodes the AWC fields it is given', () {
+      final m = MetarObservation.fromJson(const {
+        'icaoId': 'KLAX',
+        'rawOb': 'METAR KLAX 011853Z 26010KT 10SM FEW025 22/12 A2995',
+        'fltCat': 'VFR',
+        'wdir': 260,
+        'wspd': 10,
+        'temp': 22.0,
+        'dewp': 12.0,
+        'altim': 1014.2,
+      });
+      expect(m.icao, equals('KLAX'));
+      expect(m.flightCategory, equals('VFR'));
+      expect(m.tempC, equals(22.0));
+      expect(m.wind!.speedKt, equals(10));
+      expect(m.altimeterInHg, closeTo(29.95, 0.01));
     });
 
-    test('MetarData raw text is stored correctly', () {
-      const raw = 'KSFO 011953Z 28012KT 10SM SKC 18/08 A3001';
-      final metar = MetarData(
-        icao: 'KSFO',
-        raw: raw,
-        category: 'VFR',
-      );
-      expect(metar.raw, equals(raw));
+    test('raw text is stored exactly', () {
+      const raw = 'METAR KSFO 011953Z 28012KT 10SM SKC 18/08 A3001';
+      expect(MetarObservation.fromJson(const {'rawOb': raw}).raw, equals(raw));
     });
 
-    test('MetarData icao is uppercase', () {
-      final metar = MetarData(
-        icao: 'KJFK',
-        raw: 'KJFK 011953Z AUTO 18008KT 10SM CLR 20/10 A2998',
-        category: 'VFR',
-      );
-      expect(metar.icao, equals(metar.icao.toUpperCase()));
+    test('optional fields default to null, never zero', () {
+      final m = MetarObservation.fromJson(const {
+        'icaoId': 'KORD',
+        'rawOb': 'METAR KORD 011953Z 00000KT 10SM CLR 15/05 A3005',
+      });
+      expect(m.ceilingFt, isNull);
+      expect(m.wind, isNull);
+      expect(m.visibility, isNull);
+      expect(m.altimeterHpa, isNull);
     });
 
-    test('MetarData optional fields default to null', () {
-      final metar = MetarData(
-        icao: 'KORD',
-        raw: 'KORD 011953Z 00000KT 10SM CLR 15/05 A3005',
-        category: 'VFR',
-      );
-      expect(metar.ceilingFt, isNull);
-      expect(metar.windGustKt, isNull);
-      expect(metar.tafRaw, isNull);
+    test('each flight category keeps its own colour; unknown is grey', () {
+      final colours = {
+        for (final c in ['VFR', 'MVFR', 'IFR', 'LIFR']) c: flightCategoryColor(c)
+      };
+      expect(colours.values.toSet(), hasLength(4));
+      expect(flightCategoryColor('nonsense'),
+          isNot(anyOf(colours.values.map(equals))));
     });
   });
 

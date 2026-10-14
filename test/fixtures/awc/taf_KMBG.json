@@ -1,0 +1,192 @@
+{
+ "_captured_utc": "2026-10-14T13:03:13Z",
+ "_request": "GET https://aviationweather.gov/api/data/taf?ids=KMBG&format=json",
+ "_http_status": 200,
+ "response": [
+  {
+   "icaoId": "KMBG",
+   "dbPopTime": "2026-10-14T11:32:33.254Z",
+   "bulletinTime": "2026-10-14T11:32:00.000Z",
+   "issueTime": "2026-10-14T11:32:00.000Z",
+   "validTimeFrom": 1791979200,
+   "validTimeTo": 1792065600,
+   "rawTAF": "TAF KMBG 141132Z 1412/1512 VRB03KT 1/4SM FG VV001 TEMPO 1412/1415 3SM BR SCT001 BKN014 FM141500 VRB03KT P6SM FEW014 FM142100 14004KT P6SM BKN190 PROB30 1503/1508 -SHRA BKN070 FM150800 VRB03KT P6SM OVC070",
+   "mostRecent": 1,
+   "remarks": "",
+   "lat": 45.543,
+   "lon": -100.404,
+   "elev": 515,
+   "prior": 3,
+   "name": "Mobridge Muni",
+   "fcsts": [
+    {
+     "timeFrom": 1791979200,
+     "timeTo": 1791990000,
+     "timeBec": null,
+     "fcstChange": null,
+     "probability": null,
+     "wdir": "VRB",
+     "wspd": 3,
+     "wgst": null,
+     "wshearHgt": null,
+     "wshearDir": null,
+     "wshearSpd": null,
+     "visib": 0.25,
+     "altim": null,
+     "vertVis": 100,
+     "wxString": "FG",
+     "notDecoded": null,
+     "clouds": [
+      {
+       "cover": "OVX",
+       "base": null,
+       "type": null
+      }
+     ],
+     "icgTurb": [],
+     "temp": []
+    },
+    {
+     "timeFrom": 1791979200,
+     "timeTo": 1791990000,
+     "timeBec": null,
+     "fcstChange": "TEMPO",
+     "probability": null,
+     "wdir": null,
+     "wspd": null,
+     "wgst": null,
+     "wshearHgt": null,
+     "wshearDir": null,
+     "wshearSpd": null,
+     "visib": 3,
+     "altim": null,
+     "vertVis": null,
+     "wxString": "BR",
+     "notDecoded": null,
+     "clouds": [
+      {
+       "cover": "SCT",
+       "base": 100,
+       "type": null
+      },
+      {
+       "cover": "BKN",
+       "base": 1400,
+       "type": null
+      }
+     ],
+     "icgTurb": [],
+     "temp": []
+    },
+    {
+     "timeFrom": 1791990000,
+     "timeTo": 1792011600,
+     "timeBec": null,
+     "fcstChange": "FM",
+     "probability": null,
+     "wdir": "VRB",
+     "wspd": 3,
+     "wgst": null,
+     "wshearHgt": null,
+     "wshearDir": null,
+     "wshearSpd": null,
+     "visib": "6+",
+     "altim": null,
+     "vertVis": null,
+     "wxString": null,
+     "notDecoded": null,
+     "clouds": [
+      {
+       "cover": "FEW",
+       "base": 1400,
+       "type": null
+      }
+     ],
+     "icgTurb": [],
+     "temp": []
+    },
+    {
+     "timeFrom": 1792011600,
+     "timeTo": 1792051200,
+     "timeBec": null,
+     "fcstChange": "FM",
+     "probability": null,
+     "wdir": 140,
+     "wspd": 4,
+     "wgst": null,
+     "wshearHgt": null,
+     "wshearDir": null,
+     "wshearSpd": null,
+     "visib": "6+",
+     "altim": null,
+     "vertVis": null,
+     "wxString": null,
+     "notDecoded": null,
+     "clouds": [
+      {
+       "cover": "BKN",
+       "base": 19000,
+       "type": null
+      }
+     ],
+     "icgTurb": [],
+     "temp": []
+    },
+    {
+     "timeFrom": 1792033200,
+     "timeTo": 1792051200,
+     "timeBec": null,
+     "fcstChange": "PROB",
+     "probability": 30,
+     "wdir": null,
+     "wspd": null,
+     "wgst": null,
+     "wshearHgt": null,
+     "wshearDir": null,
+     "wshearSpd": null,
+     "visib": "",
+     "altim": null,
+     "vertVis": null,
+     "wxString": "-SHRA",
+     "notDecoded": null,
+     "clouds": [
+      {
+       "cover": "BKN",
+       "base": 7000,
+       "type": null
+      }
+     ],
+     "icgTurb": [],
+     "temp": []
+    },
+    {
+     "timeFrom": 1792051200,
+     "timeTo": 1792065600,
+     "timeBec": null,
+     "fcstChange": "FM",
+     "probability": null,
+     "wdir": "VRB",
+     "wspd": 3,
+     "wgst": null,
+     "wshearHgt": null,
+     "wshearDir": null,
+     "wshearSpd": null,
+     "visib": "6+",
+     "altim": null,
+     "vertVis": null,
+     "wxString": null,
+     "notDecoded": null,
+     "clouds": [
+      {
+       "cover": "OVC",
+       "base": 7000,
+       "type": null
+      }
+     ],
+     "icgTurb": [],
+     "temp": []
+    }
+   ]
+  }
+ ]
+}

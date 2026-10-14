@@ -1,11 +1,15 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
-import 'package:shared_preferences/shared_preferences.dart';
-import 'package:url_launcher/url_launcher.dart';
-import 'package:agl_i18n/agl_i18n.dart';
+import 'package:provider/provider.dart';
 
-import '../services/notification_service.dart';
+import '../core/legality/date_text.dart';
+import '../core/legality/pilot_profile.dart';
+import '../core/logbook/logbook_entry.dart';
+import '../services/settings_store.dart';
+import '../ui/theme.dart';
+import '../ui/widgets.dart';
 
+/// Pilot profile in Settings: medical, flight review, ratings, home
+/// category/class. The legality engine works every date out from these.
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
 
@@ -13,769 +17,276 @@ class ProfileScreen extends StatefulWidget {
   State<ProfileScreen> createState() => _ProfileScreenState();
 }
 
-class _ProfileScreenState extends State<ProfileScreen>
-    with SingleTickerProviderStateMixin {
-  late TabController _tabController;
-  final _nameCtrl = TextEditingController();
-  final _certCtrl = TextEditingController();
-  String _pilotLevel = 'Student Pilot';
-  String _medicalClass = '3rd Class';
-  DateTime? _medicalExpiry;
-  DateTime? _bfrExpiry;
-  bool _loading = true;
-
-  final List<String> _pilotLevels = [
-    'Student Pilot',
-    'Sport Pilot',
-    'Recreational Pilot',
-    'Private Pilot',
-    'Commercial Pilot',
-    'ATP',
-    'Flight Instructor (CFI)',
-    'Remote Pilot (Part 107)',
-  ];
-
-  final List<String> _medicalClasses = [
-    '1st Class (12 months)',
-    '2nd Class (12 months)',
-    '3rd Class (24/60 months)',
-    'BasicMed',
-    'Sport Pilot (Driver\'s License)',
-    'None Required',
-  ];
-
-  @override
-  void initState() {
-    super.initState();
-    _tabController = TabController(length: 3, vsync: this);
-    _loadProfile();
-  }
+class _ProfileScreenState extends State<ProfileScreen> {
+  late PilotProfile _p = context.read<SettingsStore>().profile;
+  late final _name = TextEditingController(text: _p.name);
 
   @override
   void dispose() {
-    _tabController.dispose();
-    _nameCtrl.dispose();
-    _certCtrl.dispose();
+    _name.dispose();
     super.dispose();
   }
 
-  Future<void> _loadProfile() async {
-    final prefs = await SharedPreferences.getInstance();
-    setState(() {
-      _nameCtrl.text = prefs.getString('profile_name') ?? '';
-      _certCtrl.text = prefs.getString('profile_cert') ?? '';
-      _pilotLevel = prefs.getString('profile_level') ?? 'Student Pilot';
-      _medicalClass = prefs.getString('profile_medical') ?? '3rd Class (24/60 months)';
-      final medExp = prefs.getString('profile_medical_expiry');
-      if (medExp != null) _medicalExpiry = DateTime.parse(medExp);
-      final bfrExp = prefs.getString('profile_bfr_expiry');
-      if (bfrExp != null) _bfrExpiry = DateTime.parse(bfrExp);
-      _loading = false;
-    });
+  Future<void> _save() async {
+    await context
+        .read<SettingsStore>()
+        .setProfile(_p.copyWith(name: _name.text.trim()));
+    if (!mounted) return;
+    ScaffoldMessenger.of(context)
+        .showSnackBar(const SnackBar(content: Text('Profile saved')));
+    Navigator.of(context).pop();
   }
 
-  Future<void> _saveProfile() async {
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setString('profile_name', _nameCtrl.text);
-    await prefs.setString('profile_cert', _certCtrl.text);
-    await prefs.setString('profile_level', _pilotLevel);
-    await prefs.setString('profile_medical', _medicalClass);
-    if (_medicalExpiry != null) {
-      await prefs.setString('profile_medical_expiry', _medicalExpiry!.toIso8601String());
-    }
-    if (_bfrExpiry != null) {
-      await prefs.setString('profile_bfr_expiry', _bfrExpiry!.toIso8601String());
-    }
-    // Schedule (or replace) the expiry reminders for the saved dates, and
-    // report only what was actually scheduled.
-    final reminders = await NotificationService.syncExpiryReminders(
-      medicalExpiry: _medicalExpiry,
-      flightReviewDue: _bfrExpiry,
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Pilot profile'),
+        actions: [TextButton(onPressed: _save, child: const Text('Save'))],
+      ),
+      body: ListView(
+        padding: const EdgeInsets.all(16),
+        children: [
+          TextField(
+            controller: _name,
+            decoration: const InputDecoration(
+              labelText: 'Name (printed on the PDF export, optional)',
+            ),
+          ),
+          const SizedBox(height: 16),
+          AircraftClassPicker(
+            value: _p.homeCategoryClass,
+            tailwheel: _p.homeTailwheel,
+            onChanged: (cc, tw) => setState(() =>
+                _p = _p.copyWith(homeCategoryClass: cc, homeTailwheel: tw)),
+          ),
+          const SizedBox(height: 16),
+          MedicalForm(
+            profile: _p,
+            onChanged: (p) => setState(() => _p = p),
+          ),
+          const SizedBox(height: 16),
+          FilledButton(onPressed: _save, child: const Text('Save profile')),
+        ],
+      ),
     );
-    if (!mounted) return;
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(profileSavedMessage(reminders), style: GoogleFonts.inter()),
-        backgroundColor: const Color(0xFF4CAF50),
+  }
+}
+
+/// Category/class chips plus a tailwheel switch.
+class AircraftClassPicker extends StatefulWidget {
+  const AircraftClassPicker({
+    super.key,
+    required this.value,
+    required this.tailwheel,
+    required this.onChanged,
+  });
+
+  final String value;
+  final bool tailwheel;
+  final void Function(String categoryClass, bool tailwheel) onChanged;
+
+  @override
+  State<AircraftClassPicker> createState() => _AircraftClassPickerState();
+}
+
+class _AircraftClassPickerState extends State<AircraftClassPicker> {
+  late bool _other = widget.value.isNotEmpty &&
+      !CategoryClass.presets.contains(widget.value.toUpperCase());
+  late final _otherCtrl = TextEditingController(text: _other ? widget.value : '');
+
+  @override
+  void dispose() {
+    _otherCtrl.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const SectionHeader('What you fly',
+            subtitle: 'Category and class for passenger currency'),
+        Wrap(spacing: 6, runSpacing: 4, children: [
+          for (final p in CategoryClass.presets)
+            ChoiceChip(
+              key: Key('class-$p'),
+              label: Text(p),
+              tooltip: CategoryClass.label(p),
+              selected: !_other && widget.value.toUpperCase() == p,
+              onSelected: (_) {
+                setState(() => _other = false);
+                widget.onChanged(p, widget.tailwheel);
+              },
+            ),
+          ChoiceChip(
+            label: const Text('Other'),
+            selected: _other,
+            onSelected: (_) {
+              setState(() => _other = true);
+              widget.onChanged(_otherCtrl.text.trim(), widget.tailwheel);
+            },
+          ),
+        ]),
+        if (_other)
+          Padding(
+            padding: const EdgeInsets.only(top: 8),
+            child: TextField(
+              controller: _otherCtrl,
+              decoration: const InputDecoration(
+                  labelText: 'Category/class', hintText: 'e.g. Glider'),
+              onChanged: (t) => widget.onChanged(t.trim(), widget.tailwheel),
+            ),
+          ),
+        SwitchListTile(
+          contentPadding: EdgeInsets.zero,
+          title: const Text('Tailwheel'),
+          value: widget.tailwheel,
+          onChanged: (v) => widget.onChanged(
+              _other ? _otherCtrl.text.trim() : widget.value, v),
+        ),
+      ],
+    );
+  }
+}
+
+/// Medical (class, exam date, the under-40 question, or BasicMed), flight
+/// review, instrument rating and student solo endorsement.
+class MedicalForm extends StatelessWidget {
+  const MedicalForm({super.key, required this.profile, required this.onChanged});
+
+  final PilotProfile profile;
+  final ValueChanged<PilotProfile> onChanged;
+
+  Future<DateTime?> _pick(BuildContext context, DateTime? initial) {
+    final now = DateTime.now();
+    return showDatePicker(
+      context: context,
+      initialDate: initial ?? now,
+      firstDate: DateTime(1970),
+      lastDate: now,
+    );
+  }
+
+  Widget _dateButton(BuildContext context, String label, DateTime? value,
+      ValueChanged<DateTime> set,
+      {Key? key}) {
+    return Padding(
+      padding: const EdgeInsets.only(top: 8),
+      child: OutlinedButton.icon(
+        key: key,
+        onPressed: () async {
+          final d = await _pick(context, value);
+          if (d != null) set(d);
+        },
+        icon: const Icon(Icons.event, size: 18),
+        label: Text(
+          '$label: ${value == null ? 'not set' : dayMonthYear(value)}',
+          style: const TextStyle(fontFamily: AppFonts.body),
+        ),
       ),
     );
   }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: const Color(0xFF0A1628),
-      appBar: AppBar(
-        title: const Text('PILOT PROFILE'),
-        actions: [
-          IconButton(
-            tooltip: (AglL10n.of(context)?.actionSave ?? 'Save'),
-            icon: const Icon(Icons.save),
-            onPressed: _saveProfile,
-          ),
+    final p = profile;
+    final scheme = Theme.of(context).colorScheme;
+    final medical = p.medicalKind;
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const SectionHeader('Medical', subtitle: '14 CFR 61.23'),
+        Wrap(spacing: 6, runSpacing: 4, children: [
+          for (final k in MedicalKind.values)
+            ChoiceChip(
+              key: Key('medical-${k.name}'),
+              label: Text(switch (k) {
+                MedicalKind.none => 'None',
+                MedicalKind.first => 'First class',
+                MedicalKind.second => 'Second class',
+                MedicalKind.third => 'Third class',
+                MedicalKind.basicMed => 'BasicMed',
+              }),
+              selected: medical == k,
+              onSelected: (_) => onChanged(p.copyWith(medicalKind: k)),
+            ),
+        ]),
+        if (medical == MedicalKind.first ||
+            medical == MedicalKind.second ||
+            medical == MedicalKind.third) ...[
+          _dateButton(context, 'Exam date on the certificate',
+              p.medicalExamDate, (d) => onChanged(p.copyWith(medicalExamDate: d)),
+              key: const Key('medical-exam-date')),
+          const SizedBox(height: 8),
+          const Text('Were you 40 or older on that exam date?'),
+          Wrap(spacing: 6, children: [
+            ChoiceChip(
+              key: const Key('age-under40'),
+              label: const Text('Under 40'),
+              selected: p.age40OrOlderAtExam == false,
+              onSelected: (_) => onChanged(p.copyWith(age40OrOlderAtExam: false)),
+            ),
+            ChoiceChip(
+              key: const Key('age-40plus'),
+              label: const Text('40 or older'),
+              selected: p.age40OrOlderAtExam == true,
+              onSelected: (_) => onChanged(p.copyWith(age40OrOlderAtExam: true)),
+            ),
+          ]),
+          Text('No date of birth is stored.',
+              style: TextStyle(fontSize: 12, color: scheme.onSurfaceVariant)),
         ],
-        bottom: TabBar(
-          controller: _tabController,
-          indicatorColor: const Color(0xFF00BCD4),
-          labelStyle: GoogleFonts.orbitron(fontSize: 9, letterSpacing: 1),
-          tabs: const [
-            Tab(text: 'PROFILE'),
-            Tab(text: 'MEDICAL'),
-            Tab(text: 'AME FINDER'),
+        if (medical == MedicalKind.basicMed) ...[
+          _dateButton(context, 'Comprehensive medical exam (CMEC)',
+              p.basicMedExamDate, (d) => onChanged(p.copyWith(basicMedExamDate: d))),
+          _dateButton(context, 'Medical education course',
+              p.basicMedCourseDate,
+              (d) => onChanged(p.copyWith(basicMedCourseDate: d))),
+        ],
+        const SizedBox(height: 10),
+        DropdownButtonFormField<MedicalPrivilege>(
+          initialValue: p.privilege,
+          isExpanded: true,
+          decoration: const InputDecoration(labelText: 'Privileges you exercise'),
+          items: [
+            for (final m in MedicalPrivilege.values)
+              DropdownMenuItem(
+                  value: m,
+                  child: Text(m.label, overflow: TextOverflow.ellipsis)),
           ],
+          onChanged: (m) => onChanged(p.copyWith(privilege: m)),
         ),
-      ),
-      body: _loading
-          ? const Center(child: CircularProgressIndicator())
-          : TabBarView(
-              controller: _tabController,
-              children: [
-                _buildProfileTab(),
-                _buildMedicalTab(),
-                _buildAmeFinderTab(),
-              ],
-            ),
+        const SizedBox(height: 16),
+        const SectionHeader('Flight review', subtitle: '14 CFR 61.56'),
+        _dateButton(context, 'Last flight review', p.flightReviewDate,
+            (d) => onChanged(p.copyWith(flightReviewDate: d)),
+            key: const Key('flight-review-date')),
+        Text(
+          'Logbook entries flagged "Flight review" or "Practical test" count '
+          'too; the latest one wins.',
+          style: TextStyle(fontSize: 12, color: scheme.onSurfaceVariant),
+        ),
+        const SizedBox(height: 8),
+        SwitchListTile(
+          contentPadding: EdgeInsets.zero,
+          title: const Text('Instrument rated'),
+          subtitle: const Text('Turns on the 61.57(c) IFR currency check'),
+          value: p.instrumentRated,
+          onChanged: (v) => onChanged(p.copyWith(instrumentRated: v)),
+        ),
+        SwitchListTile(
+          contentPadding: EdgeInsets.zero,
+          title: const Text('Student pilot'),
+          value: p.studentPilot,
+          onChanged: (v) => onChanged(p.copyWith(studentPilot: v)),
+        ),
+        if (p.studentPilot)
+          _dateButton(context, 'Solo endorsement (61.87(n))',
+              p.soloEndorsementDate,
+              (d) => onChanged(p.copyWith(soloEndorsementDate: d))),
+      ],
     );
   }
-
-  Widget _buildProfileTab() {
-    return SingleChildScrollView(
-      padding: const EdgeInsets.all(20),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // Avatar
-          Center(
-            child: Stack(
-              children: [
-                Container(
-                  width: 90,
-                  height: 90,
-                  decoration: const BoxDecoration(
-                    shape: BoxShape.circle,
-                    gradient: LinearGradient(
-                      colors: [Color(0xFF00BCD4), Color(0xFF0097A7)],
-                    ),
-                  ),
-                  child: const Icon(Icons.person, color: Colors.white, size: 48),
-                ),
-                Positioned(
-                  bottom: 0,
-                  right: 0,
-                  child: Container(
-                    width: 28,
-                    height: 28,
-                    decoration: const BoxDecoration(
-                      color: Color(0xFFFFB300),
-                      shape: BoxShape.circle,
-                    ),
-                    child: const Icon(Icons.edit, color: Colors.black, size: 14),
-                  ),
-                ),
-              ],
-            ),
-          ),
-          const SizedBox(height: 24),
-          _formField(_nameCtrl, 'Full Name', 'John Smith'),
-          const SizedBox(height: 12),
-          _formField(_certCtrl, 'Certificate Number', 'A1234567'),
-          const SizedBox(height: 16),
-          _sectionLabel('PILOT CERTIFICATE LEVEL'),
-          const SizedBox(height: 8),
-          DropdownButtonFormField<String>(
-            initialValue: _pilotLevel,
-            // Without isExpanded the button sizes to the widest certificate
-            // name, which is wider than a folded cover display.
-            isExpanded: true,
-            dropdownColor: const Color(0xFF112240),
-            style: GoogleFonts.inter(color: Colors.white, fontSize: 14),
-            decoration: const InputDecoration(),
-            items: _pilotLevels.map((level) => DropdownMenuItem(
-              value: level,
-              child: Text(level),
-            )).toList(),
-            onChanged: (v) => setState(() => _pilotLevel = v!),
-          ),
-          const SizedBox(height: 24),
-          _sectionLabel('CERTIFICATE PRIVILEGES'),
-          const SizedBox(height: 12),
-          _privilegesCard(_pilotLevel),
-          const SizedBox(height: 24),
-          SizedBox(
-            width: double.infinity,
-            child: ElevatedButton(
-              onPressed: _saveProfile,
-              child: Text(
-                'SAVE PROFILE',
-                style: GoogleFonts.orbitron(
-                  fontSize: 12,
-                  fontWeight: FontWeight.bold,
-                  letterSpacing: 2,
-                ),
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildMedicalTab() {
-    final now = DateTime.now();
-    final medDaysLeft = _medicalExpiry?.difference(now).inDays;
-    final bfrDaysLeft = _bfrExpiry?.difference(now).inDays;
-
-    return SingleChildScrollView(
-      padding: const EdgeInsets.all(20),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          _sectionLabel('MEDICAL CERTIFICATE CLASS'),
-          const SizedBox(height: 8),
-          DropdownButtonFormField<String>(
-            initialValue: _medicalClass,
-            dropdownColor: const Color(0xFF112240),
-            style: GoogleFonts.inter(color: Colors.white, fontSize: 14),
-            decoration: const InputDecoration(),
-            items: _medicalClasses.map((c) => DropdownMenuItem(
-              value: c,
-              child: Text(c),
-            )).toList(),
-            onChanged: (v) => setState(() => _medicalClass = v!),
-          ),
-          const SizedBox(height: 20),
-          _sectionLabel('MEDICAL EXPIRATION DATE'),
-          const SizedBox(height: 8),
-          GestureDetector(
-            onTap: () async {
-              final date = await showDatePicker(
-                context: context,
-                initialDate: _medicalExpiry ?? DateTime.now().add(const Duration(days: 365)),
-                firstDate: DateTime.now(),
-                lastDate: DateTime.now().add(const Duration(days: 1825)),
-                builder: (ctx, child) => Theme(
-                  data: ThemeData.dark().copyWith(
-                    colorScheme: const ColorScheme.dark(primary: Color(0xFF00BCD4)),
-                  ),
-                  child: child!,
-                ),
-              );
-              if (date != null) setState(() => _medicalExpiry = date);
-            },
-            child: Container(
-              padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                color: const Color(0xFF112240),
-                borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: Colors.white24),
-              ),
-              child: Row(
-                children: [
-                  const Icon(Icons.calendar_today, color: Color(0xFF00BCD4), size: 18),
-                  const SizedBox(width: 12),
-                  Text(
-                    _medicalExpiry != null
-                        ? '${_medicalExpiry!.month}/${_medicalExpiry!.day}/${_medicalExpiry!.year}'
-                        : 'Tap to set expiration date',
-                    style: GoogleFonts.inter(
-                      fontSize: 14,
-                      color: _medicalExpiry != null ? Colors.white : Colors.white38,
-                    ),
-                  ),
-                  const Spacer(),
-                  if (medDaysLeft != null)
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                      decoration: BoxDecoration(
-                        color: medDaysLeft > 60
-                            ? const Color(0xFF4CAF50).withValues(alpha: 0.15)
-                            : medDaysLeft > 0
-                                ? const Color(0xFFFFB300).withValues(alpha: 0.15)
-                                : const Color(0xFFF44336).withValues(alpha: 0.15),
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      child: Text(
-                        medDaysLeft > 0 ? '$medDaysLeft days' : 'EXPIRED',
-                        style: GoogleFonts.orbitron(
-                          fontSize: 9,
-                          color: medDaysLeft > 60
-                              ? const Color(0xFF4CAF50)
-                              : medDaysLeft > 0
-                                  ? const Color(0xFFFFB300)
-                                  : const Color(0xFFF44336),
-                        ),
-                      ),
-                    ),
-                ],
-              ),
-            ),
-          ),
-          const SizedBox(height: 20),
-          _sectionLabel('FLIGHT REVIEW (BFR) EXPIRATION'),
-          const SizedBox(height: 8),
-          GestureDetector(
-            onTap: () async {
-              final date = await showDatePicker(
-                context: context,
-                initialDate: _bfrExpiry ?? DateTime.now().add(const Duration(days: 730)),
-                firstDate: DateTime.now(),
-                lastDate: DateTime.now().add(const Duration(days: 1825)),
-                builder: (ctx, child) => Theme(
-                  data: ThemeData.dark().copyWith(
-                    colorScheme: const ColorScheme.dark(primary: Color(0xFF00BCD4)),
-                  ),
-                  child: child!,
-                ),
-              );
-              if (date != null) setState(() => _bfrExpiry = date);
-            },
-            child: Container(
-              padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                color: const Color(0xFF112240),
-                borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: Colors.white24),
-              ),
-              child: Row(
-                children: [
-                  const Icon(Icons.assignment_turned_in, color: Color(0xFFFFB300), size: 18),
-                  const SizedBox(width: 12),
-                  Text(
-                    _bfrExpiry != null
-                        ? '${_bfrExpiry!.month}/${_bfrExpiry!.day}/${_bfrExpiry!.year}'
-                        : 'Tap to set BFR date',
-                    style: GoogleFonts.inter(
-                      fontSize: 14,
-                      color: _bfrExpiry != null ? Colors.white : Colors.white38,
-                    ),
-                  ),
-                  const Spacer(),
-                  if (bfrDaysLeft != null)
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                      decoration: BoxDecoration(
-                        color: bfrDaysLeft > 90
-                            ? const Color(0xFF4CAF50).withValues(alpha: 0.15)
-                            : bfrDaysLeft > 0
-                                ? const Color(0xFFFFB300).withValues(alpha: 0.15)
-                                : const Color(0xFFF44336).withValues(alpha: 0.15),
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      child: Text(
-                        bfrDaysLeft > 0 ? '$bfrDaysLeft days' : 'EXPIRED',
-                        style: GoogleFonts.orbitron(
-                          fontSize: 9,
-                          color: bfrDaysLeft > 90
-                              ? const Color(0xFF4CAF50)
-                              : bfrDaysLeft > 0
-                                  ? const Color(0xFFFFB300)
-                                  : const Color(0xFFF44336),
-                        ),
-                      ),
-                    ),
-                ],
-              ),
-            ),
-          ),
-          const SizedBox(height: 24),
-          _medicalGuideCard(),
-          const SizedBox(height: 16),
-          SizedBox(
-            width: double.infinity,
-            child: ElevatedButton(
-              onPressed: _saveProfile,
-              child: Text(
-                'SAVE MEDICAL INFO',
-                style: GoogleFonts.orbitron(
-                  fontSize: 12,
-                  fontWeight: FontWeight.bold,
-                  letterSpacing: 2,
-                ),
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildAmeFinderTab() {
-    return SingleChildScrollView(
-      padding: const EdgeInsets.all(20),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Container(
-            padding: const EdgeInsets.all(16),
-            decoration: BoxDecoration(
-              color: const Color(0xFF112240),
-              borderRadius: BorderRadius.circular(16),
-              border: Border.all(color: const Color(0xFF4CAF50).withValues(alpha: 0.3)),
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  children: [
-                    const Icon(Icons.medical_services, color: Color(0xFF4CAF50), size: 22),
-                    const SizedBox(width: 10),
-                    Text(
-                      'FIND AN FAA AME',
-                      style: GoogleFonts.orbitron(
-                        fontSize: 12,
-                        color: const Color(0xFF4CAF50),
-                        letterSpacing: 1.5,
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 10),
-                Text(
-                  'Aviation Medical Examiners (AMEs) are FAA-designated physicians '
-                  'authorized to perform aviation medical exams.',
-                  style: GoogleFonts.inter(
-                    fontSize: 12,
-                    color: Colors.white70,
-                    height: 1.5,
-                  ),
-                ),
-                const SizedBox(height: 12),
-                SizedBox(
-                  width: double.infinity,
-                  child: ElevatedButton.icon(
-                    onPressed: () => _launchUrl('https://www.faa.gov/pilots/amelocator'),
-                    icon: const Icon(Icons.search, size: 16),
-                    label: Text(
-                      'SEARCH FAA AME LOCATOR',
-                      style: GoogleFonts.orbitron(
-                        fontSize: 10,
-                        fontWeight: FontWeight.bold,
-                        letterSpacing: 1,
-                      ),
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
-          const SizedBox(height: 20),
-          _sectionLabel('MEDICAL CERTIFICATE REQUIREMENTS'),
-          const SizedBox(height: 12),
-          _medicalClassCard(
-            '1st Class',
-            const Color(0xFFF44336),
-            'Required for ATP operations',
-            [
-              'Under 40: Valid for 12 months',
-              'Age 40+: Valid for 6 months',
-              'Most stringent requirements',
-              'Vision: 20/20 corrected, 20/100 uncorrected',
-              'EKG required at first exam and age 35+',
-            ],
-          ),
-          _medicalClassCard(
-            '2nd Class',
-            const Color(0xFFFFB300),
-            'Required for Commercial Pilot operations',
-            [
-              'Valid for 12 months',
-              'Vision: 20/20 corrected, 20/100 uncorrected',
-              'Hearing: Conversational voice at 6 feet',
-              'Blood pressure: 155/95 or less',
-            ],
-          ),
-          _medicalClassCard(
-            '3rd Class',
-            const Color(0xFF4CAF50),
-            'Required for Private Pilot operations',
-            [
-              'Under 40: Valid for 60 months (5 years)',
-              'Age 40+: Valid for 24 months (2 years)',
-              'Vision: 20/40 corrected',
-              'Most accessible requirements',
-            ],
-          ),
-          _medicalClassCard(
-            'BasicMed',
-            const Color(0xFF00BCD4),
-            'Alternative to 3rd Class for private ops',
-            [
-              'Valid for 48 months',
-              'Must hold valid US driver\'s license',
-              'Online medical education course required',
-              'Physician exam every 48 months',
-              'Aircraft under 6,000 lbs, max 5 passengers',
-              'Max 18,000 ft MSL, 250 KIAS',
-            ],
-          ),
-          const SizedBox(height: 20),
-          _sectionLabel('COMMON DISQUALIFYING CONDITIONS'),
-          const SizedBox(height: 12),
-          Container(
-            padding: const EdgeInsets.all(16),
-            decoration: BoxDecoration(
-              color: const Color(0xFF112240),
-              borderRadius: BorderRadius.circular(14),
-              border: Border.all(color: Colors.white12),
-            ),
-            child: Column(
-              children: [
-                _conditionRow('Diabetes (insulin-treated)', 'Special Issuance possible'),
-                _conditionRow('Heart conditions', 'Case-by-case evaluation'),
-                _conditionRow('Epilepsy/Seizures', 'Generally disqualifying'),
-                _conditionRow('Substance dependence', 'Recovery program required'),
-                _conditionRow('Psychiatric conditions', 'HIMS AME evaluation'),
-                _conditionRow('Vision below standards', 'Corrective lenses allowed'),
-              ],
-            ),
-          ),
-          const SizedBox(height: 12),
-          GestureDetector(
-            onTap: () => _launchUrl('https://www.faa.gov/pilots/medical_certification'),
-            child: Container(
-              padding: const EdgeInsets.all(14),
-              decoration: BoxDecoration(
-                color: const Color(0xFF1A237E).withValues(alpha: 0.2),
-                borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: const Color(0xFF3F51B5).withValues(alpha: 0.4)),
-              ),
-              child: Row(
-                children: [
-                  const Icon(Icons.open_in_new, color: Color(0xFF7986CB), size: 16),
-                  const SizedBox(width: 8),
-                  Text(
-                    'FAA Medical Certification Information',
-                    style: GoogleFonts.inter(
-                      fontSize: 13,
-                      color: const Color(0xFF7986CB),
-                      decoration: TextDecoration.underline,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _medicalClassCard(String cls, Color color, String subtitle, List<String> items) {
-    return Container(
-      margin: const EdgeInsets.only(bottom: 10),
-      padding: const EdgeInsets.all(14),
-      decoration: BoxDecoration(
-        color: const Color(0xFF112240),
-        borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: color.withValues(alpha: 0.3)),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                decoration: BoxDecoration(
-                  color: color.withValues(alpha: 0.15),
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: Text(
-                  '$cls Medical',
-                  style: GoogleFonts.orbitron(
-                    fontSize: 10,
-                    color: color,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-              ),
-              const SizedBox(width: 8),
-              Text(
-                subtitle,
-                style: GoogleFonts.inter(fontSize: 11, color: Colors.white54),
-              ),
-            ],
-          ),
-          const SizedBox(height: 10),
-          ...items.map((item) => Padding(
-                padding: const EdgeInsets.only(bottom: 4),
-                child: Row(
-                  children: [
-                    Icon(Icons.circle, color: color, size: 5),
-                    const SizedBox(width: 8),
-                    Text(
-                      item,
-                      style: GoogleFonts.inter(fontSize: 12, color: Colors.white70),
-                    ),
-                  ],
-                ),
-              )),
-        ],
-      ),
-    );
-  }
-
-  Widget _conditionRow(String condition, String status) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 6),
-      child: Row(
-        children: [
-          Expanded(
-            child: Text(
-              condition,
-              style: GoogleFonts.inter(fontSize: 12, color: Colors.white70),
-            ),
-          ),
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-            decoration: BoxDecoration(
-              color: const Color(0xFFFFB300).withValues(alpha: 0.1),
-              borderRadius: BorderRadius.circular(8),
-            ),
-            child: Text(
-              status,
-              style: GoogleFonts.inter(
-                fontSize: 10,
-                color: const Color(0xFFFFB300),
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _medicalGuideCard() {
-    return Container(
-      padding: const EdgeInsets.all(14),
-      decoration: BoxDecoration(
-        color: const Color(0xFF112240),
-        borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: Colors.white12),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            'MEDICAL RENEWAL TIPS',
-            style: GoogleFonts.orbitron(
-              fontSize: 10,
-              color: const Color(0xFF00BCD4),
-              letterSpacing: 1.5,
-            ),
-          ),
-          const SizedBox(height: 10),
-          _tipItem('Schedule AME appointment 60 days before expiry'),
-          _tipItem('Review AOPA\'s medical certification guide'),
-          _tipItem('Disclose all medications honestly — omission is worse'),
-          _tipItem('Use MedXPress to pre-fill FAA Form 8500-8'),
-          _tipItem('Keep copies of all medical records'),
-          _tipItem('Consider HIMS AME for complex medical histories'),
-        ],
-      ),
-    );
-  }
-
-  Widget _tipItem(String text) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 6),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const Icon(Icons.check_circle_outline, color: Color(0xFF4CAF50), size: 14),
-          const SizedBox(width: 8),
-          Expanded(
-            child: Text(
-              text,
-              style: GoogleFonts.inter(fontSize: 12, color: Colors.white70, height: 1.4),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _privilegesCard(String level) {
-    final privileges = {
-      'Student Pilot': ['Solo flight with instructor endorsement', 'Cannot carry passengers', 'Cannot fly for compensation'],
-      'Private Pilot': ['Carry passengers', 'Fly for personal/business use', 'Cannot fly for compensation'],
-      'Commercial Pilot': ['Fly for compensation or hire', 'Carry passengers for hire', 'Requires 2nd Class medical'],
-      'ATP': ['Serve as PIC of airline transport operations', 'Highest pilot certificate', 'Required for Part 121 operations'],
-      'Flight Instructor (CFI)': ['Provide flight instruction', 'Sign off student endorsements', 'Conduct flight reviews'],
-      'Remote Pilot (Part 107)': ['Fly UAS commercially', 'No medical certificate required', 'Must pass Part 107 knowledge test'],
-    };
-
-    final items = privileges[level] ?? ['Certificate privileges vary by operation'];
-
-    return Container(
-      padding: const EdgeInsets.all(14),
-      decoration: BoxDecoration(
-        color: const Color(0xFF112240),
-        borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: const Color(0xFF00BCD4).withValues(alpha: 0.3)),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: items.map((item) => Padding(
-              padding: const EdgeInsets.only(bottom: 6),
-              child: Row(
-                children: [
-                  const Icon(Icons.verified, color: Color(0xFF00BCD4), size: 14),
-                  const SizedBox(width: 8),
-                  Expanded(
-                    child: Text(
-                      item,
-                      style: GoogleFonts.inter(fontSize: 12, color: Colors.white70),
-                    ),
-                  ),
-                ],
-              ),
-            )).toList(),
-      ),
-    );
-  }
-
-  Widget _sectionLabel(String label) {
-    return Text(
-      label,
-      style: GoogleFonts.orbitron(
-        fontSize: 10,
-        color: Colors.white54,
-        letterSpacing: 1.5,
-      ),
-    );
-  }
-
-  Widget _formField(TextEditingController ctrl, String label, String hint) {
-    return TextFormField(
-      controller: ctrl,
-      style: GoogleFonts.inter(color: Colors.white, fontSize: 14),
-      decoration: InputDecoration(
-        labelText: label,
-        hintText: hint,
-      ),
-    );
-  }
-
-  Future<void> _launchUrl(String url) async {
-    final uri = Uri.parse(url);
-    if (await canLaunchUrl(uri)) {
-      await launchUrl(uri, mode: LaunchMode.externalApplication);
-    }
-  }
-}
-
-/// Snackbar text after saving the profile. Names a reminder only when one was
-/// really scheduled.
-String profileSavedMessage(ExpiryReminderResult result) {
-  if (result.permissionDenied) {
-    return 'Profile saved. Notifications are off, so no expiry reminder was '
-        'set.';
-  }
-  if (result.scheduled.isEmpty) return 'Profile saved';
-  String fmt(DateTime d) => '${d.month}/${d.day}/${d.year}';
-  final parts = result.scheduled.map((r) =>
-      '${r.id == NotificationService.medicalReminderId ? 'medical' : 'flight review'} '
-      'reminder on ${fmt(r.at)}');
-  return 'Profile saved. Set ${parts.join(' and ')}.';
 }

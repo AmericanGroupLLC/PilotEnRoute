@@ -1,0 +1,45 @@
+{
+ "_captured_utc": "2026-10-14T13:03:13Z",
+ "_request": "GET https://aviationweather.gov/api/data/airport?ids=KMBG&format=json",
+ "_http_status": 200,
+ "response": [
+  {
+   "icaoId": "KMBG",
+   "iataId": "MBG",
+   "faaId": "MBG",
+   "name": "MOBRIDGE/MOBRIDGE MUNI ",
+   "state": "SD",
+   "country": "US",
+   "source": "FAA",
+   "type": "ARP",
+   "lat": 45.5463,
+   "lon": -100.4063,
+   "elev": 523,
+   "magdec": "09E",
+   "owner": "P",
+   "rwyNum": "1",
+   "rwyLength": "M",
+   "rwyType": "A",
+   "services": "S",
+   "tower": null,
+   "beacon": "B",
+   "operations": "0",
+   "freqs": "-",
+   "priority": "3",
+   "runways": [
+    {
+     "id": "12/30",
+     "dimension": "4410x75",
+     "surface": "A",
+     "alignment": 127
+    },
+    {
+     "id": "17/35",
+     "dimension": "2399x250",
+     "surface": "T",
+     "alignment": 180
+    }
+   ]
+  }
+ ]
+}

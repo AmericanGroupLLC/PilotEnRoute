@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
+import '../ui/theme.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../services/chart_service.dart';
@@ -9,10 +9,10 @@ import '../services/chart_service.dart';
 //
 // A geo-referenced moving-map overlay would need a licensed chart provider.
 
-const _kBg = Color(0xFF0A1628);
-const _kCard = Color(0xFF112240);
-const _kCyan = Color(0xFF00BCD4);
-const _kAmber = Color(0xFFFFB300);
+const _kBg = Color(0xFF15181B);
+const _kCard = Color(0xFF1E2226);
+const _kCyan = Color(0xFFFF5A5F);
+const _kAmber = Color(0xFFE09F00);
 
 class ChartsScreen extends StatefulWidget {
   const ChartsScreen({super.key});
@@ -96,10 +96,10 @@ class _ChartsScreenState extends State<ChartsScreen> {
               textCapitalization: TextCapitalization.characters,
               textInputAction: TextInputAction.search,
               onSubmitted: (_) => _search(),
-              style: GoogleFonts.inter(color: Colors.white, fontSize: 14),
+              style: AppType.sans(color: Colors.white, fontSize: 14),
               decoration: InputDecoration(
                 hintText: 'Airport ICAO (e.g. KLAX)',
-                hintStyle: GoogleFonts.inter(color: Colors.white38),
+                hintStyle: AppType.sans(color: Colors.white38),
                 prefixIcon: const Icon(Icons.search, color: Colors.white38),
                 filled: true,
                 fillColor: _kCard,
@@ -129,7 +129,7 @@ class _ChartsScreenState extends State<ChartsScreen> {
               ),
               child: Text(
                 'OPEN',
-                style: GoogleFonts.orbitron(
+                style: AppType.condensed(
                   fontSize: 11,
                   fontWeight: FontWeight.bold,
                   letterSpacing: 1,
@@ -157,7 +157,7 @@ class _ChartsScreenState extends State<ChartsScreen> {
             return Center(
               child: Text(
                 'RECENT',
-                style: GoogleFonts.orbitron(
+                style: AppType.condensed(
                   fontSize: 9,
                   color: Colors.white38,
                   letterSpacing: 1.5,
@@ -172,7 +172,7 @@ class _ChartsScreenState extends State<ChartsScreen> {
               side: const BorderSide(color: Colors.white12),
               label: Text(
                 code,
-                style: GoogleFonts.orbitron(
+                style: AppType.condensed(
                   fontSize: 10,
                   color: _kCyan,
                   fontWeight: FontWeight.bold,
@@ -214,7 +214,7 @@ class _ChartsScreenState extends State<ChartsScreen> {
             Text(
               message,
               textAlign: TextAlign.center,
-              style: GoogleFonts.inter(
+              style: AppType.sans(
                 fontSize: 13,
                 color: Colors.white54,
                 height: 1.4,
@@ -234,7 +234,7 @@ class _ChartsScreenState extends State<ChartsScreen> {
       child: Text(
         'Official FAA d-TPP charts on faa.gov — US airports only.',
         textAlign: TextAlign.center,
-        style: GoogleFonts.inter(fontSize: 10, color: Colors.white30),
+        style: AppType.sans(fontSize: 10, color: Colors.white30),
       ),
     );
   }

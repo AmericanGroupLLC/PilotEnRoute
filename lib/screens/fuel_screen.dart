@@ -2,7 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:google_fonts/google_fonts.dart';
+import '../ui/theme.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 /// Fuel Management screen.
@@ -19,12 +19,12 @@ class FuelScreen extends StatefulWidget {
 
 class _FuelScreenState extends State<FuelScreen> {
   // ── Palette (matches app conventions) ──────────────────────────────────────
-  static const Color _bg = Color(0xFF0A1628);
-  static const Color _card = Color(0xFF112240);
-  static const Color _cyan = Color(0xFF00BCD4);
-  static const Color _amber = Color(0xFFFFB300);
-  static const Color _red = Color(0xFFF44336);
-  static const Color _green = Color(0xFF4CAF50);
+  static const Color _bg = Color(0xFF15181B);
+  static const Color _card = Color(0xFF1E2226);
+  static const Color _cyan = Color(0xFFFF5A5F);
+  static const Color _amber = Color(0xFFE09F00);
+  static const Color _red = Color(0xFFFF5A5F);
+  static const Color _green = Color(0xFF5CC277);
 
   static const String _kSwitchIntervalPref = 'fuel_switch_interval';
 
@@ -323,7 +323,7 @@ class _FuelScreenState extends State<FuelScreen> {
                 Expanded(
                   child: Text(
                     statusLabel,
-                    style: GoogleFonts.orbitron(
+                    style: AppType.condensed(
                       fontSize: 13,
                       fontWeight: FontWeight.bold,
                       color: statusColor,
@@ -369,7 +369,7 @@ class _FuelScreenState extends State<FuelScreen> {
             padding: const EdgeInsets.only(top: 6),
             child: Text(
               'Enter ground speed to compute distance-based fuel.',
-              style: GoogleFonts.inter(color: Colors.white38, fontSize: 11),
+              style: AppType.sans(color: Colors.white38, fontSize: 11),
             ),
           ),
 
@@ -396,7 +396,7 @@ class _FuelScreenState extends State<FuelScreen> {
                     overTotal
                         ? 'PLANNED TIME EXCEEDS TOTAL ENDURANCE — flight not possible with this fuel.'
                         : 'PLANNED TIME EXCEEDS USABLE (reserve-protected) ENDURANCE — would dip into reserves.',
-                    style: GoogleFonts.inter(
+                    style: AppType.sans(
                       color: _red,
                       fontSize: 12,
                       fontWeight: FontWeight.w600,
@@ -432,7 +432,7 @@ class _FuelScreenState extends State<FuelScreen> {
         ),
         child: Text(
           label,
-          style: GoogleFonts.orbitron(
+          style: AppType.condensed(
             fontSize: 8,
             color: selected ? _cyan : Colors.white54,
             fontWeight: FontWeight.bold,
@@ -483,7 +483,7 @@ class _FuelScreenState extends State<FuelScreen> {
                 const SizedBox(height: 6),
                 Text(
                   'SWITCH TANKS',
-                  style: GoogleFonts.orbitron(
+                  style: AppType.condensed(
                     fontSize: 20,
                     fontWeight: FontWeight.bold,
                     color: _red,
@@ -493,7 +493,7 @@ class _FuelScreenState extends State<FuelScreen> {
                 const SizedBox(height: 2),
                 Text(
                   'Interval reached on ${_leftActive ? 'LEFT' : 'RIGHT'} tank',
-                  style: GoogleFonts.inter(color: Colors.white70, fontSize: 12),
+                  style: AppType.sans(color: Colors.white70, fontSize: 12),
                 ),
               ],
             ),
@@ -512,7 +512,7 @@ class _FuelScreenState extends State<FuelScreen> {
               children: [
                 Text(
                   'ACTIVE TANK',
-                  style: GoogleFonts.orbitron(
+                  style: AppType.condensed(
                     fontSize: 10,
                     color: Colors.white54,
                     letterSpacing: 2,
@@ -521,7 +521,7 @@ class _FuelScreenState extends State<FuelScreen> {
                 const SizedBox(height: 6),
                 Text(
                   _leftActive ? 'LEFT' : 'RIGHT',
-                  style: GoogleFonts.orbitron(
+                  style: AppType.condensed(
                     fontSize: 22,
                     fontWeight: FontWeight.bold,
                     color: _amber,
@@ -531,7 +531,7 @@ class _FuelScreenState extends State<FuelScreen> {
                 const SizedBox(height: 12),
                 Text(
                   _fmtHMS(_currentTankSeconds),
-                  style: GoogleFonts.orbitron(
+                  style: AppType.condensed(
                     fontSize: 44,
                     fontWeight: FontWeight.bold,
                     color: timerColor,
@@ -541,7 +541,7 @@ class _FuelScreenState extends State<FuelScreen> {
                 const SizedBox(height: 4),
                 Text(
                   'switch every $_switchIntervalMinutes min',
-                  style: GoogleFonts.inter(color: Colors.white54, fontSize: 12),
+                  style: AppType.sans(color: Colors.white54, fontSize: 12),
                 ),
               ],
             ),
@@ -636,7 +636,7 @@ class _FuelScreenState extends State<FuelScreen> {
                 child: Text(
                   'Switch interval',
                   style:
-                      GoogleFonts.inter(color: Colors.white70, fontSize: 13),
+                      AppType.sans(color: Colors.white70, fontSize: 13),
                 ),
               ),
               _stepButton(Icons.remove, 'Decrease switch interval', () {
@@ -653,7 +653,7 @@ class _FuelScreenState extends State<FuelScreen> {
                   padding: const EdgeInsets.symmetric(horizontal: 12),
                   child: Text(
                     '$_switchIntervalMinutes min',
-                    style: GoogleFonts.orbitron(
+                    style: AppType.condensed(
                       color: _cyan,
                       fontSize: 14,
                       fontWeight: FontWeight.bold,
@@ -691,7 +691,7 @@ class _FuelScreenState extends State<FuelScreen> {
           children: [
             Text(
               '$label TOTAL',
-              style: GoogleFonts.orbitron(
+              style: AppType.condensed(
                 fontSize: 9,
                 color: active ? _amber : Colors.white54,
                 letterSpacing: 1.5,
@@ -700,7 +700,7 @@ class _FuelScreenState extends State<FuelScreen> {
             const SizedBox(height: 6),
             Text(
               _fmtHMS(seconds),
-              style: GoogleFonts.orbitron(
+              style: AppType.condensed(
                 fontSize: 16,
                 fontWeight: FontWeight.bold,
                 color: Colors.white,
@@ -738,7 +738,7 @@ class _FuelScreenState extends State<FuelScreen> {
       icon: Icon(icon, size: 18),
       label: Text(
         label,
-        style: GoogleFonts.orbitron(
+        style: AppType.condensed(
           fontSize: 12,
           fontWeight: FontWeight.bold,
           letterSpacing: 1.5,
@@ -787,7 +787,7 @@ class _FuelScreenState extends State<FuelScreen> {
       children: [
         Text(
           'Manual entry — no live price lookup.',
-          style: GoogleFonts.inter(color: Colors.white38, fontSize: 11),
+          style: AppType.sans(color: Colors.white38, fontSize: 11),
         ),
         const SizedBox(height: 12),
         Row(
@@ -815,7 +815,7 @@ class _FuelScreenState extends State<FuelScreen> {
             children: [
               Text(
                 'ESTIMATED TOTAL',
-                style: GoogleFonts.orbitron(
+                style: AppType.condensed(
                   fontSize: 10,
                   color: Colors.white54,
                   letterSpacing: 2,
@@ -824,7 +824,7 @@ class _FuelScreenState extends State<FuelScreen> {
               const SizedBox(height: 8),
               Text(
                 total != null ? '\$${total.toStringAsFixed(2)}' : '\$--',
-                style: GoogleFonts.orbitron(
+                style: AppType.condensed(
                   fontSize: 32,
                   fontWeight: FontWeight.bold,
                   color: _green,
@@ -872,7 +872,7 @@ class _FuelScreenState extends State<FuelScreen> {
                   const SizedBox(width: 12),
                   Text(
                     title,
-                    style: GoogleFonts.orbitron(
+                    style: AppType.condensed(
                       fontSize: 13,
                       fontWeight: FontWeight.bold,
                       color: accent,
@@ -899,13 +899,13 @@ class _FuelScreenState extends State<FuelScreen> {
     return TextField(
       controller: ctrl,
       keyboardType: const TextInputType.numberWithOptions(decimal: true),
-      style: GoogleFonts.inter(color: Colors.white, fontSize: 14),
+      style: AppType.sans(color: Colors.white, fontSize: 14),
       onChanged: (_) => setState(() {}),
       decoration: InputDecoration(
         labelText: label,
         suffixText: suffix,
-        suffixStyle: GoogleFonts.inter(color: Colors.white38, fontSize: 12),
-        labelStyle: GoogleFonts.inter(color: Colors.white54, fontSize: 12),
+        suffixStyle: AppType.sans(color: Colors.white38, fontSize: 12),
+        labelStyle: AppType.sans(color: Colors.white54, fontSize: 12),
         isDense: true,
         contentPadding:
             const EdgeInsets.symmetric(horizontal: 12, vertical: 14),
@@ -940,12 +940,12 @@ class _FuelScreenState extends State<FuelScreen> {
             Expanded(
               child: Text(
                 label,
-                style: GoogleFonts.inter(color: Colors.white70, fontSize: 13),
+                style: AppType.sans(color: Colors.white70, fontSize: 13),
               ),
             ),
             Text(
               value,
-              style: GoogleFonts.orbitron(
+              style: AppType.condensed(
                 color: valueColor,
                 fontSize: 15,
                 fontWeight: FontWeight.bold,

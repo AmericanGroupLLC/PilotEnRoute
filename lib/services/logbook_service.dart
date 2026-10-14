@@ -1,339 +1,128 @@
 import 'package:flutter/foundation.dart';
-import 'package:sqflite/sqflite.dart';
 import 'package:path/path.dart';
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
 import 'package:intl/intl.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:sqflite/sqflite.dart';
 
-class LogbookEntry {
-  final int? id;
-  final DateTime date;
-  final String aircraftType;
-  final String tailNumber;
-  final String from;
-  final String to;
-  final double totalTime;
-  final double picTime;
-  final double sicTime;
-  final double dualReceived;
-  final double cfiGiven;
-  final double crossCountry;
-  final double night;
-  final double actualInstrument;
-  final double simulatedInstrument;
-  final int dayTakeoffs;
-  final int dayLandings;
-  final int nightTakeoffs;
-  final int nightLandings;
-  final int approaches;
-  final String remarks;
-  final String conditions;
+import '../core/logbook/logbook_csv.dart';
+import '../core/logbook/logbook_entry.dart';
+import '../core/logbook/logbook_query.dart';
+import '../core/minimums/go_record.dart';
+import '../data/logbook_store.dart';
 
-  LogbookEntry({
-    this.id,
-    required this.date,
-    required this.aircraftType,
-    required this.tailNumber,
-    required this.from,
-    required this.to,
-    required this.totalTime,
-    this.picTime = 0,
-    this.sicTime = 0,
-    this.dualReceived = 0,
-    this.cfiGiven = 0,
-    this.crossCountry = 0,
-    this.night = 0,
-    this.actualInstrument = 0,
-    this.simulatedInstrument = 0,
-    this.dayTakeoffs = 0,
-    this.dayLandings = 0,
-    this.nightTakeoffs = 0,
-    this.nightLandings = 0,
-    this.approaches = 0,
-    this.remarks = '',
-    this.conditions = 'VMC',
-  });
+export '../core/logbook/logbook_entry.dart';
+export '../core/logbook/logbook_query.dart' show LogbookTotals;
 
-  Map<String, dynamic> toMap() => {
-        'id': id,
-        'date': date.toIso8601String(),
-        'aircraft_type': aircraftType,
-        'tail_number': tailNumber,
-        'from_airport': from,
-        'to_airport': to,
-        'total_time': totalTime,
-        'pic_time': picTime,
-        'sic_time': sicTime,
-        'dual_received': dualReceived,
-        'cfi_given': cfiGiven,
-        'cross_country': crossCountry,
-        'night': night,
-        'actual_instrument': actualInstrument,
-        'simulated_instrument': simulatedInstrument,
-        'day_takeoffs': dayTakeoffs,
-        'day_landings': dayLandings,
-        'night_takeoffs': nightTakeoffs,
-        'night_landings': nightLandings,
-        'approaches': approaches,
-        'remarks': remarks,
-        'conditions': conditions,
-      };
-
-  factory LogbookEntry.fromMap(Map<String, dynamic> map) => LogbookEntry(
-        id: map['id'],
-        date: DateTime.parse(map['date']),
-        aircraftType: map['aircraft_type'] ?? '',
-        tailNumber: map['tail_number'] ?? '',
-        from: map['from_airport'] ?? '',
-        to: map['to_airport'] ?? '',
-        totalTime: (map['total_time'] ?? 0).toDouble(),
-        picTime: (map['pic_time'] ?? 0).toDouble(),
-        sicTime: (map['sic_time'] ?? 0).toDouble(),
-        dualReceived: (map['dual_received'] ?? 0).toDouble(),
-        cfiGiven: (map['cfi_given'] ?? 0).toDouble(),
-        crossCountry: (map['cross_country'] ?? 0).toDouble(),
-        night: (map['night'] ?? 0).toDouble(),
-        actualInstrument: (map['actual_instrument'] ?? 0).toDouble(),
-        simulatedInstrument: (map['simulated_instrument'] ?? 0).toDouble(),
-        dayTakeoffs: map['day_takeoffs'] ?? 0,
-        dayLandings: map['day_landings'] ?? 0,
-        nightTakeoffs: map['night_takeoffs'] ?? 0,
-        nightLandings: map['night_landings'] ?? 0,
-        approaches: map['approaches'] ?? 0,
-        remarks: map['remarks'] ?? '',
-        conditions: map['conditions'] ?? 'VMC',
-      );
-}
-
-class LogbookTotals {
-  final double totalTime;
-  final double picTime;
-  final double sicTime;
-  final double dualReceived;
-  final double cfiGiven;
-  final double crossCountry;
-  final double night;
-  final double actualInstrument;
-  final double simulatedInstrument;
-  final int dayTakeoffs;
-  final int dayLandings;
-  final int nightTakeoffs;
-  final int nightLandings;
-  final int approaches;
-  final int totalFlights;
-
-  LogbookTotals({
-    this.totalTime = 0,
-    this.picTime = 0,
-    this.sicTime = 0,
-    this.dualReceived = 0,
-    this.cfiGiven = 0,
-    this.crossCountry = 0,
-    this.night = 0,
-    this.actualInstrument = 0,
-    this.simulatedInstrument = 0,
-    this.dayTakeoffs = 0,
-    this.dayLandings = 0,
-    this.nightTakeoffs = 0,
-    this.nightLandings = 0,
-    this.approaches = 0,
-    this.totalFlights = 0,
-  });
-}
-
+/// The pilot's logbook and Go check history, on the device.
+///
+/// Opens SQLite (`pilot_logbook.db`, schema v2) on first [init]. Web and
+/// widget tests pass a [MemoryLogbookStore]. A fresh install starts empty:
+/// no sample flights are ever shown, totalled or exported.
 class LogbookService extends ChangeNotifier {
-  Database? _db;
+  LogbookService({LogbookStore? store}) : _store = store;
+
+  LogbookStore? _store;
+  Future<void>? _opening;
   List<LogbookEntry> _entries = [];
-  LogbookTotals _totals = LogbookTotals();
+  List<GoCheckRecord> _checks = [];
+  LogbookTotals _totals = const LogbookTotals();
   bool _isLoading = false;
+  bool _ready = false;
+  String? _error;
 
   List<LogbookEntry> get entries => _entries;
+  List<GoCheckRecord> get checks => _checks;
   LogbookTotals get totals => _totals;
   bool get isLoading => _isLoading;
+  bool get ready => _ready;
+  String? get error => _error;
 
-  Future<void> init() async {
-    if (kIsWeb) {
-      // Web: in-memory logbook that starts empty — only the user's own
-      // entries are ever shown, totalled or exported.
-      _entries = [];
-      _calculateTotals();
-      notifyListeners();
-      return;
+  /// Safe to call more than once; later calls wait for the first.
+  Future<void> init() => _opening ??= _open();
+
+  Future<void> _open() async {
+    if (_store == null) {
+      if (kIsWeb) {
+        _store = MemoryLogbookStore();
+      } else {
+        try {
+          final dbPath = await getDatabasesPath();
+          final db = await openLogbookDatabase(
+              databaseFactory, join(dbPath, 'pilot_logbook.db'));
+          _store = SqfliteLogbookStore(db);
+        } catch (e) {
+          // Without a database the logbook says so rather than pretending to
+          // save into memory and losing everything on the next launch.
+          _error = 'The logbook database could not be opened: $e';
+          _store = MemoryLogbookStore();
+        }
+      }
     }
-    final dbPath = await getDatabasesPath();
-    _db = await openDatabase(
-      join(dbPath, 'pilot_logbook.db'),
-      version: 1,
-      onCreate: (db, version) async {
-        await db.execute('''
-          CREATE TABLE logbook_entries (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            date TEXT NOT NULL,
-            aircraft_type TEXT,
-            tail_number TEXT,
-            from_airport TEXT,
-            to_airport TEXT,
-            total_time REAL DEFAULT 0,
-            pic_time REAL DEFAULT 0,
-            sic_time REAL DEFAULT 0,
-            dual_received REAL DEFAULT 0,
-            cfi_given REAL DEFAULT 0,
-            cross_country REAL DEFAULT 0,
-            night REAL DEFAULT 0,
-            actual_instrument REAL DEFAULT 0,
-            simulated_instrument REAL DEFAULT 0,
-            day_takeoffs INTEGER DEFAULT 0,
-            day_landings INTEGER DEFAULT 0,
-            night_takeoffs INTEGER DEFAULT 0,
-            night_landings INTEGER DEFAULT 0,
-            approaches INTEGER DEFAULT 0,
-            remarks TEXT DEFAULT '',
-            conditions TEXT DEFAULT 'VMC'
-          )
-        ''');
-      },
-    );
     await loadEntries();
   }
 
   Future<void> loadEntries() async {
     _isLoading = true;
     notifyListeners();
-    if (_db != null) {
-      final maps = await _db!.query('logbook_entries', orderBy: 'date DESC');
-      _entries = maps.map((m) => LogbookEntry.fromMap(m)).toList();
+    final store = _store;
+    if (store != null) {
+      _entries = await store.allEntries();
+      _checks = await store.allChecks();
     }
-    _calculateTotals();
+    _totals = LogbookTotals.of(_entries);
     _isLoading = false;
+    _ready = true;
     notifyListeners();
   }
 
-  Future<void> addEntry(LogbookEntry entry) async {
-    if (_db != null) {
-      await _db!.insert('logbook_entries', entry.toMap());
-      await loadEntries();
-    } else {
-      // Every column must be copied. The earlier version of this branch left
-      // out SIC, CFI given, instrument time, night takeoffs/landings and
-      // approaches, so a logged IFR lesson lost its approaches and the
-      // instrument-currency check below silently read false.
-      _entries.insert(0, LogbookEntry(
-        id: _nextInMemoryId(),
-        date: entry.date,
-        aircraftType: entry.aircraftType,
-        tailNumber: entry.tailNumber,
-        from: entry.from,
-        to: entry.to,
-        totalTime: entry.totalTime,
-        picTime: entry.picTime,
-        sicTime: entry.sicTime,
-        dualReceived: entry.dualReceived,
-        cfiGiven: entry.cfiGiven,
-        crossCountry: entry.crossCountry,
-        night: entry.night,
-        actualInstrument: entry.actualInstrument,
-        simulatedInstrument: entry.simulatedInstrument,
-        dayTakeoffs: entry.dayTakeoffs,
-        dayLandings: entry.dayLandings,
-        nightTakeoffs: entry.nightTakeoffs,
-        nightLandings: entry.nightLandings,
-        approaches: entry.approaches,
-        remarks: entry.remarks,
-        conditions: entry.conditions,
-      ));
-      _calculateTotals();
-      notifyListeners();
-    }
+  Future<LogbookStore> _ensure() async {
+    await init();
+    return _store!;
   }
 
-  /// Next free id for the in-memory store. Counting entries would reuse an id
-  /// after a delete, and deleteEntry() removes *by* id — so two rows would
-  /// disappear at once.
-  int _nextInMemoryId() {
-    var max = 0;
-    for (final e in _entries) {
-      final id = e.id ?? 0;
-      if (id > max) max = id;
-    }
-    return max + 1;
+  Future<int> addEntry(LogbookEntry entry) async {
+    final store = await _ensure();
+    final id = await store.insertEntry(entry.copyWith(clearId: true));
+    await loadEntries();
+    return id;
+  }
+
+  Future<void> updateEntry(LogbookEntry entry) async {
+    final store = await _ensure();
+    await store.updateEntry(entry);
+    await loadEntries();
   }
 
   Future<void> deleteEntry(int id) async {
-    if (_db != null) {
-      await _db!.delete('logbook_entries', where: 'id = ?', whereArgs: [id]);
-      await loadEntries();
-    } else {
-      _entries.removeWhere((e) => e.id == id);
-      _calculateTotals();
-      notifyListeners();
-    }
+    final store = await _ensure();
+    await store.deleteEntry(id);
+    await loadEntries();
   }
 
-  void _calculateTotals() {
-    double totalTime = 0, picTime = 0, sicTime = 0, dualReceived = 0;
-    double cfiGiven = 0, crossCountry = 0, night = 0;
-    double actualInstrument = 0, simulatedInstrument = 0;
-    int dayTakeoffs = 0, dayLandings = 0, nightTakeoffs = 0, nightLandings = 0;
-    int approaches = 0;
+  /// Puts back an entry removed by a swipe (the Undo in the snackbar).
+  Future<void> restoreEntry(LogbookEntry entry) => addEntry(entry);
 
-    for (final e in _entries) {
-      totalTime += e.totalTime;
-      picTime += e.picTime;
-      sicTime += e.sicTime;
-      dualReceived += e.dualReceived;
-      cfiGiven += e.cfiGiven;
-      crossCountry += e.crossCountry;
-      night += e.night;
-      actualInstrument += e.actualInstrument;
-      simulatedInstrument += e.simulatedInstrument;
-      dayTakeoffs += e.dayTakeoffs;
-      dayLandings += e.dayLandings;
-      nightTakeoffs += e.nightTakeoffs;
-      nightLandings += e.nightLandings;
-      approaches += e.approaches;
-    }
+  /// The most recent entry, for "Log again".
+  LogbookEntry? get lastEntry => _entries.isEmpty ? null : _entries.first;
 
-    _totals = LogbookTotals(
-      totalTime: totalTime,
-      picTime: picTime,
-      sicTime: sicTime,
-      dualReceived: dualReceived,
-      cfiGiven: cfiGiven,
-      crossCountry: crossCountry,
-      night: night,
-      actualInstrument: actualInstrument,
-      simulatedInstrument: simulatedInstrument,
-      dayTakeoffs: dayTakeoffs,
-      dayLandings: dayLandings,
-      nightTakeoffs: nightTakeoffs,
-      nightLandings: nightLandings,
-      approaches: approaches,
-      totalFlights: _entries.length,
-    );
+  Future<void> saveCheck(GoCheckRecord record) async {
+    final store = await _ensure();
+    await store.insertCheck(record);
+    _checks = await store.allChecks();
+    notifyListeners();
   }
 
-  // Currency checks
-  bool get isPassengerCurrent {
-    final ninetyDaysAgo = DateTime.now().subtract(const Duration(days: 90));
-    final recent = _entries.where((e) => e.date.isAfter(ninetyDaysAgo));
-    final landings = recent.fold(0, (sum, e) => sum + e.dayLandings);
-    return landings >= 3;
+  Future<void> deleteCheck(int id) async {
+    final store = await _ensure();
+    await store.deleteCheck(id);
+    _checks = await store.allChecks();
+    notifyListeners();
   }
 
-  bool get isNightPassengerCurrent {
-    final ninetyDaysAgo = DateTime.now().subtract(const Duration(days: 90));
-    final recent = _entries.where((e) => e.date.isAfter(ninetyDaysAgo));
-    final nightLandings = recent.fold(0, (sum, e) => sum + e.nightLandings);
-    return nightLandings >= 3;
-  }
-
-  bool get isIfrCurrent {
-    final sixMonthsAgo = DateTime.now().subtract(const Duration(days: 180));
-    final recent = _entries.where((e) => e.date.isAfter(sixMonthsAgo));
-    final approaches = recent.fold(0, (sum, e) => sum + e.approaches);
-    return approaches >= 6;
-  }
+  /// RFC 4180 CSV of every entry, for "Copy as CSV".
+  String toCsv() => logbookToCsv(_entries);
 
   /// Generates a clean, FAA-style logbook PDF from all current entries.
   ///

@@ -1,0 +1,106 @@
+{
+ "_captured_utc": "2026-10-14T13:03:13Z",
+ "_request": "GET https://aviationweather.gov/api/data/taf?ids=KDLH&format=json",
+ "_http_status": 200,
+ "response": [
+  {
+   "icaoId": "KDLH",
+   "dbPopTime": "2026-10-14T11:20:10.678Z",
+   "bulletinTime": "2026-10-14T11:20:00.000Z",
+   "issueTime": "2026-10-14T11:20:00.000Z",
+   "validTimeFrom": 1791979200,
+   "validTimeTo": 1792065600,
+   "rawTAF": "TAF KDLH 141120Z 1412/1512 32005G15KT P6SM BKN010 FM141400 33005KT P6SM SCT019 FM142200 03004KT P6SM SCT040",
+   "mostRecent": 1,
+   "remarks": "",
+   "lat": 46.84346,
+   "lon": -92.1866,
+   "elev": 434,
+   "prior": 2,
+   "name": "Duluth Intl Arpt",
+   "fcsts": [
+    {
+     "timeFrom": 1791979200,
+     "timeTo": 1791986400,
+     "timeBec": null,
+     "fcstChange": null,
+     "probability": null,
+     "wdir": 320,
+     "wspd": 5,
+     "wgst": 15,
+     "wshearHgt": null,
+     "wshearDir": null,
+     "wshearSpd": null,
+     "visib": "6+",
+     "altim": null,
+     "vertVis": null,
+     "wxString": null,
+     "notDecoded": null,
+     "clouds": [
+      {
+       "cover": "BKN",
+       "base": 1000,
+       "type": null
+      }
+     ],
+     "icgTurb": [],
+     "temp": []
+    },
+    {
+     "timeFrom": 1791986400,
+     "timeTo": 1792015200,
+     "timeBec": null,
+     "fcstChange": "FM",
+     "probability": null,
+     "wdir": 330,
+     "wspd": 5,
+     "wgst": null,
+     "wshearHgt": null,
+     "wshearDir": null,
+     "wshearSpd": null,
+     "visib": "6+",
+     "altim": null,
+     "vertVis": null,
+     "wxString": null,
+     "notDecoded": null,
+     "clouds": [
+      {
+       "cover": "SCT",
+       "base": 1900,
+       "type": null
+      }
+     ],
+     "icgTurb": [],
+     "temp": []
+    },
+    {
+     "timeFrom": 1792015200,
+     "timeTo": 1792065600,
+     "timeBec": null,
+     "fcstChange": "FM",
+     "probability": null,
+     "wdir": 30,
+     "wspd": 4,
+     "wgst": null,
+     "wshearHgt": null,
+     "wshearDir": null,
+     "wshearSpd": null,
+     "visib": "6+",
+     "altim": null,
+     "vertVis": null,
+     "wxString": null,
+     "notDecoded": null,
+     "clouds": [
+      {
+       "cover": "SCT",
+       "base": 4000,
+       "type": null
+      }
+     ],
+     "icgTurb": [],
+     "temp": []
+    }
+   ]
+  }
+ ]
+}

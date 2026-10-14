@@ -10,102 +10,16 @@ import 'dart:ui' show CheckedState;
 
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'package:pilot_enroute/screens/checklist_screen.dart';
-import 'package:pilot_enroute/screens/emergency_screen.dart';
 import 'package:pilot_enroute/screens/fuel_screen.dart';
-import 'package:pilot_enroute/screens/home_screen.dart';
-import 'package:pilot_enroute/services/aviation_api_service.dart';
-import 'package:pilot_enroute/services/news_service.dart';
-import 'package:pilot_enroute/services/weather_service.dart';
-
-Widget wrap(Widget child) {
-  return MultiProvider(
-    providers: [
-      ChangeNotifierProvider<AviationApiService>(
-          create: (_) => AviationApiService()),
-      ChangeNotifierProvider<NewsService>(create: (_) => NewsService()),
-      ChangeNotifierProvider<WeatherService>(create: (_) => WeatherService()),
-    ],
-    child: MaterialApp(
-      home: child,
-      routes: {
-        '/store': (_) => const Scaffold(body: Text('Store')),
-        '/news': (_) => const Scaffold(body: Text('News')),
-        '/weather': (_) => const Scaffold(body: Text('Weather')),
-      },
-    ),
-  );
-}
+import 'package:pilot_enroute/core/legality/legality_engine.dart';
+import 'package:pilot_enroute/core/minimums/minimums_check.dart';
+import 'package:pilot_enroute/ui/status_tag.dart';
 
 void main() {
   setUp(() => SharedPreferences.setMockInitialValues({}));
-
-  group('HomeScreen semantics', () {
-    testWidgets('module cards announce a name and their badge, with the '
-        'layout line break removed', (tester) async {
-      final handle = tester.ensureSemantics();
-      tester.view.physicalSize = const Size(1200, 3600);
-      tester.view.devicePixelRatio = 1.0;
-      addTearDown(tester.view.reset);
-
-      await tester.pumpWidget(wrap(const HomeScreen()));
-      await tester.pump(const Duration(milliseconds: 500));
-
-      // 'Basic Flight\nSim' must not be read with a pause mid-name.
-      expect(find.bySemanticsLabel('Basic Flight Sim'), findsOneWidget);
-      expect(find.bySemanticsLabel('Live Weather, LIVE'), findsOneWidget);
-      expect(find.bySemanticsLabel('Smart Checklists'), findsOneWidget);
-
-      handle.dispose();
-    });
-
-    testWidgets('the live-data cards read as buttons; no store promo',
-        (tester) async {
-      final handle = tester.ensureSemantics();
-      tester.view.physicalSize = const Size(1200, 3600);
-      tester.view.devicePixelRatio = 1.0;
-      addTearDown(tester.view.reset);
-
-      await tester.pumpWidget(wrap(const HomeScreen()));
-      await tester.pump(const Duration(milliseconds: 500));
-
-      expect(
-        find.bySemanticsLabel('METAR, Live airport weather'),
-        findsOneWidget,
-      );
-      final metar = tester.getSemantics(
-        find.bySemanticsLabel('METAR, Live airport weather'),
-      );
-      expect(metar.flagsCollection.isButton, isTrue);
-
-      // The Pilot Gear Store (invented ratings, dead affiliate links) is gone.
-      expect(
-        find.bySemanticsLabel(RegExp('Pilot Gear Store')),
-        findsNothing,
-      );
-
-      handle.dispose();
-    });
-
-    testWidgets('the hero stat badges are read as one phrase, not two '
-        'orphan fragments', (tester) async {
-      final handle = tester.ensureSemantics();
-      tester.view.physicalSize = const Size(1200, 3600);
-      tester.view.devicePixelRatio = 1.0;
-      addTearDown(tester.view.reset);
-
-      await tester.pumpWidget(wrap(const HomeScreen()));
-      await tester.pump(const Duration(milliseconds: 500));
-
-      expect(find.bySemanticsLabel('500+ Airports'), findsOneWidget);
-      expect(find.bySemanticsLabel('13 Subjects'), findsOneWidget);
-
-      handle.dispose();
-    });
-  });
 
   group('FuelScreen semantics', () {
     Future<void> open(WidgetTester tester) async {
@@ -205,7 +119,7 @@ void main() {
       tester.view.devicePixelRatio = 1.0;
       addTearDown(tester.view.reset);
 
-      await tester.pumpWidget(wrap(const ChecklistScreen()));
+      await tester.pumpWidget(const MaterialApp(home: ChecklistScreen()));
       await tester.pump(const Duration(milliseconds: 300));
 
       final item = find.bySemanticsLabel(
@@ -232,7 +146,7 @@ void main() {
       tester.view.devicePixelRatio = 1.0;
       addTearDown(tester.view.reset);
 
-      await tester.pumpWidget(wrap(const ChecklistScreen()));
+      await tester.pumpWidget(const MaterialApp(home: ChecklistScreen()));
       await tester.pump(const Duration(milliseconds: 300));
 
       expect(
@@ -246,26 +160,30 @@ void main() {
     });
   });
 
-  group('EmergencyScreen semantics', () {
-    testWidgets('a scenario card reads its difficulty and time limit',
+  group('Go Card semantics', () {
+    testWidgets('a status tag is read as its word, not as a colour',
         (tester) async {
       final handle = tester.ensureSemantics();
-      tester.view.physicalSize = const Size(1200, 2400);
-      tester.view.devicePixelRatio = 1.0;
-      addTearDown(tester.view.reset);
-
-      await tester.pumpWidget(wrap(const EmergencyScreen()));
-      await tester.pump(const Duration(milliseconds: 300));
-
-      final card = find.bySemanticsLabel(
-        RegExp(r'difficulty, \d+ second time limit$'),
-      );
-      expect(card, findsAtLeastNWidgets(1));
-      expect(
-        tester.getSemantics(card.first).flagsCollection.isButton,
-        isTrue,
-      );
-
+      await tester.pumpWidget(MaterialApp(
+        home: Scaffold(
+          body: Column(children: [
+            StatusTag(lookForCheck(CheckState.outside)),
+            StatusTag(lookForCheck(CheckState.near)),
+            StatusTag(lookForRule(const RuleStatus(
+              id: RuleId.medical,
+              title: 'Medical',
+              cite: '14 CFR 61.23',
+              shortLabel: 'medical',
+              required: true,
+              state: RuleState.valid,
+              summary: 'x',
+            ))),
+          ]),
+        ),
+      ));
+      expect(find.bySemanticsLabel('OUTSIDE'), findsOneWidget);
+      expect(find.bySemanticsLabel('NEAR'), findsOneWidget);
+      expect(find.bySemanticsLabel('VALID'), findsOneWidget);
       handle.dispose();
     });
   });

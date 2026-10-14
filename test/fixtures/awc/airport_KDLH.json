@@ -1,0 +1,45 @@
+{
+ "_captured_utc": "2026-10-14T13:03:13Z",
+ "_request": "GET https://aviationweather.gov/api/data/airport?ids=KDLH&format=json",
+ "_http_status": 200,
+ "response": [
+  {
+   "icaoId": "KDLH",
+   "iataId": "DLH",
+   "faaId": "DLH",
+   "name": "DULUTH/DULUTH INTL ",
+   "state": "MN",
+   "country": "US",
+   "source": "FAA",
+   "type": "ARP",
+   "lat": 46.8421,
+   "lon": -92.1932,
+   "elev": 435,
+   "magdec": "01W",
+   "owner": "P",
+   "rwyNum": "2",
+   "rwyLength": "L",
+   "rwyType": "C",
+   "services": "S",
+   "tower": "T",
+   "beacon": "B",
+   "operations": "0",
+   "freqs": "LCL/P,118.3;ATIS,124.1",
+   "priority": "2",
+   "runways": [
+    {
+     "id": "03/21",
+     "dimension": "5719x150",
+     "surface": "A",
+     "alignment": 32
+    },
+    {
+     "id": "09/27",
+     "dimension": "10591x150",
+     "surface": "C",
+     "alignment": 92
+    }
+   ]
+  }
+ ]
+}

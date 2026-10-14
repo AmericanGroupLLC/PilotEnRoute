@@ -1,13 +1,19 @@
-/// Logbook aggregation, currency rules and export.
+/// Logbook aggregation, currency from the logbook, and export.
 ///
-/// These exercise the in-memory store (the path used on web and before the
-/// sqflite database opens); the totals and currency logic is shared with the
-/// database path.
+/// These exercise the in-memory store (web and widget tests); the database
+/// path is covered by test/data/logbook_migration_test.dart. Currency used to
+/// come from three getters on the service (isPassengerCurrent and friends);
+/// those are gone and the same scenarios now go through the legality engine,
+/// which applies the regulation correctly (takeoffs and landings, night
+/// landings counting toward 61.57(a), holding and tracking for IFR).
 library;
 
 import 'dart:async';
 
 import 'package:flutter_test/flutter_test.dart';
+import 'package:pilot_enroute/core/legality/legality_engine.dart';
+import 'package:pilot_enroute/core/legality/pilot_profile.dart';
+import 'package:pilot_enroute/data/logbook_store.dart';
 import 'package:pilot_enroute/services/logbook_service.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -27,7 +33,9 @@ LogbookEntry entry({
   int nightTakeoffs = 0,
   int nightLandings = 0,
   int approaches = 0,
-  String conditions = 'VMC',
+  bool holding = false,
+  bool tracking = false,
+  String conditions = 'VFR',
 }) {
   return LogbookEntry(
     date: DateTime.now().subtract(Duration(days: daysAgo)),
@@ -49,6 +57,9 @@ LogbookEntry entry({
     nightTakeoffs: nightTakeoffs,
     nightLandings: nightLandings,
     approaches: approaches,
+    holding: holding,
+    tracking: tracking,
+    categoryClass: 'ASEL',
     conditions: conditions,
   );
 }
@@ -58,8 +69,29 @@ void main() {
 
   setUp(() {
     SharedPreferences.setMockInitialValues({});
-    service = LogbookService();
+    service = LogbookService(store: MemoryLogbookStore());
   });
+
+  RuleState state(RuleId id, {bool night = false, bool ifr = false}) =>
+      const LegalityEngine()
+          .evaluate(
+            entries: service.entries,
+            profile: const PilotProfile(
+                instrumentRated: true, homeCategoryClass: 'ASEL'),
+            flight: PlannedFlight(
+              date: DateTime.now(),
+              categoryClass: 'ASEL',
+              passengers: true,
+              night: night,
+              ifr: ifr,
+            ),
+          )
+          .rule(id)
+          .state;
+  bool isPassengerCurrent() => state(RuleId.dayPassengers) == RuleState.valid;
+  bool isNightPassengerCurrent() =>
+      state(RuleId.nightPassengers, night: true) == RuleState.valid;
+  bool isIfrCurrent() => state(RuleId.ifr, ifr: true) == RuleState.valid;
 
   group('adding entries', () {
     test('an added entry keeps every column, not just the common ones',
@@ -164,65 +196,80 @@ void main() {
   });
 
   group('currency', () {
-    test('three landings inside 90 days makes a pilot passenger-current',
-        () async {
-      await service.addEntry(entry(daysAgo: 10, dayLandings: 3));
-      expect(service.isPassengerCurrent, isTrue);
+    test('three takeoffs and landings inside 90 days make a pilot '
+        'passenger-current', () async {
+      await service.addEntry(entry(daysAgo: 10, dayTakeoffs: 3, dayLandings: 3));
+      expect(isPassengerCurrent(), isTrue);
     });
 
-    test('two landings is not enough', () async {
-      await service.addEntry(entry(daysAgo: 10, dayLandings: 2));
-      expect(service.isPassengerCurrent, isFalse);
+    test('two is not enough', () async {
+      await service.addEntry(entry(daysAgo: 10, dayTakeoffs: 2, dayLandings: 2));
+      expect(isPassengerCurrent(), isFalse);
+    });
+
+    test('landings without takeoffs are not enough (61.57(a) needs both)',
+        () async {
+      await service.addEntry(entry(daysAgo: 10, dayLandings: 3));
+      expect(isPassengerCurrent(), isFalse);
     });
 
     test('landings older than 90 days do not count', () async {
-      await service.addEntry(entry(daysAgo: 100, dayLandings: 5));
-      expect(service.isPassengerCurrent, isFalse);
+      await service.addEntry(entry(daysAgo: 100, dayTakeoffs: 5, dayLandings: 5));
+      expect(isPassengerCurrent(), isFalse);
     });
 
     test('landings are summed across flights inside the window', () async {
-      await service.addEntry(entry(daysAgo: 80, dayLandings: 1));
-      await service.addEntry(entry(daysAgo: 40, dayLandings: 1));
-      expect(service.isPassengerCurrent, isFalse);
-      await service.addEntry(entry(daysAgo: 5, dayLandings: 1));
-      expect(service.isPassengerCurrent, isTrue);
+      await service.addEntry(entry(daysAgo: 80, dayTakeoffs: 1, dayLandings: 1));
+      await service.addEntry(entry(daysAgo: 40, dayTakeoffs: 1, dayLandings: 1));
+      expect(isPassengerCurrent(), isFalse);
+      await service.addEntry(entry(daysAgo: 5, dayTakeoffs: 1, dayLandings: 1));
+      expect(isPassengerCurrent(), isTrue);
     });
 
-    test('night currency needs three night landings, day landings do not '
-        'substitute', () async {
-      await service.addEntry(entry(daysAgo: 5, dayLandings: 10));
-      expect(service.isNightPassengerCurrent, isFalse);
-      await service.addEntry(entry(daysAgo: 5, nightLandings: 3));
-      expect(service.isNightPassengerCurrent, isTrue);
+    test('night currency needs three night takeoffs and full-stop landings, '
+        'day landings do not substitute', () async {
+      await service.addEntry(entry(daysAgo: 5, dayTakeoffs: 10, dayLandings: 10));
+      expect(isNightPassengerCurrent(), isFalse);
+      await service.addEntry(
+          entry(daysAgo: 5, nightTakeoffs: 3, nightLandings: 3));
+      expect(isNightPassengerCurrent(), isTrue);
     });
 
-    test('night landings alone do not satisfy the general passenger check',
-        () async {
-      // Pinning current behaviour, which is stricter than FAA 61.57(a): that
-      // rule counts any three takeoffs and landings in 90 days, day or night.
-      // Changing it would relax a currency check, so it is reported rather
-      // than quietly altered.
-      await service.addEntry(entry(daysAgo: 5, nightLandings: 5));
-      expect(service.isPassengerCurrent, isFalse);
+    test('night landings DO count toward the general passenger check', () async {
+      // The old getter counted day landings only, which 61.57(a) does not
+      // say: it asks for three takeoffs and three landings, day or night.
+      // The spec (M1) corrects this; the old pinning test asserted false.
+      await service.addEntry(
+          entry(daysAgo: 5, nightTakeoffs: 5, nightLandings: 5));
+      expect(isPassengerCurrent(), isTrue);
     });
 
-    test('six approaches inside six months makes a pilot IFR current',
-        () async {
+    test('six approaches plus holding and tracking inside six calendar months '
+        'make a pilot IFR current', () async {
       await service.addEntry(entry(daysAgo: 100, approaches: 3));
-      expect(service.isIfrCurrent, isFalse);
-      await service.addEntry(entry(daysAgo: 20, approaches: 3));
-      expect(service.isIfrCurrent, isTrue);
+      expect(isIfrCurrent(), isFalse);
+      await service.addEntry(
+          entry(daysAgo: 20, approaches: 3, holding: true, tracking: true));
+      expect(isIfrCurrent(), isTrue);
     });
 
-    test('approaches older than six months do not count', () async {
-      await service.addEntry(entry(daysAgo: 200, approaches: 10));
-      expect(service.isIfrCurrent, isFalse);
+    test('six approaches without holding and tracking are not IFR current',
+        () async {
+      await service.addEntry(entry(daysAgo: 20, approaches: 6));
+      expect(isIfrCurrent(), isFalse);
+    });
+
+    test('approaches older than six calendar months do not count', () async {
+      // 230 days is past the longest possible window (about 213 days).
+      await service.addEntry(
+          entry(daysAgo: 230, approaches: 10, holding: true, tracking: true));
+      expect(isIfrCurrent(), isFalse);
     });
 
     test('an empty logbook is current in nothing', () {
-      expect(service.isPassengerCurrent, isFalse);
-      expect(service.isNightPassengerCurrent, isFalse);
-      expect(service.isIfrCurrent, isFalse);
+      expect(isPassengerCurrent(), isFalse);
+      expect(isNightPassengerCurrent(), isFalse);
+      expect(isIfrCurrent(), isFalse);
     });
   });
 
@@ -276,7 +323,8 @@ void main() {
       });
       expect(restored.totalTime, equals(2.0));
       expect(restored.picTime, equals(2.0));
-      expect(restored.conditions, equals('VMC'));
+      // An absent or v1 'VMC' value reads as VFR.
+      expect(restored.conditions, equals('VFR'));
     });
 
     test('a row missing its optional columns decodes to zeros', () {

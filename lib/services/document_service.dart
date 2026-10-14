@@ -152,6 +152,12 @@ class PilotDocument {
 /// [_prefsKey]. All disk access is guarded for web with [kIsWeb].
 class DocumentService extends ChangeNotifier {
   static const String _prefsKey = 'pilot_documents';
+
+  /// Where the metadata lives, so lapse reminders can read expiry dates.
+  static const String prefsKey = _prefsKey;
+
+  /// Called after every save, so lapse reminders follow expiry changes.
+  static VoidCallback? onChanged;
   static const String _subDir = 'documents';
 
   final ImagePicker _picker = ImagePicker();
@@ -223,6 +229,7 @@ class DocumentService extends ChangeNotifier {
       final prefs = await SharedPreferences.getInstance();
       final raw = jsonEncode(_documents.map((d) => d.toJson()).toList());
       await prefs.setString(_prefsKey, raw);
+      onChanged?.call();
     } catch (e) {
       debugPrint('DocumentService._persist failed: $e');
     }

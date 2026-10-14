@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:google_fonts/google_fonts.dart';
+import '../ui/theme.dart';
 import 'package:intl/intl.dart';
 import '../services/flight_plan_service.dart';
 import 'package:agl_i18n/agl_i18n.dart';
@@ -28,7 +28,7 @@ class _FlightPlanScreenState extends State<FlightPlanScreen> {
     return Consumer<FlightPlanService>(
       builder: (context, service, _) {
         return Scaffold(
-          backgroundColor: const Color(0xFF0A1628),
+          backgroundColor: const Color(0xFF15181B),
           appBar: AppBar(
             title: const Text('FLIGHT PLANS'),
             actions: [
@@ -45,12 +45,12 @@ class _FlightPlanScreenState extends State<FlightPlanScreen> {
           floatingActionButton: !_creating
               ? FloatingActionButton.extended(
                   onPressed: () => setState(() => _creating = true),
-                  backgroundColor: const Color(0xFF00BCD4),
+                  backgroundColor: const Color(0xFFFF5A5F),
                   foregroundColor: Colors.black,
                   icon: const Icon(Icons.add),
                   label: Text(
                     'NEW PLAN',
-                    style: GoogleFonts.orbitron(
+                    style: AppType.condensed(
                       fontSize: 10,
                       fontWeight: FontWeight.bold,
                       letterSpacing: 1,
@@ -77,8 +77,8 @@ class _FlightPlanScreenState extends State<FlightPlanScreen> {
               Text(
                 loadError,
                 textAlign: TextAlign.center,
-                style: GoogleFonts.inter(
-                    color: const Color(0xFFFFB300), fontSize: 13),
+                style: AppType.sans(
+                    color: const Color(0xFFE09F00), fontSize: 13),
               ),
               const SizedBox(height: 16),
             ],
@@ -86,12 +86,12 @@ class _FlightPlanScreenState extends State<FlightPlanScreen> {
             const SizedBox(height: 16),
             Text(
               'No saved flight plans yet.',
-              style: GoogleFonts.inter(color: Colors.white54, fontSize: 16),
+              style: AppType.sans(color: Colors.white54, fontSize: 16),
             ),
             const SizedBox(height: 8),
             Text(
               'Create your first flight plan',
-              style: GoogleFonts.inter(color: Colors.white38, fontSize: 13),
+              style: AppType.sans(color: Colors.white38, fontSize: 13),
             ),
           ],
         ),
@@ -108,8 +108,8 @@ class _FlightPlanScreenState extends State<FlightPlanScreen> {
               padding: const EdgeInsets.only(bottom: 12),
               child: Text(
                 loadError,
-                style: GoogleFonts.inter(
-                    color: const Color(0xFFFFB300), fontSize: 13),
+                style: AppType.sans(
+                    color: const Color(0xFFE09F00), fontSize: 13),
               ),
             );
           }
@@ -125,13 +125,13 @@ class _FlightPlanScreenState extends State<FlightPlanScreen> {
     final flightRuleColor = plan.flightRules == 'IFR'
         ? const Color(0xFF2196F3)
         : plan.flightRules == 'VFR'
-            ? const Color(0xFF4CAF50)
-            : const Color(0xFFFFB300);
+            ? const Color(0xFF5CC277)
+            : const Color(0xFFE09F00);
 
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
       decoration: BoxDecoration(
-        color: const Color(0xFF112240),
+        color: const Color(0xFF1E2226),
         borderRadius: BorderRadius.circular(16),
         border: Border.all(color: Colors.white12),
       ),
@@ -145,7 +145,7 @@ class _FlightPlanScreenState extends State<FlightPlanScreen> {
                 Expanded(
                   child: Text(
                     plan.name,
-                    style: GoogleFonts.inter(
+                    style: AppType.sans(
                       fontSize: 15,
                       fontWeight: FontWeight.bold,
                       color: Colors.white,
@@ -161,7 +161,7 @@ class _FlightPlanScreenState extends State<FlightPlanScreen> {
                   ),
                   child: Text(
                     plan.flightRules,
-                    style: GoogleFonts.orbitron(
+                    style: AppType.condensed(
                       fontSize: 9,
                       color: flightRuleColor,
                       fontWeight: FontWeight.bold,
@@ -177,7 +177,7 @@ class _FlightPlanScreenState extends State<FlightPlanScreen> {
                 _airportBadge(plan.departure),
                 const Padding(
                   padding: EdgeInsets.symmetric(horizontal: 12),
-                  child: Icon(Icons.arrow_forward, color: Color(0xFF00BCD4), size: 18),
+                  child: Icon(Icons.arrow_forward, color: Color(0xFFFF5A5F), size: 18),
                 ),
                 _airportBadge(plan.destination),
                 if (plan.alternate != null) ...[
@@ -205,7 +205,7 @@ class _FlightPlanScreenState extends State<FlightPlanScreen> {
               children: [
                 Text(
                   DateFormat('MMM d, yyyy').format(plan.createdAt),
-                  style: GoogleFonts.inter(fontSize: 11, color: Colors.white38),
+                  style: AppType.sans(fontSize: 11, color: Colors.white38),
                 ),
                 const Spacer(),
                 TextButton.icon(
@@ -213,10 +213,10 @@ class _FlightPlanScreenState extends State<FlightPlanScreen> {
                   icon: const Icon(Icons.visibility, size: 14),
                   label: Text(
                     'VIEW',
-                    style: GoogleFonts.orbitron(fontSize: 9, letterSpacing: 1),
+                    style: AppType.condensed(fontSize: 9, letterSpacing: 1),
                   ),
                   style: TextButton.styleFrom(
-                    foregroundColor: const Color(0xFF00BCD4),
+                    foregroundColor: const Color(0xFFFF5A5F),
                   ),
                 ),
                 TextButton.icon(
@@ -224,10 +224,10 @@ class _FlightPlanScreenState extends State<FlightPlanScreen> {
                   icon: const Icon(Icons.delete_outline, size: 14),
                   label: Text(
                     'DELETE',
-                    style: GoogleFonts.orbitron(fontSize: 9, letterSpacing: 1),
+                    style: AppType.condensed(fontSize: 9, letterSpacing: 1),
                   ),
                   style: TextButton.styleFrom(
-                    foregroundColor: const Color(0xFFF44336),
+                    foregroundColor: const Color(0xFFFF5A5F),
                   ),
                 ),
               ],
@@ -243,21 +243,21 @@ class _FlightPlanScreenState extends State<FlightPlanScreen> {
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
       decoration: BoxDecoration(
         color: isAlternate
-            ? const Color(0xFFFFB300).withValues(alpha: 0.1)
-            : const Color(0xFF00BCD4).withValues(alpha: 0.1),
+            ? const Color(0xFFE09F00).withValues(alpha: 0.1)
+            : const Color(0xFFFF5A5F).withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(8),
         border: Border.all(
           color: isAlternate
-              ? const Color(0xFFFFB300).withValues(alpha: 0.5)
-              : const Color(0xFF00BCD4).withValues(alpha: 0.5),
+              ? const Color(0xFFE09F00).withValues(alpha: 0.5)
+              : const Color(0xFFFF5A5F).withValues(alpha: 0.5),
         ),
       ),
       child: Text(
         icao,
-        style: GoogleFonts.orbitron(
+        style: AppType.condensed(
           fontSize: 14,
           fontWeight: FontWeight.bold,
-          color: isAlternate ? const Color(0xFFFFB300) : const Color(0xFF00BCD4),
+          color: isAlternate ? const Color(0xFFE09F00) : const Color(0xFFFF5A5F),
         ),
       ),
     );
@@ -268,7 +268,7 @@ class _FlightPlanScreenState extends State<FlightPlanScreen> {
       children: [
         Text(
           value,
-          style: GoogleFonts.orbitron(
+          style: AppType.condensed(
             fontSize: 11,
             fontWeight: FontWeight.bold,
             color: Colors.white,
@@ -276,7 +276,7 @@ class _FlightPlanScreenState extends State<FlightPlanScreen> {
         ),
         Text(
           label,
-          style: GoogleFonts.inter(fontSize: 9, color: Colors.white38),
+          style: AppType.sans(fontSize: 9, color: Colors.white38),
         ),
       ],
     );
@@ -285,7 +285,7 @@ class _FlightPlanScreenState extends State<FlightPlanScreen> {
   void _showPlanDetails(FlightPlan plan, FlightPlanService service) {
     showModalBottomSheet(
       context: context,
-      backgroundColor: const Color(0xFF112240),
+      backgroundColor: const Color(0xFF1E2226),
       isScrollControlled: true,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
@@ -303,9 +303,9 @@ class _FlightPlanScreenState extends State<FlightPlanScreen> {
             children: [
               Text(
                 'FAA FLIGHT PLAN',
-                style: GoogleFonts.orbitron(
+                style: AppType.condensed(
                   fontSize: 14,
-                  color: const Color(0xFF00BCD4),
+                  color: const Color(0xFFFF5A5F),
                   letterSpacing: 2,
                 ),
               ),
@@ -314,15 +314,15 @@ class _FlightPlanScreenState extends State<FlightPlanScreen> {
                 width: double.infinity,
                 padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
-                  color: const Color(0xFF0A1628),
+                  color: const Color(0xFF15181B),
                   borderRadius: BorderRadius.circular(12),
                   border: Border.all(color: Colors.white12),
                 ),
                 child: Text(
                   service.generateFaaFlightPlanString(plan),
-                  style: GoogleFonts.robotoMono(
+                  style: AppType.mono(
                     fontSize: 12,
-                    color: const Color(0xFF4CAF50),
+                    color: const Color(0xFF5CC277),
                     height: 1.6,
                   ),
                 ),
@@ -330,7 +330,7 @@ class _FlightPlanScreenState extends State<FlightPlanScreen> {
               const SizedBox(height: 16),
               Text(
                 '📞 File via 1800wxbrief.com or call 1-800-WX-BRIEF',
-                style: GoogleFonts.inter(
+                style: AppType.sans(
                   fontSize: 12,
                   color: Colors.white54,
                   height: 1.5,
@@ -374,9 +374,9 @@ class _FlightPlanScreenState extends State<FlightPlanScreen> {
                   ),
                   Text(
                     'NEW FLIGHT PLAN',
-                    style: GoogleFonts.orbitron(
+                    style: AppType.condensed(
                       fontSize: 13,
-                      color: const Color(0xFF00BCD4),
+                      color: const Color(0xFFFF5A5F),
                       letterSpacing: 2,
                     ),
                   ),
@@ -414,7 +414,7 @@ class _FlightPlanScreenState extends State<FlightPlanScreen> {
               // Flight rules selector
               Text(
                 'FLIGHT RULES',
-                style: GoogleFonts.orbitron(
+                style: AppType.condensed(
                   fontSize: 10,
                   color: Colors.white54,
                   letterSpacing: 1.5,
@@ -431,18 +431,18 @@ class _FlightPlanScreenState extends State<FlightPlanScreen> {
                       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
                       decoration: BoxDecoration(
                         color: selected
-                            ? const Color(0xFF00BCD4).withValues(alpha: 0.2)
-                            : const Color(0xFF112240),
+                            ? const Color(0xFFFF5A5F).withValues(alpha: 0.2)
+                            : const Color(0xFF1E2226),
                         borderRadius: BorderRadius.circular(10),
                         border: Border.all(
-                          color: selected ? const Color(0xFF00BCD4) : Colors.white24,
+                          color: selected ? const Color(0xFFFF5A5F) : Colors.white24,
                         ),
                       ),
                       child: Text(
                         rule,
-                        style: GoogleFonts.orbitron(
+                        style: AppType.condensed(
                           fontSize: 11,
-                          color: selected ? const Color(0xFF00BCD4) : Colors.white54,
+                          color: selected ? const Color(0xFFFF5A5F) : Colors.white54,
                           fontWeight: FontWeight.bold,
                         ),
                       ),
@@ -487,7 +487,7 @@ class _FlightPlanScreenState extends State<FlightPlanScreen> {
                   ),
                   child: Text(
                     'SAVE FLIGHT PLAN',
-                    style: GoogleFonts.orbitron(
+                    style: AppType.condensed(
                       fontSize: 13,
                       fontWeight: FontWeight.bold,
                       letterSpacing: 2,
@@ -507,12 +507,12 @@ class _FlightPlanScreenState extends State<FlightPlanScreen> {
     return TextFormField(
       controller: ctrl,
       keyboardType: isNum ? TextInputType.number : TextInputType.text,
-      style: GoogleFonts.inter(color: Colors.white, fontSize: 14),
+      style: AppType.sans(color: Colors.white, fontSize: 14),
       decoration: InputDecoration(
         labelText: label,
         hintText: hint,
-        hintStyle: GoogleFonts.inter(color: Colors.white24, fontSize: 12),
-        labelStyle: GoogleFonts.inter(color: Colors.white54, fontSize: 12),
+        hintStyle: AppType.sans(color: Colors.white24, fontSize: 12),
+        labelStyle: AppType.sans(color: Colors.white54, fontSize: 12),
       ),
     );
   }

@@ -1,0 +1,46 @@
+{
+ "_captured_utc": "2026-10-14T13:03:13Z",
+ "_request": "GET https://aviationweather.gov/api/data/airport?ids=KSJC&format=json",
+ "_http_status": 200,
+ "response": [
+  {
+   "icaoId": "KSJC",
+   "iataId": "SJC",
+   "faaId": "SJC",
+   "name": "SAN JOSE/NORMAN Y MINETA SAN JOSE INTL ",
+   "state": "CA",
+   "country": "US",
+   "source": "FAA",
+   "type": "ARP",
+   "lat": 37.363,
+   "lon": -121.9286,
+   "elev": 19,
+   "magdec": "13E",
+   "owner": "P",
+   "rwyNum": "2",
+   "rwyLength": "L",
+   "rwyType": "C",
+   "services": "S",
+   "tower": "T",
+   "beacon": "B",
+   "operations": "0",
+   "passengers": "11330",
+   "freqs": "LCL/P,124.0;D-ATIS,126.95",
+   "priority": "4",
+   "runways": [
+    {
+     "id": "12L/30R",
+     "dimension": "11000x150",
+     "surface": "C",
+     "alignment": 139
+    },
+    {
+     "id": "12R/30L",
+     "dimension": "11000x150",
+     "surface": "C",
+     "alignment": 139
+    }
+   ]
+  }
+ ]
+}

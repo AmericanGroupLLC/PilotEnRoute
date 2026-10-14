@@ -1,0 +1,29 @@
+{
+ "_captured_utc": "2026-10-14T13:03:13Z",
+ "_request": "GET https://aviationweather.gov/api/data/metar?ids=KPAO&format=json",
+ "_http_status": 200,
+ "response": [
+  {
+   "icaoId": "KPAO",
+   "receiptTime": "2026-10-14T03:48:25.041Z",
+   "obsTime": 1791949620,
+   "reportTime": "2026-10-14T04:00:00.000Z",
+   "temp": 16,
+   "dewp": 3,
+   "wdir": 280,
+   "wspd": 5,
+   "visib": "10+",
+   "altim": 1019.4,
+   "qcField": 0,
+   "metarType": "METAR",
+   "rawOb": "METAR KPAO 140347Z 28005KT 10SM SKC 16/03 A3010 RMK LAST",
+   "lat": 37.458,
+   "lon": -122.112,
+   "elev": 2,
+   "name": "Palo Alto Arpt, CA, US",
+   "cover": "SKC",
+   "clouds": [],
+   "fltCat": "VFR"
+  }
+ ]
+}

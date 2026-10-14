@@ -1,0 +1,30 @@
+{
+ "_captured_utc": "2026-10-14T13:03:13Z",
+ "_request": "GET https://aviationweather.gov/api/data/metar?ids=KSJC&format=json",
+ "_http_status": 200,
+ "response": [
+  {
+   "icaoId": "KSJC",
+   "receiptTime": "2026-10-14T12:56:29.535Z",
+   "obsTime": 1791982380,
+   "reportTime": "2026-10-14T13:00:00.000Z",
+   "temp": 10,
+   "dewp": 2.2,
+   "wdir": 160,
+   "wspd": 5,
+   "visib": "10+",
+   "altim": 1019.7,
+   "slp": 1019.5,
+   "qcField": 4,
+   "metarType": "METAR",
+   "rawOb": "METAR KSJC 141253Z 16005KT 10SM CLR 10/02 A3011 RMK AO2 SLP195 T01000022",
+   "lat": 37.3594,
+   "lon": -121.9244,
+   "elev": 13,
+   "name": "San Jose Intl Arpt, CA, US",
+   "cover": "CLR",
+   "clouds": [],
+   "fltCat": "VFR"
+  }
+ ]
+}

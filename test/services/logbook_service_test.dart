@@ -1,4 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
+import 'package:pilot_enroute/data/logbook_store.dart';
 import 'package:pilot_enroute/services/logbook_service.dart';
 
 void main() {
@@ -39,7 +40,10 @@ void main() {
       expect(entry.night, equals(0));
       expect(entry.actualInstrument, equals(0));
       expect(entry.nightLandings, equals(0));
-      expect(entry.conditions, equals('VMC'));
+      // New entries default to VFR; the form sets IFR explicitly.
+      expect(entry.conditions, equals('VFR'));
+      expect(entry.categoryClass, isEmpty,
+          reason: 'never assumed; the form requires it');
     });
 
     test('toMap produces correct keys', () {
@@ -93,6 +97,61 @@ void main() {
   });
 
   group('LogbookService', () {
+    test('a fresh store opens empty: no sample flights', () async {
+      final service = LogbookService(store: MemoryLogbookStore());
+      await service.init();
+      expect(service.ready, isTrue);
+      expect(service.entries, isEmpty);
+      expect(service.checks, isEmpty);
+      expect(service.lastEntry, isNull);
+    });
+
+    test('edit replaces the entry in place', () async {
+      final service = LogbookService(store: MemoryLogbookStore());
+      final id = await service.addEntry(LogbookEntry(
+          date: DateTime(2026, 1, 1),
+          aircraftType: 'C172',
+          tailNumber: 'N1',
+          from: 'KPAO',
+          to: 'KPAO',
+          totalTime: 1));
+      final e = service.entries.single;
+      expect(e.id, id);
+      await service.updateEntry(e.copyWith(totalTime: 1.4));
+      expect(service.entries.single.totalTime, 1.4);
+      expect(service.entries, hasLength(1));
+    });
+
+    test('a swiped-away entry can be put back (undo)', () async {
+      final service = LogbookService(store: MemoryLogbookStore());
+      await service.addEntry(LogbookEntry(
+          date: DateTime(2026, 1, 1),
+          aircraftType: 'C172',
+          tailNumber: 'N1',
+          from: 'KPAO',
+          to: 'KSQL',
+          totalTime: 1,
+          remarks: 'keep me'));
+      final e = service.entries.single;
+      await service.deleteEntry(e.id!);
+      expect(service.entries, isEmpty);
+      await service.restoreEntry(e);
+      expect(service.entries.single.remarks, 'keep me');
+    });
+
+    test('Copy as CSV covers every entry', () async {
+      final service = LogbookService(store: MemoryLogbookStore());
+      await service.addEntry(LogbookEntry(
+          date: DateTime(2026, 1, 1),
+          aircraftType: 'C172',
+          tailNumber: 'N1',
+          from: 'KPAO',
+          to: 'KSQL',
+          totalTime: 1));
+      expect(service.toCsv().split('\r\n').where((l) => l.isNotEmpty),
+          hasLength(2));
+    });
+
     test('initializes with empty entries', () {
       final service = LogbookService();
       expect(service.entries, isEmpty);
@@ -110,7 +169,7 @@ void main() {
 
   group('LogbookTotals model', () {
     test('creates with all fields', () {
-      final totals = LogbookTotals(
+      const totals = LogbookTotals(
         totalTime: 250.5,
         picTime: 200.0,
         sicTime: 50.5,

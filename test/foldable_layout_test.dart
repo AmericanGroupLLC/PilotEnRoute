@@ -16,43 +16,31 @@ library;
 
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-import 'package:pilot_enroute/services/aviation_api_service.dart';
-import 'package:pilot_enroute/services/news_service.dart';
-import 'package:pilot_enroute/services/logbook_service.dart';
-import 'package:pilot_enroute/services/notification_service.dart';
-import 'package:pilot_enroute/services/flight_plan_service.dart';
-import 'package:pilot_enroute/services/flight_tracker_service.dart';
-import 'package:pilot_enroute/services/flashcard_service.dart';
-import 'package:pilot_enroute/services/weather_service.dart';
-
-import 'package:pilot_enroute/screens/home_screen.dart';
-import 'package:pilot_enroute/screens/weather_screen.dart';
-import 'package:pilot_enroute/screens/news_screen.dart';
-import 'package:pilot_enroute/screens/quiz_screen.dart';
+import 'package:pilot_enroute/data/logbook_store.dart';
 import 'package:pilot_enroute/screens/airport_screen.dart';
-import 'package:pilot_enroute/screens/glossary_screen.dart';
-import 'package:pilot_enroute/screens/drone_screen.dart';
-import 'package:pilot_enroute/screens/education_screen.dart';
-import 'package:pilot_enroute/screens/endorsements_screen.dart';
-import 'package:pilot_enroute/screens/career_screen.dart';
-import 'package:pilot_enroute/screens/icara_screen.dart';
-import 'package:pilot_enroute/screens/notifications_screen.dart';
+import 'package:pilot_enroute/screens/app_shell.dart';
 import 'package:pilot_enroute/screens/checklist_screen.dart';
-import 'package:pilot_enroute/screens/emergency_screen.dart';
-import 'package:pilot_enroute/screens/profile_screen.dart';
-import 'package:pilot_enroute/screens/flashcard_screen.dart';
-import 'package:pilot_enroute/screens/exam_screen.dart';
-import 'package:pilot_enroute/screens/flight_plan_screen.dart';
-import 'package:pilot_enroute/screens/flight_tracker_screen.dart';
-import 'package:pilot_enroute/screens/garmin_screen.dart';
-import 'package:pilot_enroute/screens/alerts_screen.dart';
+import 'package:pilot_enroute/screens/documents_screen.dart';
 import 'package:pilot_enroute/screens/e6b_screen.dart';
+import 'package:pilot_enroute/screens/flight_plan_screen.dart';
 import 'package:pilot_enroute/screens/fuel_screen.dart';
+import 'package:pilot_enroute/screens/go_history_screen.dart';
+import 'package:pilot_enroute/screens/kit_screen.dart';
+import 'package:pilot_enroute/screens/logbook_entry_screen.dart';
+import 'package:pilot_enroute/screens/logbook_screen.dart';
+import 'package:pilot_enroute/screens/minimums_screen.dart';
+import 'package:pilot_enroute/screens/onboarding_screen.dart';
+import 'package:pilot_enroute/screens/reminders_screen.dart';
+import 'package:pilot_enroute/screens/settings_screen.dart';
+import 'package:pilot_enroute/screens/today_screen.dart';
+import 'package:pilot_enroute/screens/weather_screen.dart';
 import 'package:pilot_enroute/screens/weight_balance_screen.dart';
-import 'package:pilot_enroute/screens/regulations_screen.dart';
+import 'package:pilot_enroute/services/logbook_service.dart';
+import 'package:pilot_enroute/services/settings_store.dart';
+
+import 'support/harness.dart';
 
 /// The geometries a folding iPhone actually presents, in logical pixels.
 ///
@@ -72,52 +60,32 @@ const Map<String, Size> _foldGeometries = <String, Size>{
   'mid-resize landscape 840x540': Size(840, 540),
 };
 
+/// A logbook with real-looking rows the pilot would have typed, so the
+/// ledger and Today layouts are exercised with content, not just empty
+/// states. (Test data only; the app never seeds entries.)
+LogbookService _seeded() => LogbookService(
+      store: MemoryLogbookStore([
+        for (var i = 0; i < 8; i++)
+          LogbookEntry(
+            date: DateTime(2026, 10, 12 - i),
+            aircraftType: 'C172S',
+            tailNumber: 'N35${i}2X',
+            from: 'KPAO',
+            to: 'KSQL',
+            totalTime: 1.2,
+            categoryClass: 'ASEL',
+            dayTakeoffs: 2,
+            dayLandings: 2,
+            remarks: 'Pattern work, crosswind practice on 31',
+          ),
+      ]),
+    );
+
 Widget _wrap(Widget screen, {double textScale = 1.0}) {
-  return MultiProvider(
-    providers: [
-      ChangeNotifierProvider(create: (_) => AviationApiService()),
-      ChangeNotifierProvider(create: (_) => NewsService()),
-      ChangeNotifierProvider(create: (_) => LogbookService()),
-      ChangeNotifierProvider(create: (_) => NotificationService()),
-      ChangeNotifierProvider(create: (_) => FlightPlanService()),
-      ChangeNotifierProvider(create: (_) => FlightTrackerService()),
-      ChangeNotifierProvider(create: (_) => FlashcardService()),
-      ChangeNotifierProvider(create: (_) => WeatherService()),
-    ],
-    child: MaterialApp(
-      home: Builder(
-        builder: (context) => MediaQuery(
-          data: MediaQuery.of(context)
-              .copyWith(textScaler: TextScaler.linear(textScale)),
-          child: screen,
-        ),
-      ),
-      routes: {
-        '/store': (_) => const Scaffold(body: Text('Store')),
-        '/weather': (_) => const Scaffold(body: Text('Weather')),
-        '/quiz': (_) => const Scaffold(body: Text('Quiz')),
-        '/logbook': (_) => const Scaffold(body: Text('Logbook')),
-        '/simulation': (_) => const Scaffold(body: Text('Simulation')),
-        '/flashcards': (_) => const Scaffold(body: Text('Flashcards')),
-        '/exam': (_) => const Scaffold(body: Text('Exam')),
-        '/flight-tracker': (_) => const Scaffold(body: Text('Tracker')),
-        '/flight-plan': (_) => const Scaffold(body: Text('Plan')),
-        '/drone': (_) => const Scaffold(body: Text('Drone')),
-        '/news': (_) => const Scaffold(body: Text('News')),
-        '/airport': (_) => const Scaffold(body: Text('Airport')),
-        '/glossary': (_) => const Scaffold(body: Text('Glossary')),
-        '/education': (_) => const Scaffold(body: Text('Education')),
-        '/checklist': (_) => const Scaffold(body: Text('Checklist')),
-        '/emergency': (_) => const Scaffold(body: Text('Emergency')),
-        '/endorsements': (_) => const Scaffold(body: Text('Endorsements')),
-        '/career': (_) => const Scaffold(body: Text('Career')),
-        '/icara': (_) => const Scaffold(body: Text('ICARA')),
-        '/garmin': (_) => const Scaffold(body: Text('Garmin')),
-        '/notifications': (_) => const Scaffold(body: Text('Notifications')),
-        '/profile': (_) => const Scaffold(body: Text('Profile')),
-      },
-    ),
-  );
+  return Harness(
+    settings: SettingsStore(onboardingDone: true, homeAirport: ''),
+    logbook: _seeded(),
+  ).wrap(screen, textScale: textScale);
 }
 
 /// Pumps until the tree is quiet.
@@ -181,50 +149,38 @@ void main() {
   });
 
   group('every primary screen survives a fold', () {
-    _foldSweep('HomeScreen', () => const HomeScreen());
+    _foldSweep('TodayScreen', () => const TodayScreen());
+    _foldSweep('LogbookScreen', () => const LogbookScreen());
+    _foldSweep('LogbookEntryScreen', () => const LogbookEntryScreen());
     _foldSweep('WeatherScreen', () => const WeatherScreen());
-    _foldSweep('NewsScreen', () => const NewsScreen());
-    _foldSweep('QuizScreen', () => const QuizScreen());
+    _foldSweep('KitScreen', () => const KitScreen());
     _foldSweep('AirportScreen', () => const AirportScreen());
-    _foldSweep('GlossaryScreen', () => const GlossaryScreen());
-    _foldSweep('DroneScreen', () => const DroneScreen());
-    _foldSweep('EducationScreen', () => const EducationScreen());
-    _foldSweep('EndorsementsScreen', () => const EndorsementsScreen());
-    _foldSweep('CareerScreen', () => const CareerScreen());
-    _foldSweep('IcaraScreen', () => const IcaraScreen());
-    _foldSweep('NotificationsScreen', () => const NotificationsScreen());
+    _foldSweep('SettingsScreen', () => SettingsScreen(
+        isPrivacyOptionsRequired: () async => true,
+        showPrivacyOptions: () async {}));
+    _foldSweep('MinimumsScreen', () => const MinimumsScreen());
+    _foldSweep('RemindersScreen', () => const RemindersScreen());
+    _foldSweep('GoHistoryScreen', () => const GoHistoryScreen());
+    _foldSweep('OnboardingScreen', () => const OnboardingScreen());
     _foldSweep('ChecklistScreen', () => const ChecklistScreen());
-    _foldSweep('EmergencyScreen', () => const EmergencyScreen());
-    _foldSweep('ProfileScreen', () => const ProfileScreen());
-    _foldSweep('FlashcardScreen', () => const FlashcardScreen());
-    _foldSweep('ExamScreen', () => const ExamScreen());
+    _foldSweep('DocumentsScreen', () => const DocumentsScreen());
     _foldSweep('FlightPlanScreen', () => const FlightPlanScreen());
-    _foldSweep('FlightTrackerScreen', () => const FlightTrackerScreen());
-    _foldSweep('GarminScreen', () => const GarminScreen());
-    _foldSweep('AlertsScreen', () => const AlertsScreen());
     _foldSweep('E6BScreen', () => const E6BScreen());
     _foldSweep('FuelScreen', () => const FuelScreen());
     _foldSweep('WeightBalanceScreen', () => const WeightBalanceScreen());
-    // WindScreen builds a WebViewController in initState, which asserts
-    // `WebViewPlatform.instance != null` — there is no platform
-    // implementation in a widget test, so it cannot be pumped here at any
-    // size. Its layout is a single full-bleed WebViewWidget under an AppBar.
-    _foldSweep('RegulationsScreen', () => const RegulationsScreen());
   });
 
   // A fold plus large type is where text layouts actually break: the window
   // gets narrower *and* every string gets longer at the same time.
   group('large type on a folded window', () {
     final busiest = <String, Widget Function()>{
-      'HomeScreen': () => const HomeScreen(),
-      'QuizScreen': () => const QuizScreen(),
-      'EmergencyScreen': () => const EmergencyScreen(),
-      'ProfileScreen': () => const ProfileScreen(),
+      'TodayScreen': () => const TodayScreen(),
+      'LogbookScreen': () => const LogbookScreen(),
+      'LogbookEntryScreen': () => const LogbookEntryScreen(),
+      'OnboardingScreen': () => const OnboardingScreen(),
+      'MinimumsScreen': () => const MinimumsScreen(),
       'E6BScreen': () => const E6BScreen(),
       'WeightBalanceScreen': () => const WeightBalanceScreen(),
-      'DroneScreen': () => const DroneScreen(),
-      'CareerScreen': () => const CareerScreen(),
-      'ExamScreen': () => const ExamScreen(),
     };
 
     busiest.forEach((name, build) {
@@ -241,13 +197,13 @@ void main() {
   // does not update when the device unfolds. Resizing the same live tree
   // (rather than pumping a fresh one) is what catches it.
   group('resizing a live tree', () {
-    testWidgets('HomeScreen reflows from folded to unfolded and back',
+    testWidgets('the app shell reflows from folded to unfolded and back',
         (tester) async {
       tester.view.devicePixelRatio = 1.0;
       tester.view.physicalSize = const Size(360, 840);
       addTearDown(tester.view.reset);
 
-      await tester.pumpWidget(_wrap(const HomeScreen()));
+      await tester.pumpWidget(_wrap(const AppShell()));
       await _settle(tester);
       expect(tester.takeException(), isNull, reason: 'folded');
 
@@ -263,7 +219,7 @@ void main() {
         expect(
           tester.takeException(),
           isNull,
-          reason: 'HomeScreen overflowed after resizing to '
+          reason: 'AppShell overflowed after resizing to '
               '${size.width.toInt()}x${size.height.toInt()}',
         );
       }

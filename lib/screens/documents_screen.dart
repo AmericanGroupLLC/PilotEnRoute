@@ -2,7 +2,7 @@ import 'dart:io';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
+import '../ui/theme.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:intl/intl.dart';
 import 'package:printing/printing.dart';
@@ -10,12 +10,12 @@ import 'package:printing/printing.dart';
 import '../services/document_service.dart';
 import 'package:agl_i18n/agl_i18n.dart';
 
-const Color _bg = Color(0xFF0A1628);
-const Color _card = Color(0xFF112240);
-const Color _cyan = Color(0xFF00BCD4);
-const Color _amber = Color(0xFFFFB300);
-const Color _red = Color(0xFFF44336);
-const Color _green = Color(0xFF4CAF50);
+const Color _bg = Color(0xFF15181B);
+const Color _card = Color(0xFF1E2226);
+const Color _cyan = Color(0xFFFF5A5F);
+const Color _amber = Color(0xFFE09F00);
+const Color _red = Color(0xFFFF5A5F);
+const Color _green = Color(0xFF5CC277);
 
 /// Offline document vault: store aircraft/pilot documents (insurance, POH,
 /// AFM, certificates, checklists) as images or generated PDFs.
@@ -116,7 +116,7 @@ class _DocumentsScreenState extends State<DocumentsScreen> {
         icon: const Icon(Icons.add),
         label: Text(
           'ADD',
-          style: GoogleFonts.orbitron(
+          style: AppType.condensed(
             fontSize: 12,
             fontWeight: FontWeight.bold,
             letterSpacing: 1,
@@ -166,7 +166,7 @@ class _DocumentsScreenState extends State<DocumentsScreen> {
               child: Text(
                 'File storage is only available on mobile/desktop. '
                 'Documents are not persisted on web.',
-                style: GoogleFonts.inter(fontSize: 12, color: Colors.white70),
+                style: AppType.sans(fontSize: 12, color: Colors.white70),
               ),
             ),
           ],
@@ -195,7 +195,7 @@ class _DocumentsScreenState extends State<DocumentsScreen> {
                 const SizedBox(width: 8),
                 Text(
                   'EXPIRING SOON',
-                  style: GoogleFonts.orbitron(
+                  style: AppType.condensed(
                     fontSize: 11,
                     color: _amber,
                     letterSpacing: 1.5,
@@ -225,7 +225,7 @@ class _DocumentsScreenState extends State<DocumentsScreen> {
                         child: Text(
                           d.title,
                           overflow: TextOverflow.ellipsis,
-                          style: GoogleFonts.inter(
+                          style: AppType.sans(
                             fontSize: 13,
                             color: Colors.white,
                           ),
@@ -240,7 +240,7 @@ class _DocumentsScreenState extends State<DocumentsScreen> {
                         ),
                         child: Text(
                           label,
-                          style: GoogleFonts.orbitron(
+                          style: AppType.condensed(
                             fontSize: 9,
                             color: color,
                             fontWeight: FontWeight.bold,
@@ -303,7 +303,7 @@ class _DocumentsScreenState extends State<DocumentsScreen> {
         ),
         child: Text(
           count > 0 ? '$label · $count' : label,
-          style: GoogleFonts.orbitron(
+          style: AppType.condensed(
             fontSize: 9,
             letterSpacing: 1,
             fontWeight: FontWeight.bold,
@@ -392,7 +392,7 @@ class _DocumentsScreenState extends State<DocumentsScreen> {
                       ),
                       child: Text(
                         d.category.label.toUpperCase(),
-                        style: GoogleFonts.orbitron(
+                        style: AppType.condensed(
                           fontSize: 7,
                           color: iconColor,
                           letterSpacing: 1,
@@ -413,7 +413,7 @@ class _DocumentsScreenState extends State<DocumentsScreen> {
                     d.title,
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
-                    style: GoogleFonts.inter(
+                    style: AppType.sans(
                       fontSize: 13,
                       fontWeight: FontWeight.bold,
                       color: Colors.white,
@@ -426,7 +426,7 @@ class _DocumentsScreenState extends State<DocumentsScreen> {
                         : 'Added ${DateFormat.yMMMd().format(d.addedDate)}',
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
-                    style: GoogleFonts.inter(
+                    style: AppType.sans(
                       fontSize: 10,
                       color: d.isExpiringSoon
                           ? (d.isExpired ? _red : _amber)
@@ -464,7 +464,7 @@ class _DocumentsScreenState extends State<DocumentsScreen> {
           const SizedBox(height: 16),
           Text(
             'NO DOCUMENTS',
-            style: GoogleFonts.orbitron(
+            style: AppType.condensed(
               fontSize: 14,
               color: Colors.white54,
               letterSpacing: 2,
@@ -479,7 +479,7 @@ class _DocumentsScreenState extends State<DocumentsScreen> {
                       'Everything is stored offline on this device.'
                   : 'No ${_filter!.label} documents yet.',
               textAlign: TextAlign.center,
-              style: GoogleFonts.inter(fontSize: 13, color: Colors.white38),
+              style: AppType.sans(fontSize: 13, color: Colors.white38),
             ),
           ),
         ],
@@ -539,7 +539,7 @@ class _DocumentsScreenState extends State<DocumentsScreen> {
             ListTile(
               leading: const Icon(Icons.open_in_full, color: _cyan),
               title: Text('Open',
-                  style: GoogleFonts.inter(color: Colors.white)),
+                  style: AppType.sans(color: Colors.white)),
               onTap: () {
                 Navigator.pop(ctx);
                 _openDocument(d);
@@ -548,7 +548,7 @@ class _DocumentsScreenState extends State<DocumentsScreen> {
             ListTile(
               leading: const Icon(Icons.edit, color: _amber),
               title: Text('Edit details',
-                  style: GoogleFonts.inter(color: Colors.white)),
+                  style: AppType.sans(color: Colors.white)),
               onTap: () {
                 Navigator.pop(ctx);
                 _showEditSheet(d);
@@ -557,7 +557,7 @@ class _DocumentsScreenState extends State<DocumentsScreen> {
             ListTile(
               leading: const Icon(Icons.delete_outline, color: _red),
               title: Text('Delete',
-                  style: GoogleFonts.inter(color: Colors.white)),
+                  style: AppType.sans(color: Colors.white)),
               onTap: () {
                 Navigator.pop(ctx);
                 _confirmDelete(d);
@@ -575,20 +575,20 @@ class _DocumentsScreenState extends State<DocumentsScreen> {
       builder: (ctx) => AlertDialog(
         backgroundColor: _card,
         title: Text('Delete document?',
-            style: GoogleFonts.orbitron(color: Colors.white, fontSize: 14)),
+            style: AppType.condensed(color: Colors.white, fontSize: 14)),
         content: Text(
           'This permanently removes "${d.title}" from this device.',
-          style: GoogleFonts.inter(color: Colors.white70),
+          style: AppType.sans(color: Colors.white70),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx, false),
             child: Text('Cancel',
-                style: GoogleFonts.inter(color: Colors.white54)),
+                style: AppType.sans(color: Colors.white54)),
           ),
           TextButton(
             onPressed: () => Navigator.pop(ctx, true),
-            child: Text('Delete', style: GoogleFonts.inter(color: _red)),
+            child: Text('Delete', style: AppType.sans(color: _red)),
           ),
         ],
       ),
@@ -618,7 +618,7 @@ class _DocumentsScreenState extends State<DocumentsScreen> {
               padding: const EdgeInsets.all(16),
               child: Text(
                 'ADD DOCUMENT',
-                style: GoogleFonts.orbitron(
+                style: AppType.condensed(
                   fontSize: 12,
                   color: _cyan,
                   letterSpacing: 2,
@@ -628,7 +628,7 @@ class _DocumentsScreenState extends State<DocumentsScreen> {
             ListTile(
               leading: const Icon(Icons.photo_camera, color: _cyan),
               title: Text('Capture photo',
-                  style: GoogleFonts.inter(color: Colors.white)),
+                  style: AppType.sans(color: Colors.white)),
               onTap: () {
                 Navigator.pop(ctx);
                 _addImage(ImageSource.camera);
@@ -637,7 +637,7 @@ class _DocumentsScreenState extends State<DocumentsScreen> {
             ListTile(
               leading: const Icon(Icons.photo_library, color: _cyan),
               title: Text('Import from gallery',
-                  style: GoogleFonts.inter(color: Colors.white)),
+                  style: AppType.sans(color: Colors.white)),
               onTap: () {
                 Navigator.pop(ctx);
                 _addImage(ImageSource.gallery);
@@ -646,9 +646,9 @@ class _DocumentsScreenState extends State<DocumentsScreen> {
             ListTile(
               leading: const Icon(Icons.picture_as_pdf, color: _amber),
               title: Text('Generate cover sheet PDF',
-                  style: GoogleFonts.inter(color: Colors.white)),
+                  style: AppType.sans(color: Colors.white)),
               subtitle: Text('Sample aircraft doc, printable',
-                  style: GoogleFonts.inter(
+                  style: AppType.sans(
                       color: Colors.white38, fontSize: 11)),
               onTap: () {
                 Navigator.pop(ctx);
@@ -756,7 +756,7 @@ class _DocumentsScreenState extends State<DocumentsScreen> {
     if (!mounted) return;
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text(msg, style: GoogleFonts.inter(color: Colors.white)),
+        content: Text(msg, style: AppType.sans(color: Colors.white)),
         backgroundColor: _card,
       ),
     );
@@ -842,7 +842,7 @@ class _MetadataDialogState extends State<_MetadataDialog> {
       backgroundColor: _card,
       title: Text(
         widget.isEdit ? 'EDIT DETAILS' : 'DOCUMENT DETAILS',
-        style: GoogleFonts.orbitron(
+        style: AppType.condensed(
             color: _cyan, fontSize: 13, letterSpacing: 1.5),
       ),
       content: SingleChildScrollView(
@@ -852,7 +852,7 @@ class _MetadataDialogState extends State<_MetadataDialog> {
           children: [
             TextField(
               controller: _titleCtrl,
-              style: GoogleFonts.inter(color: Colors.white),
+              style: AppType.sans(color: Colors.white),
               decoration: _inputDeco('Title'),
             ),
             const SizedBox(height: 14),
@@ -860,13 +860,13 @@ class _MetadataDialogState extends State<_MetadataDialog> {
               initialValue: _category,
               dropdownColor: _card,
               isExpanded: true,
-              style: GoogleFonts.inter(color: Colors.white),
+              style: AppType.sans(color: Colors.white),
               decoration: _inputDeco('Category'),
               items: DocCategory.values
                   .map((c) => DropdownMenuItem(
                         value: c,
                         child: Text(c.label,
-                            style: GoogleFonts.inter(color: Colors.white)),
+                            style: AppType.sans(color: Colors.white)),
                       ))
                   .toList(),
               onChanged: (v) {
@@ -888,7 +888,7 @@ class _MetadataDialogState extends State<_MetadataDialog> {
                         _expiry != null
                             ? DateFormat.yMMMd().format(_expiry!)
                             : 'None',
-                        style: GoogleFonts.inter(
+                        style: AppType.sans(
                           color:
                               _expiry != null ? Colors.white : Colors.white38,
                         ),
@@ -907,7 +907,7 @@ class _MetadataDialogState extends State<_MetadataDialog> {
             const SizedBox(height: 14),
             TextField(
               controller: _notesCtrl,
-              style: GoogleFonts.inter(color: Colors.white),
+              style: AppType.sans(color: Colors.white),
               maxLines: 2,
               decoration: _inputDeco('Notes (optional)'),
             ),
@@ -918,7 +918,7 @@ class _MetadataDialogState extends State<_MetadataDialog> {
         TextButton(
           onPressed: () => Navigator.pop(context),
           child:
-              Text((AglL10n.of(context)?.actionCancel ?? 'Cancel'), style: GoogleFonts.inter(color: Colors.white54)),
+              Text((AglL10n.of(context)?.actionCancel ?? 'Cancel'), style: AppType.sans(color: Colors.white54)),
         ),
         TextButton(
           onPressed: () {
@@ -934,7 +934,7 @@ class _MetadataDialogState extends State<_MetadataDialog> {
             );
           },
           child: Text(widget.isEdit ? 'Save' : 'Continue',
-              style: GoogleFonts.inter(
+              style: AppType.sans(
                   color: _cyan, fontWeight: FontWeight.bold)),
         ),
       ],
@@ -944,7 +944,7 @@ class _MetadataDialogState extends State<_MetadataDialog> {
   InputDecoration _inputDeco(String label) {
     return InputDecoration(
       labelText: label,
-      labelStyle: GoogleFonts.inter(color: Colors.white54, fontSize: 13),
+      labelStyle: AppType.sans(color: Colors.white54, fontSize: 13),
       filled: true,
       fillColor: _bg,
       enabledBorder: OutlineInputBorder(
@@ -976,7 +976,7 @@ class _ImageViewer extends StatelessWidget {
         backgroundColor: Colors.black,
         title: Text(
           document.title,
-          style: GoogleFonts.orbitron(fontSize: 12, letterSpacing: 1),
+          style: AppType.condensed(fontSize: 12, letterSpacing: 1),
         ),
       ),
       body: Center(

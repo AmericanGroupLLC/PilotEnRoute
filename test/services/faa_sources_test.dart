@@ -16,8 +16,8 @@ import 'package:http/testing.dart';
 import 'package:provider/provider.dart';
 import 'package:pilot_enroute/screens/airport_screen.dart';
 import 'package:pilot_enroute/screens/charts_screen.dart';
-import 'package:pilot_enroute/services/aviation_api_service.dart';
 import 'package:pilot_enroute/services/chart_service.dart';
+import 'package:pilot_enroute/services/settings_store.dart';
 import 'package:pilot_enroute/services/weather_service.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -244,44 +244,34 @@ void main() {
   });
 
   group('AirportScreen FAA section', () {
-    // Rotate Pilot's real KLAX answer, trimmed.
-    const rotatePilot = {
-      'icao': 'KLAX',
-      'iata': 'LAX',
-      'name': 'Los Angeles International Airport',
-      'city': 'Los Angeles',
-      'country': 'United States',
-      'coordinates': {'lat': 33.9425, 'lon': -118.4081},
-      'elevation': 128,
-      'runways': 4,
-    };
-
     Future<void> lookUpKlax(WidgetTester tester, int awcStatus) async {
+      // Tall enough that the lazily built list lays out every section.
+      tester.view.physicalSize = const Size(1200, 2400);
+      tester.view.devicePixelRatio = 1.0;
+      addTearDown(tester.view.reset);
       SharedPreferences.setMockInitialValues({});
       await http.runWithClient(() async {
         await tester.pumpWidget(MultiProvider(
           providers: [
-            ChangeNotifierProvider(create: (_) => AviationApiService()),
+            ChangeNotifierProvider(create: (_) => SettingsStore()),
             ChangeNotifierProvider(create: (_) => WeatherService()),
           ],
           child: const MaterialApp(home: AirportScreen()),
         ));
-        await tester.tap(find.text('KLAX'));
+        await tester.enterText(find.byKey(const Key('airport-ident')), 'klax');
+        await tester.tap(find.byKey(const Key('airport-lookup')));
         for (var i = 0; i < 10; i++) {
           await tester.pump(const Duration(milliseconds: 50));
         }
       }, () => MockClient((req) async {
-            if (req.url.host == 'rotatepilot.com' &&
-                req.url.path == '/api/v1/airport/KLAX') {
-              return http.Response(jsonEncode(rotatePilot), 200);
-            }
-            if (req.url.host == 'aviationweather.gov' &&
-                req.url.path == '/api/data/airport') {
+            // The screen talks to aviationweather.gov only.
+            expect(req.url.host, 'aviationweather.gov');
+            if (req.url.path == '/api/data/airport') {
               return awcStatus == 200
                   ? http.Response(jsonEncode(_klax), 200)
                   : http.Response('<html>gateway</html>', awcStatus);
             }
-            return http.Response('', 404);
+            return http.Response('', 204);
           }));
     }
 

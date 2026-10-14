@@ -1,0 +1,37 @@
+{
+ "_captured_utc": "2026-10-14T13:03:13Z",
+ "_request": "GET https://aviationweather.gov/api/data/metar?ids=KDLH&format=json",
+ "_http_status": 200,
+ "response": [
+  {
+   "icaoId": "KDLH",
+   "receiptTime": "2026-10-14T12:58:33.841Z",
+   "obsTime": 1791982500,
+   "reportTime": "2026-10-14T13:00:00.000Z",
+   "temp": 6.1,
+   "dewp": 3.9,
+   "wdir": 360,
+   "wspd": 12,
+   "wgst": 18,
+   "visib": "10+",
+   "altim": 1020.7,
+   "slp": 1021.6,
+   "qcField": 12,
+   "metarType": "METAR",
+   "rawOb": "METAR KDLH 141255Z 36012G18KT 10SM OVC013 06/04 A3014 RMK AO2 SLP216 T00610039 $",
+   "lat": 46.8435,
+   "lon": -92.1866,
+   "elev": 434,
+   "name": "Duluth Intl Arpt, MN, US",
+   "cover": "OVC",
+   "clouds": [
+    {
+     "cover": "OVC",
+     "base": 1300
+    }
+   ],
+   "fltCat": "MVFR"
+  }
+ ],
+ "_note": "First request at the capture time returned a 504 from the AWC gateway; this is the retry a few seconds later."
+}

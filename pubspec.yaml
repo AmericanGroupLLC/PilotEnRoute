@@ -1,5 +1,5 @@
 name: pilot_enroute
-description: "PilotEnRoute — Complete Aviation Training Platform: FAA Education, AI Flight Simulation, Drone Training, Logbook, Flight Planner, Live Weather & Notifications"
+description: "PilotEnRoute — a pilot logbook that works out 14 CFR 61 currency and checks live METAR/TAF against your own personal minimums."
 publish_to: 'none'
 version: 1.0.0+5
 environment:
@@ -30,79 +30,34 @@ dependencies:
 
   # ── Core UI ──────────────────────────────────────────────────────────────────
   cupertino_icons: ^1.0.8
-  google_fonts: ^6.2.1
-  cached_network_image: ^3.3.1
-  shimmer: ^3.0.0
-  lottie: ^3.1.2
-  animations: ^2.0.11
-  flutter_staggered_animations: ^1.1.1
-  percent_indicator: ^4.2.3
-  confetti: ^0.7.0
-  fl_chart: ^0.68.0
-  flutter_svg: ^2.0.10+1
 
   # ── State Management ─────────────────────────────────────────────────────────
   provider: ^6.1.2
 
-  # ── Navigation ───────────────────────────────────────────────────────────────
-  go_router: ^13.2.0
-
-  # ── Networking ───────────────────────────────────────────────────────────────
+  # ── Networking (aviationweather.gov, keyless) ────────────────────────────────
   http: ^1.2.1
-  xml: ^6.5.0
-  dio: ^5.4.3+1
 
-  # ── Local Storage ────────────────────────────────────────────────────────────
+  # ── Local Storage (logbook, Go history, profile, minimums) ───────────────────
   shared_preferences: ^2.2.3
-  hive: ^2.2.3
-  hive_flutter: ^1.1.0
   sqflite: ^2.3.3+1
   path_provider: ^2.1.3
   path: ^1.9.0
 
-  # ── Maps ─────────────────────────────────────────────────────────────────────
-  flutter_map: ^6.2.1
-  latlong2: ^0.9.1
-
-  # ── Notifications ────────────────────────────────────────────────────────────
+  # ── Lapse reminders ──────────────────────────────────────────────────────────
   flutter_local_notifications: ^17.2.1+2
   timezone: ^0.9.4
 
   # ── Utilities ────────────────────────────────────────────────────────────────
   url_launcher: ^6.3.0
-  permission_handler: ^11.3.1
-  connectivity_plus: ^6.0.3
-  device_info_plus: ^10.1.2
-  package_info_plus: ^8.0.2
   intl: any  # pinned by flutter_localizations; see docs/I18N.md
   image_picker: ^1.1.2
-  qr_flutter: ^4.1.0
 
   # ── Documents & PDF ──────────────────────────────────────────────────────────
   pdf: ^3.11.1
   printing: ^5.13.1
 
-  # ── Game Engine ──────────────────────────────────────────────────────────────
-  flame: ^1.18.0
-
-  # ── Markdown ─────────────────────────────────────────────────────────────────
-  flutter_markdown: ^0.7.3+1
-
-  # ── Audio ────────────────────────────────────────────────────────────────────
-  audioplayers: ^6.1.0
-
   # ── Monetization (AdMob) ─────────────────────────────────────────────────────
   google_mobile_ads: ^5.1.0
-
-  # ── Affiliate Store ──────────────────────────────────────────────────────────
-  webview_flutter: ^4.8.0
-  flutter_rating_bar: ^4.0.1
-  supabase_flutter: ^2.16.0
-
-  # ── Native OAuth (Supabase-native ID-token sign-in) ──────────────────────────
-  google_sign_in: ^6.2.1
-  sign_in_with_apple: ^6.1.0
-  crypto: ^3.0.3
 
 dev_dependencies:
   flutter_test:
@@ -110,15 +65,41 @@ dev_dependencies:
   integration_test:
     sdk: flutter
   flutter_lints: ^4.0.0
-  hive_generator: ^2.0.1
-  build_runner: ^2.4.9
+  # Real SQLite on the host, so the v1 -> v2 logbook migration is tested
+  # against an actual database file rather than a mock.
+  sqflite_common_ffi: ^2.3.3
 
 flutter:
   uses-material-design: true
 
   assets:
-    - assets/images/
-    - assets/icons/
-    - assets/data/
-    - assets/lottie/
     - assets/logo/
+
+  # Bundled, never fetched at runtime. All three are SIL Open Font License 1.1;
+  # the licence texts are in assets/fonts/.
+  fonts:
+    - family: SofiaSansCondensed
+      fonts:
+        - asset: assets/fonts/SofiaSansCondensed-Regular.ttf
+        - asset: assets/fonts/SofiaSansCondensed-SemiBold.ttf
+          weight: 600
+        - asset: assets/fonts/SofiaSansCondensed-Bold.ttf
+          weight: 700
+    - family: SofiaSans
+      fonts:
+        - asset: assets/fonts/SofiaSans-Regular.ttf
+        - asset: assets/fonts/SofiaSans-Italic.ttf
+          style: italic
+        - asset: assets/fonts/SofiaSans-Medium.ttf
+          weight: 500
+        - asset: assets/fonts/SofiaSans-SemiBold.ttf
+          weight: 600
+        - asset: assets/fonts/SofiaSans-Bold.ttf
+          weight: 700
+    - family: FiraMono
+      fonts:
+        - asset: assets/fonts/FiraMono-Regular.ttf
+        - asset: assets/fonts/FiraMono-Medium.ttf
+          weight: 500
+        - asset: assets/fonts/FiraMono-Bold.ttf
+          weight: 700

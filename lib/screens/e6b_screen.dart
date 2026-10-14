@@ -2,7 +2,7 @@ import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:google_fonts/google_fonts.dart';
+import '../ui/theme.dart';
 import 'package:intl/intl.dart';
 
 /// E6B flight computer screen.
@@ -19,8 +19,8 @@ class E6BScreen extends StatefulWidget {
 
 class _E6BScreenState extends State<E6BScreen>
     with SingleTickerProviderStateMixin {
-  static const Color _bg = Color(0xFF0A1628);
-  static const Color _cyan = Color(0xFF00BCD4);
+  static const Color _bg = Color(0xFF15181B);
+  static const Color _cyan = Color(0xFFFF5A5F);
 
   late final TabController _tabController;
 
@@ -48,9 +48,9 @@ class _E6BScreenState extends State<E6BScreen>
           indicatorColor: _cyan,
           labelColor: _cyan,
           unselectedLabelColor: Colors.white54,
-          labelStyle: GoogleFonts.orbitron(fontSize: 9, letterSpacing: 1),
+          labelStyle: AppType.condensed(fontSize: 9, letterSpacing: 1),
           unselectedLabelStyle:
-              GoogleFonts.orbitron(fontSize: 9, letterSpacing: 1),
+              AppType.condensed(fontSize: 9, letterSpacing: 1),
           tabs: const [
             Tab(text: 'WIND'),
             Tab(text: 'X-WIND'),
@@ -80,11 +80,11 @@ class _E6BScreenState extends State<E6BScreen>
 // Shared styling colors / helpers
 // ---------------------------------------------------------------------------
 
-const Color _kBg = Color(0xFF0A1628);
-const Color _kPanel = Color(0xFF112240);
-const Color _kCyan = Color(0xFF00BCD4);
-const Color _kAmber = Color(0xFFFFB300);
-const Color _kRed = Color(0xFFF44336);
+const Color _kBg = Color(0xFF15181B);
+const Color _kPanel = Color(0xFF1E2226);
+const Color _kCyan = Color(0xFFFF5A5F);
+const Color _kAmber = Color(0xFFE09F00);
+const Color _kRed = Color(0xFFFF5A5F);
 
 final NumberFormat _num0 = NumberFormat('#,##0');
 final NumberFormat _num1 = NumberFormat('#,##0.0');
@@ -131,12 +131,12 @@ class _NumField extends StatelessWidget {
       inputFormatters: [
         FilteringTextInputFormatter.allow(RegExp(r'[0-9.\-]')),
       ],
-      style: GoogleFonts.inter(color: Colors.white, fontSize: 15),
+      style: AppType.sans(color: Colors.white, fontSize: 15),
       cursorColor: _kCyan,
       decoration: InputDecoration(
         labelText: label,
         suffixText: suffix,
-        suffixStyle: GoogleFonts.inter(color: Colors.white54, fontSize: 12),
+        suffixStyle: AppType.sans(color: Colors.white54, fontSize: 12),
         isDense: true,
         contentPadding:
             const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
@@ -170,7 +170,7 @@ class _Panel extends StatelessWidget {
             header: true,
             child: Text(
               title,
-              style: GoogleFonts.orbitron(
+              style: AppType.condensed(
                 color: _kCyan,
                 fontSize: 12,
                 letterSpacing: 1.2,
@@ -215,7 +215,7 @@ class _ResultTile extends StatelessWidget {
             Expanded(
               child: Text(
                 label,
-                style: GoogleFonts.inter(
+                style: AppType.sans(
                   color: Colors.white70,
                   fontSize: 13,
                 ),
@@ -224,7 +224,7 @@ class _ResultTile extends StatelessWidget {
             const SizedBox(width: 12),
             Text(
               value,
-              style: GoogleFonts.orbitron(
+              style: AppType.condensed(
                 color: color,
                 fontSize: big ? 26 : 18,
                 fontWeight: FontWeight.w700,
@@ -262,7 +262,7 @@ class _ResultCard extends StatelessWidget {
             header: true,
             child: Text(
               title,
-              style: GoogleFonts.orbitron(
+              style: AppType.condensed(
                 color: _kAmber,
                 fontSize: 11,
                 letterSpacing: 1.2,
@@ -1045,7 +1045,7 @@ class _ConversionTabState extends State<_ConversionTab> {
                     side: BorderSide(
                       color: i == _categoryIndex ? _kCyan : Colors.white24,
                     ),
-                    labelStyle: GoogleFonts.inter(
+                    labelStyle: AppType.sans(
                       color: i == _categoryIndex ? _kCyan : Colors.white70,
                       fontSize: 12,
                       fontWeight: FontWeight.w600,
@@ -1138,7 +1138,7 @@ class _UnitDropdown extends StatelessWidget {
           isExpanded: true,
           dropdownColor: _kPanel,
           iconEnabledColor: _kCyan,
-          style: GoogleFonts.inter(color: Colors.white, fontSize: 15),
+          style: AppType.sans(color: Colors.white, fontSize: 15),
           items: [
             for (int i = 0; i < units.length; i++)
               DropdownMenuItem<int>(
@@ -1175,7 +1175,7 @@ class _SolveSelector<T> extends StatelessWidget {
       children: [
         Text(
           'SOLVE FOR',
-          style: GoogleFonts.inter(
+          style: AppType.sans(
             color: Colors.white54,
             fontSize: 11,
             letterSpacing: 1,
@@ -1213,7 +1213,7 @@ class _SolveSelector<T> extends StatelessWidget {
                         child: Text(
                           e.value,
                           textAlign: TextAlign.center,
-                          style: GoogleFonts.orbitron(
+                          style: AppType.condensed(
                             color: e.key == value
                                 ? Colors.black
                                 : Colors.white70,

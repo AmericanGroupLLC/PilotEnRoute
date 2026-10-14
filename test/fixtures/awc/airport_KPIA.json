@@ -1,0 +1,46 @@
+{
+ "_captured_utc": "2026-10-14T13:03:13Z",
+ "_request": "GET https://aviationweather.gov/api/data/airport?ids=KPIA&format=json",
+ "_http_status": 200,
+ "response": [
+  {
+   "icaoId": "KPIA",
+   "iataId": "PIA",
+   "faaId": "PIA",
+   "name": "PEORIA/GENERAL DOWNING - PEORIA INTL ",
+   "state": "IL",
+   "country": "US",
+   "source": "FAA",
+   "type": "ARP",
+   "lat": 40.6642,
+   "lon": -89.6933,
+   "elev": 201,
+   "magdec": "02W",
+   "owner": "P",
+   "rwyNum": "2",
+   "rwyLength": "L",
+   "rwyType": "C",
+   "services": "S",
+   "tower": "T",
+   "beacon": "B",
+   "operations": "0",
+   "passengers": "560",
+   "freqs": "LCL/P,124.0;ATIS,126.1",
+   "priority": "2",
+   "runways": [
+    {
+     "id": "04/22",
+     "dimension": "8004x150",
+     "surface": "A",
+     "alignment": 39
+    },
+    {
+     "id": "13/31",
+     "dimension": "10104x150",
+     "surface": "C",
+     "alignment": 127
+    }
+   ]
+  }
+ ]
+}

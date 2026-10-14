@@ -1,0 +1,46 @@
+{
+ "_captured_utc": "2026-10-14T13:03:13Z",
+ "_request": "GET https://aviationweather.gov/api/data/airport?ids=KACK&format=json",
+ "_http_status": 200,
+ "response": [
+  {
+   "icaoId": "KACK",
+   "iataId": "ACK",
+   "faaId": "ACK",
+   "name": "NANTUCKET/NANTUCKET MEML ",
+   "state": "MA",
+   "country": "US",
+   "source": "FAA",
+   "type": "ARP",
+   "lat": 41.2533,
+   "lon": -70.0605,
+   "elev": 14,
+   "magdec": "16W",
+   "owner": "P",
+   "rwyNum": "2",
+   "rwyLength": "M",
+   "rwyType": "A",
+   "services": "S",
+   "tower": "T",
+   "beacon": "B",
+   "operations": "0",
+   "passengers": "270",
+   "freqs": "LCL/P,118.3;ATIS,127.5",
+   "priority": "3",
+   "runways": [
+    {
+     "id": "06/24",
+     "dimension": "6303x150",
+     "surface": "A",
+     "alignment": 45
+    },
+    {
+     "id": "15/33",
+     "dimension": "4500x100",
+     "surface": "A",
+     "alignment": 135
+    }
+   ]
+  }
+ ]
+}

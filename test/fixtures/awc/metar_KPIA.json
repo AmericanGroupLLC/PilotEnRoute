@@ -1,0 +1,30 @@
+{
+ "_captured_utc": "2026-10-14T13:03:13Z",
+ "_request": "GET https://aviationweather.gov/api/data/metar?ids=KPIA&format=json",
+ "_http_status": 200,
+ "response": [
+  {
+   "icaoId": "KPIA",
+   "receiptTime": "2026-10-14T12:58:08.826Z",
+   "obsTime": 1791982440,
+   "reportTime": "2026-10-14T13:00:00.000Z",
+   "temp": 18.3,
+   "dewp": 17.2,
+   "wdir": "VRB",
+   "wspd": 4,
+   "visib": "10+",
+   "altim": 1015.3,
+   "slp": 1014.9,
+   "qcField": 4,
+   "metarType": "METAR",
+   "rawOb": "METAR KPIA 141254Z VRB04KT 10SM CLR 18/17 A2998 RMK AO2 SLP149 T01830172",
+   "lat": 40.6675,
+   "lon": -89.6842,
+   "elev": 200,
+   "name": "Peoria Intl, IL, US",
+   "cover": "CLR",
+   "clouds": [],
+   "fltCat": "VFR"
+  }
+ ]
+}

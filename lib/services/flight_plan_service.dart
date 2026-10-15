@@ -284,8 +284,10 @@ class FlightPlanService extends ChangeNotifier {
 
   // Generate FAA flight plan string
   String generateFaaFlightPlanString(FlightPlan plan) {
-    final etdStr = plan.etd != null
-        ? '${plan.etd!.hour.toString().padLeft(2, '0')}${plan.etd!.minute.toString().padLeft(2, '0')}'
+    // ETD is filed in Zulu: convert first, or a local 17:15 PDT reads "1715Z".
+    final etdUtc = plan.etd?.toUtc();
+    final etdStr = etdUtc != null
+        ? '${etdUtc.hour.toString().padLeft(2, '0')}${etdUtc.minute.toString().padLeft(2, '0')}'
         : '0000';
     final eteStr = plan.estimatedTime != null
         ? '${plan.estimatedTime!.floor().toString().padLeft(2, '0')}${((plan.estimatedTime! % 1) * 60).round().toString().padLeft(2, '0')}'

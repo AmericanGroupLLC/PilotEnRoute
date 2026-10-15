@@ -27,6 +27,15 @@ packages:
       url: "https://github.com/AmericanGroupLLC/agl-manifest.git"
     source: git
     version: "1.0.0"
+  agl_notify:
+    dependency: "direct main"
+    description:
+      path: "packages/agl_notify"
+      ref: master
+      resolved-ref: "3ded3bea5b1ec74728feab6b99261f59f399928d"
+      url: "https://github.com/AmericanGroupLLC/agl-manifest.git"
+    source: git
+    version: "1.0.0"
   agl_observability:
     dependency: "direct main"
     description:

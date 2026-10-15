@@ -194,7 +194,7 @@ void main() {
       final cancelled = <int>[];
       NotificationService.permissionChecker = () async => true;
       NotificationService.reminderScheduler = (r) async => scheduled.add(r.id);
-      NotificationService.reminderCanceller = (id) async => cancelled.add(id);
+      NotificationService.remindersCanceller = (ids) async => cancelled.addAll(ids);
 
       final result =
           await NotificationService.sync(plans, previousIds: const [4030, 4007]);
@@ -211,7 +211,7 @@ void main() {
       final scheduled = <int>[];
       NotificationService.permissionRequester = () async => false;
       NotificationService.reminderScheduler = (r) async => scheduled.add(r.id);
-      NotificationService.reminderCanceller = (_) async {};
+      NotificationService.remindersCanceller = (_) async {};
 
       final result = await NotificationService.sync(plans, ask: true);
       expect(scheduled, isEmpty);
@@ -224,7 +224,7 @@ void main() {
       NotificationService.permissionChecker = () async => true;
       NotificationService.reminderScheduler =
           (_) async => throw StateError('plugin missing');
-      NotificationService.reminderCanceller = (_) async {};
+      NotificationService.remindersCanceller = (_) async {};
 
       final result = await NotificationService.sync(plans);
       expect(result.scheduled, isEmpty);
@@ -239,7 +239,7 @@ void main() {
       };
       NotificationService.permissionChecker = () async => false;
       NotificationService.reminderScheduler = (_) async {};
-      NotificationService.reminderCanceller = (_) async {};
+      NotificationService.remindersCanceller = (_) async {};
       final result = await NotificationService.sync(plans);
       expect(asked, 0);
       expect(result.scheduled, isEmpty);
@@ -255,7 +255,7 @@ void main() {
         return true;
       };
       NotificationService.reminderScheduler = (r) async => scheduled.add(r.id);
-      NotificationService.reminderCanceller = (_) async {};
+      NotificationService.remindersCanceller = (_) async {};
       final result = await NotificationService.sync(plans, ask: true);
       expect(asked, 1);
       expect(scheduled, [2030, 2007]);
@@ -268,7 +268,7 @@ void main() {
         asked++;
         return true;
       };
-      NotificationService.reminderCanceller = (_) async {};
+      NotificationService.remindersCanceller = (_) async {};
       final result = await NotificationService.sync(const []);
       expect(asked, 0);
       expect(result.scheduled, isEmpty);
@@ -286,7 +286,7 @@ void main() {
         checked++;
         return false;
       };
-      NotificationService.reminderCanceller = (id) async => cancelled.add(id);
+      NotificationService.remindersCanceller = (ids) async => cancelled.addAll(ids);
       NotificationService.reminderScheduler = (_) async {};
       final result = await NotificationService.sync(plans);
       expect(cancelled, isEmpty);
@@ -298,7 +298,7 @@ void main() {
         'off', () async {
       final cancelled = <int>[];
       NotificationService.permissionChecker = () async => false;
-      NotificationService.reminderCanceller = (id) async => cancelled.add(id);
+      NotificationService.remindersCanceller = (ids) async => cancelled.addAll(ids);
       await NotificationService.sync(plans, previousIds: const [4030]);
       expect(cancelled, [4030]);
     });
@@ -313,7 +313,7 @@ void main() {
       cancelled = [];
       NotificationService.permissionChecker = () async => true;
       NotificationService.reminderScheduler = (r) async => scheduled.add(r.id);
-      NotificationService.reminderCanceller = (id) async => cancelled.add(id);
+      NotificationService.remindersCanceller = (ids) async => cancelled.addAll(ids);
     });
 
     Future<ReminderService> build({

@@ -57,7 +57,7 @@ void main() {
     SharedPreferences.setMockInitialValues({});
     NotificationService.permissionRequester = () async => false;
     NotificationService.permissionChecker = () async => false;
-    NotificationService.reminderCanceller = (_) async {};
+    NotificationService.remindersCanceller = (_) async {};
   });
 
   group('app boot', () {
@@ -121,7 +121,7 @@ void main() {
         (tester) async {
       final cancelled = <int>[];
       var checked = 0;
-      NotificationService.reminderCanceller = (id) async => cancelled.add(id);
+      NotificationService.remindersCanceller = (ids) async => cancelled.addAll(ids);
       NotificationService.permissionChecker = () async {
         checked++;
         return false;

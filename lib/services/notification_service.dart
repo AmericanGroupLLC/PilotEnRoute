@@ -1,3 +1,4 @@
+import 'package:agl_notify/agl_notify.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:timezone/timezone.dart' as tz;
@@ -12,6 +13,21 @@ class NotificationService {
 
   static final FlutterLocalNotificationsPlugin _plugin =
       FlutterLocalNotificationsPlugin();
+
+  /// Every cancel goes through here: on iOS 27 a cancel-by-id waits on the
+  /// main thread for the system notification server and froze apps on the
+  /// simulator (2026-10-14). AglNotify only cancels ids that are actually
+  /// pending or delivered, and defers instead of blocking.
+  static final AglNotify _notify = AglNotify(
+    pendingIds: () async =>
+        [for (final r in await _plugin.pendingNotificationRequests()) r.id],
+    deliveredIds: () async => [
+      for (final n in await _plugin.getActiveNotifications())
+        if (n.id != null) n.id!,
+    ],
+    cancelId: (id) => _plugin.cancel(id),
+    cancelEverything: _plugin.cancelAll,
+  );
 
   static const String channelId = 'lapse_reminders';
   static const String channelName = 'Lapse reminders';
@@ -85,9 +101,10 @@ class NotificationService {
   @visibleForTesting
   static Future<void> Function(PlannedReminder reminder) reminderScheduler =
       _schedule;
+  /// Cancels a batch in one look-up (see [_notify]); never throws.
   @visibleForTesting
-  static Future<void> Function(int id) reminderCanceller =
-      (id) => _plugin.cancel(id);
+  static Future<void> Function(Iterable<int> ids) remindersCanceller =
+      (ids) => _notify.cancel(ids);
 
   /// Replaces every reminder this app scheduled before ([previousIds]) with
   /// [plans]. Shows the system permission prompt only when [ask] is true —
@@ -101,12 +118,11 @@ class NotificationService {
     bool ask = false,
   }) async {
     Future<void> cancelAll(Iterable<int> ids) async {
-      for (final id in ids) {
-        try {
-          await reminderCanceller(id);
-        } catch (e) {
-          debugPrint('Cancelling reminder $id failed: $e');
-        }
+      if (ids.isEmpty) return;
+      try {
+        await remindersCanceller(ids);
+      } catch (e) {
+        debugPrint('Cancelling reminders $ids failed: $e');
       }
     }
 
@@ -146,6 +162,7 @@ class NotificationService {
   }
 
   static Future<void> _schedule(PlannedReminder r) async {
+    _notify.noteScheduled(r.id);
     await _plugin.zonedSchedule(
       r.id,
       r.title,

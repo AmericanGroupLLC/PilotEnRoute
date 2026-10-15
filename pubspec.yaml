@@ -20,6 +20,13 @@ dependencies:
       url: https://github.com/AmericanGroupLLC/agl-manifest.git
       path: packages/agl_ads
       ref: master
+  # Cancels local notifications without the main-thread wait that freezes
+  # apps on the iOS 27 simulator (see packages/agl_notify/README.md).
+  agl_notify:
+    git:
+      url: https://github.com/AmericanGroupLLC/agl-manifest.git
+      path: packages/agl_notify
+      ref: master
   flutter:
     sdk: flutter
   agl_observability:

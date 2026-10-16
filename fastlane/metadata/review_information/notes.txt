@@ -1,17 +1,20 @@
-WHAT THIS APP DOES
-PilotEnRoute is a pilot's logbook that works out currency and checks live weather against the pilot's own minimums. It is a ground tool, not for use in flight. There is no account and no sign-in; the logbook is stored on the device only.
+2. DEVICES AND OS VERSIONS TESTED
+The unit and widget test suite runs before every build. The app was run end to end through its real UI on an iPhone 17 Pro Max simulator (1320x2868) and an iPad Pro 13-inch simulator (2064x2752), which produced the store screenshots, and on an Android emulator (Pixel 7, API 34).
 
-HOW TO REACH THE MAIN FEATURES
+3. WHAT THIS APP DOES, AND FOR WHOM
+PilotEnRoute is a pilot's logbook that works out currency and checks live weather against the pilot's own minimums, for private and student pilots who keep their own records. It is a ground tool, not for use in flight. There is no account and no sign-in; the logbook is stored on the device only.
+
+4. SETTING UP AND REACHING THE MAIN FEATURES
 On first launch, choose a home airport (e.g. KPAO), enter your medical details and set your personal minimums for day and night. The Today tab shows the Go Card: legality for the planned flight (passengers / night / IFR), worked out on the device from logged flights, and the latest METAR/TAF from aviationweather.gov compared with your minimums, including crosswind on the best runway. Tap "Log this flight" to add an entry. The Logbook tab has search, totals and PDF/CSV export; Weather shows METAR/TAF for any airport; Kit holds ground tools (E6B, weight and balance, fuel, flight planner, checklists, documents, airport details, links to FAA terminal procedures).
 
-EXTERNAL SERVICES
+5. EXTERNAL SERVICES USED
 - Aviation Weather Center (aviationweather.gov, NOAA): METAR, TAF and airport data. Public API, no account.
 - Google AdMob: banner ads in the Logbook list and on the Weather tab. Where consent is required, Google's consent form is shown first; Settings > Privacy choices reopens it.
 - Firebase Crashlytics: crash reports.
 - FAA and eCFR pages open in the browser from links; the app does not download charts.
 
-REGIONAL DIFFERENCES
+6. REGIONAL DIFFERENCES
 None. Nothing is remote-configured, hidden or region-dependent.
 
-THIRD-PARTY MATERIAL
-Weather and airport data are public US government data (NOAA/FAA). Regulation references cite 14 CFR. No licensed third-party content.
+7. REGULATED INDUSTRY OR THIRD-PARTY MATERIAL
+Not a regulated-industry app. Weather and airport data are public US government data (NOAA/FAA); regulation references cite 14 CFR. PilotEnRoute is not affiliated with the FAA, NOAA or any government agency. No licensed third-party content.

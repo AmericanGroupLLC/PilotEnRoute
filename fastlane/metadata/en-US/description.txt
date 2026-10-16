@@ -8,6 +8,6 @@ Search your logbook, see totals for the last 30, 90 and 365 days, and export it 
 
 No account. Your logbook stays on your phone.
 
-PilotEnRoute is a ground planning and record-keeping tool. It is not approved for navigation and does not replace an official weather briefing, your POH/AFM or your instructor. Every go/no-go decision is yours.
+PilotEnRoute is a ground planning and record-keeping tool. It is not approved for navigation and does not replace an official weather briefing, your POH/AFM or your instructor. Every go/no-go decision is yours. PilotEnRoute is not affiliated with or endorsed by the FAA, NOAA or any government agency; it reads their public data.
 
 PilotEnRoute is free and shows ads from Google AdMob. Where consent is required you are asked first, and you can change it in Settings > Privacy choices.

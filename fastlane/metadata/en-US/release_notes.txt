@@ -1,13 +1,3 @@
-First release of PilotEnRoute.
+First release of PilotEnRoute: a pilot's logbook that works out your currency and checks live METAR/TAF against your own day and night minimums, on one Go Card.
 
-• FAA ground-school study with exams, flashcards and debriefs
-• Part 107 drone training
-• E6B flight computer, flight planner, fuel and weight tools
-• Build-your-own checklists, airport information and chart reference
-• Digital logbook, endorsements and documents, with a medical-expiry reminder
-• Live weather from public aviation sources
-• Sign-in optional - "Continue as guest" unlocks everything
-
-Not approved for navigation. A study and planning tool only - always verify against official sources.
-
-Feedback: contact@americangroup.ai
+Not approved for navigation. Feedback: contact@americangroup.ai

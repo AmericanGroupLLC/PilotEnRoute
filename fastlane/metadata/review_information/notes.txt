@@ -1,32 +1,17 @@
-2. DEVICES AND OS VERSIONS TESTED
-Automated tests run on every build: iPhone 17 Pro Max and iPad Pro 13-inch simulators on iOS 26, and a Pixel Android emulator on API 34.
-Each release is also installed and launched on those targets, so a
-build that cannot start never ships.
+WHAT THIS APP DOES
+PilotEnRoute is a pilot's logbook that works out currency and checks live weather against the pilot's own minimums. It is a ground tool, not for use in flight. There is no account and no sign-in; the logbook is stored on the device only.
 
-3. WHAT THIS APP DOES, AND FOR WHOM
-PilotEnRoute is a study and record-keeping companion for pilots and student pilots. It is a training tool for use on the ground — not an avionics or navigation product.
+HOW TO REACH THE MAIN FEATURES
+On first launch, choose a home airport (e.g. KPAO), enter your medical details and set your personal minimums for day and night. The Today tab shows the Go Card: legality for the planned flight (passengers / night / IFR), worked out on the device from logged flights, and the latest METAR/TAF from aviationweather.gov compared with your minimums, including crosswind on the best runway. Tap "Log this flight" to add an entry. The Logbook tab has search, totals and PDF/CSV export; Weather shows METAR/TAF for any airport; Kit holds ground tools (E6B, weight and balance, fuel, flight planner, checklists, documents, airport details, links to FAA terminal procedures).
 
-Intended audience:
-FAA study, logbook & E6B
+EXTERNAL SERVICES
+- Aviation Weather Center (aviationweather.gov, NOAA): METAR, TAF and airport data. Public API, no account.
+- Google AdMob: banner ads in the Logbook list and on the Weather tab. Where consent is required, Google's consent form is shown first; Settings > Privacy choices reopens it.
+- Firebase Crashlytics: crash reports.
+- FAA and eCFR pages open in the browser from links; the app does not download charts.
 
-4. SETTING UP AND REACHING THE MAIN FEATURES
-The app opens on a sign-in screen. An account is optional; the main features can be reached without signing in.
+REGIONAL DIFFERENCES
+None. Nothing is remote-configured, hidden or region-dependent.
 
-5. EXTERNAL SERVICES USED
-- Supabase — account and data storage
-- Google AdMob — advertising
-- Google Sign-In — authentication
-- Sign in with Apple — authentication
-- HTTPS requests to the app's own endpoints
-- Free public data APIs, no account: OpenSky Network (live traffic), adsbdb.com (aircraft lookup by registration), U.S. Bureau of Labor Statistics (career median pay), aviationweather.gov (weather)
-
-6. REGIONAL DIFFERENCES
-The app ships 12 languages (Arabic, Chinese (Simplified), English, French, German, Hindi, Italian, Japanese, Korean, Portuguese, Russian, Spanish). Features are identical in every region.
-
-7. REGULATED INDUSTRY OR THIRD-PARTY MATERIAL
-
-The app is not in a regulated industry and carries no licensed third-party material. All content, artwork and copy are the developer's own.
-
-
-ACCOUNT DELETION
-Account deletion is in the app: open the menu (drawer) > Account > Delete account.
+THIRD-PARTY MATERIAL
+Weather and airport data are public US government data (NOAA/FAA). Regulation references cite 14 CFR. No licensed third-party content.

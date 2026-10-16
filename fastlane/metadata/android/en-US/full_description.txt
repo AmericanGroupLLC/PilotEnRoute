@@ -1,16 +1,13 @@
-PilotEnRoute is a study and record-keeping companion for pilots and student pilots. It is a training tool for use on the ground - not an avionics or navigation product.
+Before every flight you ask two questions: am I legal for this one, and is today inside my own limits? PilotEnRoute answers both on one card.
 
-<b>Study</b>
-FAA ground-school material by subject, with exams, flashcards and a debrief so you can see what you actually know. Part 107 drone training for remote pilots. Career guidance on ratings and the path between them.
+Log each flight with the things the regulations count: day and night takeoffs and full-stop landings, approaches, holds, night, instrument and cross-country time. PilotEnRoute works out your passenger currency (day and night), IFR currency, flight review and medical (including BasicMed) from your own entries and dates, and shows the date each one lapses and what you need to fix it.
 
-<b>Tools</b>
-An E6B flight computer. A flight planner with fuel and weight considerations. Build-your-own checklists. Airport information and chart reference. Live weather from public aviation sources, for planning.
+Set your personal minimums once, for day and for night. Pick your airport and PilotEnRoute pulls the latest METAR and TAF from the Aviation Weather Center. It finds the runway with the least crosswind and shows each number next to your limit.
 
-<b>Records</b>
-A digital logbook for your hours, plus endorsements and documents kept together, with a reminder before your medical expires.
+Search your logbook, see totals for the last 30, 90 and 365 days, and export it as PDF or CSV. Reminders arrive before anything lapses. The Kit has an E6B, weight and balance, fuel and flight planning, representative checklists you can add your own items to, your documents with their expiry dates, airport details and links to FAA terminal procedures.
 
-<b>No account required</b>
-Sign-in is optional - "Continue as guest" unlocks everything.
+No account. Your logbook stays on your phone.
 
-<b>Read this before you fly</b>
-PilotEnRoute is NOT approved for navigation and must not be used as a primary or sole source for any flight operation. It is not an EFB replacement, not a substitute for official charts, official weather briefings, the AIM, or your POH/AFM, and it is not certified by the FAA or any aviation authority. Every figure is for study and planning only. Verify everything against official sources and comply with all applicable regulations.
+PilotEnRoute is a ground planning and record-keeping tool. It is not approved for navigation and does not replace an official weather briefing, your POH/AFM or your instructor. Every go/no-go decision is yours.
+
+PilotEnRoute is free and shows ads from Google AdMob. Where consent is required you are asked first, and you can change it in Settings > Privacy choices.

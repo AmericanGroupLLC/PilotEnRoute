@@ -1,1 +1,1 @@
-FAA ground-school study, digital logbook, E6B, checklists and drone training.
+Pilot logbook that works out currency and checks weather against your minimums.

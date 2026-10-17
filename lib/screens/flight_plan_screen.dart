@@ -28,7 +28,7 @@ class _FlightPlanScreenState extends State<FlightPlanScreen> {
     return Consumer<FlightPlanService>(
       builder: (context, service, _) {
         return Scaffold(
-          backgroundColor: const Color(0xFF15181B),
+          backgroundColor: Sky.canvas,
           appBar: AppBar(
             title: const Text('FLIGHT PLANS'),
             actions: [
@@ -45,8 +45,8 @@ class _FlightPlanScreenState extends State<FlightPlanScreen> {
           floatingActionButton: !_creating
               ? FloatingActionButton.extended(
                   onPressed: () => setState(() => _creating = true),
-                  backgroundColor: const Color(0xFFFF5A5F),
-                  foregroundColor: Colors.black,
+                  backgroundColor: Sky.teal,
+                  foregroundColor: Colors.white,
                   icon: const Icon(Icons.add),
                   label: Text(
                     'NEW PLAN',
@@ -78,20 +78,20 @@ class _FlightPlanScreenState extends State<FlightPlanScreen> {
                 loadError,
                 textAlign: TextAlign.center,
                 style: AppType.sans(
-                    color: const Color(0xFFE09F00), fontSize: 13),
+                    color: Sky.caution, fontSize: 13),
               ),
               const SizedBox(height: 16),
             ],
-            const Icon(Icons.map, color: Colors.white24, size: 64),
+            const Icon(Icons.map, color: Sky.lineStrong, size: 64),
             const SizedBox(height: 16),
             Text(
               'No saved flight plans yet.',
-              style: AppType.sans(color: Colors.white54, fontSize: 16),
+              style: AppType.sans(color: Sky.muted, fontSize: 16),
             ),
             const SizedBox(height: 8),
             Text(
               'Create your first flight plan',
-              style: AppType.sans(color: Colors.white38, fontSize: 13),
+              style: AppType.sans(color: Sky.muted, fontSize: 13),
             ),
           ],
         ),
@@ -109,7 +109,7 @@ class _FlightPlanScreenState extends State<FlightPlanScreen> {
               child: Text(
                 loadError,
                 style: AppType.sans(
-                    color: const Color(0xFFE09F00), fontSize: 13),
+                    color: Sky.caution, fontSize: 13),
               ),
             );
           }
@@ -125,15 +125,15 @@ class _FlightPlanScreenState extends State<FlightPlanScreen> {
     final flightRuleColor = plan.flightRules == 'IFR'
         ? const Color(0xFF2196F3)
         : plan.flightRules == 'VFR'
-            ? const Color(0xFF5CC277)
-            : const Color(0xFFE09F00);
+            ? Sky.go
+            : Sky.caution;
 
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
       decoration: BoxDecoration(
-        color: const Color(0xFF1E2226),
+        color: Sky.card,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: Colors.white12),
+        border: Border.all(color: Sky.line),
       ),
       child: Padding(
         padding: const EdgeInsets.all(16),
@@ -148,7 +148,7 @@ class _FlightPlanScreenState extends State<FlightPlanScreen> {
                     style: AppType.sans(
                       fontSize: 15,
                       fontWeight: FontWeight.bold,
-                      color: Colors.white,
+                      color: Sky.ink,
                     ),
                   ),
                 ),
@@ -177,13 +177,13 @@ class _FlightPlanScreenState extends State<FlightPlanScreen> {
                 _airportBadge(plan.departure),
                 const Padding(
                   padding: EdgeInsets.symmetric(horizontal: 12),
-                  child: Icon(Icons.arrow_forward, color: Color(0xFFFF5A5F), size: 18),
+                  child: Icon(Icons.arrow_forward, color: Sky.teal, size: 18),
                 ),
                 _airportBadge(plan.destination),
                 if (plan.alternate != null) ...[
                   const Padding(
                     padding: EdgeInsets.symmetric(horizontal: 8),
-                    child: Text('ALT:', style: TextStyle(color: Colors.white38, fontSize: 10)),
+                    child: Text('ALT:', style: TextStyle(color: Sky.muted, fontSize: 10)),
                   ),
                   _airportBadge(plan.alternate!, isAlternate: true),
                 ],
@@ -205,7 +205,7 @@ class _FlightPlanScreenState extends State<FlightPlanScreen> {
               children: [
                 Text(
                   DateFormat('MMM d, yyyy').format(plan.createdAt),
-                  style: AppType.sans(fontSize: 11, color: Colors.white38),
+                  style: AppType.sans(fontSize: 11, color: Sky.muted),
                 ),
                 const Spacer(),
                 TextButton.icon(
@@ -216,7 +216,7 @@ class _FlightPlanScreenState extends State<FlightPlanScreen> {
                     style: AppType.condensed(fontSize: 9, letterSpacing: 1),
                   ),
                   style: TextButton.styleFrom(
-                    foregroundColor: const Color(0xFFFF5A5F),
+                    foregroundColor: Sky.teal,
                   ),
                 ),
                 TextButton.icon(
@@ -227,7 +227,7 @@ class _FlightPlanScreenState extends State<FlightPlanScreen> {
                     style: AppType.condensed(fontSize: 9, letterSpacing: 1),
                   ),
                   style: TextButton.styleFrom(
-                    foregroundColor: const Color(0xFFFF5A5F),
+                    foregroundColor: Sky.teal,
                   ),
                 ),
               ],
@@ -243,13 +243,13 @@ class _FlightPlanScreenState extends State<FlightPlanScreen> {
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
       decoration: BoxDecoration(
         color: isAlternate
-            ? const Color(0xFFE09F00).withValues(alpha: 0.1)
-            : const Color(0xFFFF5A5F).withValues(alpha: 0.1),
+            ? Sky.caution.withValues(alpha: 0.1)
+            : Sky.teal.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(8),
         border: Border.all(
           color: isAlternate
-              ? const Color(0xFFE09F00).withValues(alpha: 0.5)
-              : const Color(0xFFFF5A5F).withValues(alpha: 0.5),
+              ? Sky.caution.withValues(alpha: 0.5)
+              : Sky.teal.withValues(alpha: 0.5),
         ),
       ),
       child: Text(
@@ -257,7 +257,7 @@ class _FlightPlanScreenState extends State<FlightPlanScreen> {
         style: AppType.condensed(
           fontSize: 14,
           fontWeight: FontWeight.bold,
-          color: isAlternate ? const Color(0xFFE09F00) : const Color(0xFFFF5A5F),
+          color: isAlternate ? Sky.caution : Sky.teal,
         ),
       ),
     );
@@ -271,12 +271,12 @@ class _FlightPlanScreenState extends State<FlightPlanScreen> {
           style: AppType.condensed(
             fontSize: 11,
             fontWeight: FontWeight.bold,
-            color: Colors.white,
+            color: Sky.ink,
           ),
         ),
         Text(
           label,
-          style: AppType.sans(fontSize: 9, color: Colors.white38),
+          style: AppType.sans(fontSize: 9, color: Sky.muted),
         ),
       ],
     );
@@ -285,7 +285,7 @@ class _FlightPlanScreenState extends State<FlightPlanScreen> {
   void _showPlanDetails(FlightPlan plan, FlightPlanService service) {
     showModalBottomSheet(
       context: context,
-      backgroundColor: const Color(0xFF1E2226),
+      backgroundColor: Sky.card,
       isScrollControlled: true,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
@@ -305,7 +305,7 @@ class _FlightPlanScreenState extends State<FlightPlanScreen> {
                 'FAA FLIGHT PLAN',
                 style: AppType.condensed(
                   fontSize: 14,
-                  color: const Color(0xFFFF5A5F),
+                  color: Sky.teal,
                   letterSpacing: 2,
                 ),
               ),
@@ -314,15 +314,15 @@ class _FlightPlanScreenState extends State<FlightPlanScreen> {
                 width: double.infinity,
                 padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
-                  color: const Color(0xFF15181B),
+                  color: Sky.canvas,
                   borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: Colors.white12),
+                  border: Border.all(color: Sky.line),
                 ),
                 child: Text(
                   service.generateFaaFlightPlanString(plan),
                   style: AppType.mono(
                     fontSize: 12,
-                    color: const Color(0xFF5CC277),
+                    color: Sky.go,
                     height: 1.6,
                   ),
                 ),
@@ -332,7 +332,7 @@ class _FlightPlanScreenState extends State<FlightPlanScreen> {
                 '📞 File via 1800wxbrief.com or call 1-800-WX-BRIEF',
                 style: AppType.sans(
                   fontSize: 12,
-                  color: Colors.white54,
+                  color: Sky.muted,
                   height: 1.5,
                 ),
               ),
@@ -370,13 +370,13 @@ class _FlightPlanScreenState extends State<FlightPlanScreen> {
                   IconButton(
                     tooltip: 'Back',
                     onPressed: () => setState(() => _creating = false),
-                    icon: const Icon(Icons.arrow_back, color: Colors.white),
+                    icon: const Icon(Icons.arrow_back, color: Sky.ink),
                   ),
                   Text(
                     'NEW FLIGHT PLAN',
                     style: AppType.condensed(
                       fontSize: 13,
-                      color: const Color(0xFFFF5A5F),
+                      color: Sky.teal,
                       letterSpacing: 2,
                     ),
                   ),
@@ -416,7 +416,7 @@ class _FlightPlanScreenState extends State<FlightPlanScreen> {
                 'FLIGHT RULES',
                 style: AppType.condensed(
                   fontSize: 10,
-                  color: Colors.white54,
+                  color: Sky.muted,
                   letterSpacing: 1.5,
                 ),
               ),
@@ -431,18 +431,18 @@ class _FlightPlanScreenState extends State<FlightPlanScreen> {
                       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
                       decoration: BoxDecoration(
                         color: selected
-                            ? const Color(0xFFFF5A5F).withValues(alpha: 0.2)
-                            : const Color(0xFF1E2226),
+                            ? Sky.teal.withValues(alpha: 0.2)
+                            : Sky.card,
                         borderRadius: BorderRadius.circular(10),
                         border: Border.all(
-                          color: selected ? const Color(0xFFFF5A5F) : Colors.white24,
+                          color: selected ? Sky.teal : Sky.lineStrong,
                         ),
                       ),
                       child: Text(
                         rule,
                         style: AppType.condensed(
                           fontSize: 11,
-                          color: selected ? const Color(0xFFFF5A5F) : Colors.white54,
+                          color: selected ? Sky.teal : Sky.muted,
                           fontWeight: FontWeight.bold,
                         ),
                       ),
@@ -507,12 +507,12 @@ class _FlightPlanScreenState extends State<FlightPlanScreen> {
     return TextFormField(
       controller: ctrl,
       keyboardType: isNum ? TextInputType.number : TextInputType.text,
-      style: AppType.sans(color: Colors.white, fontSize: 14),
+      style: AppType.sans(color: Sky.ink, fontSize: 14),
       decoration: InputDecoration(
         labelText: label,
         hintText: hint,
-        hintStyle: AppType.sans(color: Colors.white24, fontSize: 12),
-        labelStyle: AppType.sans(color: Colors.white54, fontSize: 12),
+        hintStyle: AppType.sans(color: Sky.lineStrong, fontSize: 12),
+        labelStyle: AppType.sans(color: Sky.muted, fontSize: 12),
       ),
     );
   }

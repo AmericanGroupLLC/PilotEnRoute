@@ -3,6 +3,7 @@ import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import '../ui/theme.dart';
+import '../ui/widgets.dart';
 import 'package:intl/intl.dart';
 
 /// E6B flight computer screen.
@@ -19,8 +20,7 @@ class E6BScreen extends StatefulWidget {
 
 class _E6BScreenState extends State<E6BScreen>
     with SingleTickerProviderStateMixin {
-  static const Color _bg = Color(0xFF15181B);
-  static const Color _cyan = Color(0xFFFF5A5F);
+  static const Color _bg = Sky.canvas;
 
   late final TabController _tabController;
 
@@ -42,15 +42,9 @@ class _E6BScreenState extends State<E6BScreen>
       backgroundColor: _bg,
       appBar: AppBar(
         title: const Text('E6B CALCULATOR'),
-        bottom: TabBar(
+        bottom: SegmentedTabBar(
           controller: _tabController,
           isScrollable: true,
-          indicatorColor: _cyan,
-          labelColor: _cyan,
-          unselectedLabelColor: Colors.white54,
-          labelStyle: AppType.condensed(fontSize: 9, letterSpacing: 1),
-          unselectedLabelStyle:
-              AppType.condensed(fontSize: 9, letterSpacing: 1),
           tabs: const [
             Tab(text: 'WIND'),
             Tab(text: 'X-WIND'),
@@ -80,11 +74,11 @@ class _E6BScreenState extends State<E6BScreen>
 // Shared styling colors / helpers
 // ---------------------------------------------------------------------------
 
-const Color _kBg = Color(0xFF15181B);
-const Color _kPanel = Color(0xFF1E2226);
-const Color _kCyan = Color(0xFFFF5A5F);
-const Color _kAmber = Color(0xFFE09F00);
-const Color _kRed = Color(0xFFFF5A5F);
+const Color _kBg = Sky.canvas;
+const Color _kPanel = Sky.card;
+const Color _kCyan = Sky.teal;
+const Color _kAmber = Sky.caution;
+const Color _kRed = Sky.stop;
 
 final NumberFormat _num0 = NumberFormat('#,##0');
 final NumberFormat _num1 = NumberFormat('#,##0.0');
@@ -131,12 +125,12 @@ class _NumField extends StatelessWidget {
       inputFormatters: [
         FilteringTextInputFormatter.allow(RegExp(r'[0-9.\-]')),
       ],
-      style: AppType.sans(color: Colors.white, fontSize: 15),
+      style: AppType.sans(color: Sky.ink, fontSize: 15),
       cursorColor: _kCyan,
       decoration: InputDecoration(
         labelText: label,
         suffixText: suffix,
-        suffixStyle: AppType.sans(color: Colors.white54, fontSize: 12),
+        suffixStyle: AppType.sans(color: Sky.muted, fontSize: 12),
         isDense: true,
         contentPadding:
             const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
@@ -160,7 +154,7 @@ class _Panel extends StatelessWidget {
       decoration: BoxDecoration(
         color: _kPanel,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: Colors.white12),
+        border: Border.all(color: Sky.line),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -216,7 +210,7 @@ class _ResultTile extends StatelessWidget {
               child: Text(
                 label,
                 style: AppType.sans(
-                  color: Colors.white70,
+                  color: Sky.inkSoft,
                   fontSize: 13,
                 ),
               ),
@@ -270,7 +264,7 @@ class _ResultCard extends StatelessWidget {
               ),
             ),
           ),
-          const Divider(color: Colors.white12, height: 20),
+          const Divider(color: Sky.line, height: 20),
           ...children,
         ],
       ),
@@ -408,7 +402,7 @@ class _WindTriangleTabState extends State<_WindTriangleTab> {
             _ResultTile(
               label: 'Wind Correction Angle',
               value: wcaLabel,
-              color: Colors.white,
+              color: Sky.ink,
             ),
           ],
         ),
@@ -512,7 +506,7 @@ class _CrosswindTabState extends State<_CrosswindTab> {
             _ResultTile(
               label: 'Crosswind detail',
               value: crossLabel,
-              color: Colors.white,
+              color: Sky.ink,
             ),
             _ResultTile(
               label: along != null && along < 0 ? 'Tailwind' : 'Headwind',
@@ -523,7 +517,7 @@ class _CrosswindTabState extends State<_CrosswindTab> {
             _ResultTile(
               label: 'Along-runway detail',
               value: alongLabel,
-              color: Colors.white,
+              color: Sky.ink,
             ),
           ],
         ),
@@ -635,7 +629,7 @@ class _TasDaTabState extends State<_TasDaTab> {
             _ResultTile(
               label: 'ISA Temp @ PA',
               value: _fmt(isaTemp, _num1, suffix: ' °C'),
-              color: Colors.white,
+              color: Sky.ink,
             ),
             _ResultTile(
               label: 'True Airspeed',
@@ -780,7 +774,7 @@ class _TimeSpeedDistanceTabState extends State<_TimeSpeedDistanceTab> {
               _ResultTile(
                 label: 'Time (minutes)',
                 value: _fmt(resTimeMin, _num1, suffix: ' min'),
-                color: Colors.white,
+                color: Sky.ink,
               ),
             ],
           ],
@@ -914,7 +908,7 @@ class _FuelTabState extends State<_FuelTab> {
               _ResultTile(
                 label: 'Endurance (minutes)',
                 value: _fmt(resTimeMin, _num1, suffix: ' min'),
-                color: Colors.white,
+                color: Sky.ink,
               ),
             ],
             if (_solveFor == _FuelSolve.burn)
@@ -1043,10 +1037,10 @@ class _ConversionTabState extends State<_ConversionTab> {
                     backgroundColor: _kBg,
                     selectedColor: _kCyan.withValues(alpha: 0.25),
                     side: BorderSide(
-                      color: i == _categoryIndex ? _kCyan : Colors.white24,
+                      color: i == _categoryIndex ? _kCyan : Sky.lineStrong,
                     ),
                     labelStyle: AppType.sans(
-                      color: i == _categoryIndex ? _kCyan : Colors.white70,
+                      color: i == _categoryIndex ? _kCyan : Sky.inkSoft,
                       fontSize: 12,
                       fontWeight: FontWeight.w600,
                     ),
@@ -1138,7 +1132,7 @@ class _UnitDropdown extends StatelessWidget {
           isExpanded: true,
           dropdownColor: _kPanel,
           iconEnabledColor: _kCyan,
-          style: AppType.sans(color: Colors.white, fontSize: 15),
+          style: AppType.sans(color: Sky.ink, fontSize: 15),
           items: [
             for (int i = 0; i < units.length; i++)
               DropdownMenuItem<int>(
@@ -1176,7 +1170,7 @@ class _SolveSelector<T> extends StatelessWidget {
         Text(
           'SOLVE FOR',
           style: AppType.sans(
-            color: Colors.white54,
+            color: Sky.muted,
             fontSize: 11,
             letterSpacing: 1,
           ),
@@ -1186,7 +1180,7 @@ class _SolveSelector<T> extends StatelessWidget {
           decoration: BoxDecoration(
             color: _kBg,
             borderRadius: BorderRadius.circular(12),
-            border: Border.all(color: Colors.white12),
+            border: Border.all(color: Sky.line),
           ),
           padding: const EdgeInsets.all(4),
           child: Row(
@@ -1215,8 +1209,8 @@ class _SolveSelector<T> extends StatelessWidget {
                           textAlign: TextAlign.center,
                           style: AppType.condensed(
                             color: e.key == value
-                                ? Colors.black
-                                : Colors.white70,
+                                ? Colors.white
+                                : Sky.inkSoft,
                             fontSize: 9,
                             fontWeight: FontWeight.w700,
                             letterSpacing: 0.5,

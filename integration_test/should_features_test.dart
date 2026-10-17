@@ -1,4 +1,5 @@
-// On-device check of spec S1-S3 and the Kit "About" sheets, on the real app.
+// On-device check of the Clear Skies 5-tab app: Home, the Go Card (spec S2),
+// Logbook (S1, S3), Plan (Kit "About"), Learn and Practice, on the real app.
 //
 // VERIFICATION ONLY, never store art: the driver writes to
 // build/verify_screenshots/. The profile is set to a student pilot through
@@ -44,6 +45,8 @@ void main() {
   Future<void> waitFor(WidgetTester tester, Finder f, String what,
       {Duration timeout = const Duration(seconds: 30)}) async {
     if (!await pumpUntil(tester, f, timeout: timeout)) {
+      // What was on screen instead, for the log reader.
+      await binding.takeScreenshot('fail_${what.replaceAll(RegExp(r'\W+'), '_')}');
       fail('Timed out waiting for $what');
     }
   }
@@ -77,7 +80,8 @@ void main() {
     await settle(tester);
   }
 
-  testWidgets('S1-S3 and Kit About on device', (tester) async {
+  testWidgets('Clear Skies tabs, S1-S3 and Kit About on device',
+      (tester) async {
     final today = DateTime.now();
     LogbookEntry lesson(int daysAgo, {double dual = 0, double solo = 0,
             double xc = 0, double night = 0, int nightLdg = 0}) =>
@@ -119,8 +123,12 @@ void main() {
             .toJson()));
 
     app.main();
-    await waitFor(tester, find.text('Check this flight'), 'Today',
+    await waitFor(tester, find.byKey(const Key('home-go-card')), 'Home',
         timeout: const Duration(seconds: 120));
+    await shot(tester, 'v0_home');
+
+    await tap(tester, find.byKey(const Key('home-go-card')), 'Go Card row');
+    await waitFor(tester, find.text('Check this flight'), 'Go Card');
 
     // S2: Night on; the window appears once the live KPAO check returns
     // (the airport position comes from aviationweather.gov). Skipped with
@@ -136,6 +144,7 @@ void main() {
           findsOneWidget);
       await shot(tester, 'v1_today_night_window');
     }
+    await tap(tester, find.byType(BackButton), 'back to Home');
 
     // S3: Paste CSV through the real menu and dialog.
     await Clipboard.setData(ClipboardData(text: csv));
@@ -159,10 +168,47 @@ void main() {
     await shot(tester, 'v4_student_progress');
     await tap(tester, find.byType(BackButton), 'back');
 
-    // Kit About sheet.
-    await tap(tester, find.text('Kit').last, 'Kit tab');
+    // Plan: the hub and a Kit About sheet.
+    await tap(tester, find.text('Plan').last, 'Plan tab');
+    await waitFor(tester, find.byKey(const Key('plan-tile-/go')), 'Plan hub');
+    await shot(tester, 'v5a_plan_hub');
     await tap(tester, find.byTooltip('About E6B'), 'About E6B');
     await waitFor(tester, find.textContaining('wind triangle'), 'E6B text');
     await shot(tester, 'v5_kit_about_e6b');
+    Navigator.of(tester.element(find.textContaining('wind triangle'))).pop();
+    await settle(tester);
+
+    // Learn: hub, six-pack trainer, airport signs, the library.
+    await tap(tester, find.text('Learn').last, 'Learn tab');
+    await shot(tester, 'v6_learn');
+    await tap(tester, find.byKey(const Key('learn-sixpack')), 'six-pack');
+    await tap(tester, find.byKey(const Key('sixpack-alt')), 'altimeter');
+    await waitFor(tester, find.byKey(const Key('sixpack-lesson-alt')),
+        'altimeter lesson');
+    await shot(tester, 'v7_sixpack_altimeter');
+    await tap(tester, find.byType(BackButton), 'back');
+    await tap(tester, find.byKey(const Key('learn-airport-ops')), 'airport ops');
+    await tap(tester, find.text('Signs'), 'Signs tab');
+    await waitFor(tester, find.text('Mandatory instruction sign'), 'signs');
+    await shot(tester, 'v8_airport_signs');
+    await tap(tester, find.byType(BackButton), 'back');
+    await tap(tester, find.byKey(const Key('learn-library')), 'library');
+    await tap(tester, find.byKey(const Key('library-phak')), 'PHAK');
+    await waitFor(tester, find.byKey(const Key('library-phak-8')),
+        'PHAK chapters');
+    await shot(tester, 'v9_library_phak');
+    await tap(tester, find.byType(BackButton), 'back');
+
+    // Practice: the hub, then one real question answered.
+    await tap(tester, find.text('Practice').last, 'Practice tab');
+    await waitFor(tester, find.byKey(const Key('practice-start-all')),
+        'Practice hub');
+    await shot(tester, 'v10_practice');
+    await tap(tester, find.byKey(const Key('practice-start-all')), 'start');
+    await tap(tester, find.byKey(const Key('quiz-choice-A')), 'choice A');
+    await waitFor(tester, find.byKey(const Key('quiz-explanation')),
+        'explanation');
+    await tester.ensureVisible(find.byKey(const Key('quiz-explanation')));
+    await shot(tester, 'v11_quiz_explanation');
   });
 }

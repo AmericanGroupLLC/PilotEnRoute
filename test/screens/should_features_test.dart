@@ -12,7 +12,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:pilot_enroute/core/legality/pilot_profile.dart';
 import 'package:pilot_enroute/core/logbook/logbook_csv.dart';
 import 'package:pilot_enroute/data/logbook_store.dart';
-import 'package:pilot_enroute/screens/kit_screen.dart';
+import 'package:pilot_enroute/screens/plan_screen.dart';
 import 'package:pilot_enroute/screens/logbook_screen.dart';
 import 'package:pilot_enroute/screens/student_progress_screen.dart';
 import 'package:pilot_enroute/screens/today_screen.dart';
@@ -200,26 +200,26 @@ void main() {
 
   group('Kit explanations', () {
     test('every Kit tool has an explanation', () {
-      for (final t in KitScreen.tools) {
-        expect(KitScreen.explanations[t.$1], isNotNull, reason: t.$1);
-        expect(KitScreen.explanations[t.$1]!.length, greaterThan(80));
+      for (final t in PlanScreen.tools) {
+        expect(PlanScreen.explanations[t.$1], isNotNull, reason: t.$1);
+        expect(PlanScreen.explanations[t.$1]!.length, greaterThan(80));
       }
     });
 
     test('safety wording points back to the POH/AFM and official sources', () {
-      expect(KitScreen.explanations['/checklist'], contains('POH/AFM'));
-      expect(KitScreen.explanations['/fuel'], contains('91.151'));
-      expect(KitScreen.explanations['/documents'],
+      expect(PlanScreen.explanations['/checklist'], contains('POH/AFM'));
+      expect(PlanScreen.explanations['/fuel'], contains('91.151'));
+      expect(PlanScreen.explanations['/documents'],
           contains('does not replace a document'));
     });
 
     testWidgets('the info button opens the sheet for that tool',
         (tester) async {
       big(tester);
-      await tester.pumpWidget(Harness().wrap(const KitScreen()));
+      await tester.pumpWidget(Harness().wrap(const PlanScreen()));
       await tester.tap(find.byTooltip('About E6B'));
       await tester.pumpAndSettle();
-      expect(find.text('ABOUT E6B'), findsOneWidget);
+      expect(find.text('About E6B'), findsOneWidget);
       expect(find.textContaining('wind triangle'), findsOneWidget);
     });
   });

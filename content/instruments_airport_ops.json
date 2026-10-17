@@ -1,0 +1,494 @@
+{
+  "sources": [
+    {
+      "title": "Pilot's Handbook of Aeronautical Knowledge (Full Version), Chapter 8 Flight Instruments used",
+      "docNumber": "FAA-H-8083-25C",
+      "edition": "C (2023); faa.gov PHAK page lists FAA-H-8083-25C as current, page 'Last updated: Friday, November 3, 2023'",
+      "url": "https://www.faa.gov/regulations_policies/handbooks_manuals/aviation/faa-h-8083-25c.pdf",
+      "retrievedUtc": "2026-10-17T10:56:47Z",
+      "sha256": "247929cace0ab56b376e683eba540cc4c8f39f199ab35414e8b604e24f395cb7"
+    },
+    {
+      "title": "Aeronautical Information Manual, Chapter 2 Section 3, Airport Marking Aids and Signs",
+      "docNumber": "AIM",
+      "edition": "Change 3, effective 7/9/2026 (per faa.gov AIM HTML index)",
+      "url": "https://www.faa.gov/air_traffic/publications/atpubs/aim_html/chap2_section_3.html",
+      "retrievedUtc": "2026-10-17T10:58:01Z",
+      "sha256": "d456bcaf62de14a3cb23e9e2dd004855a2ba6e3471cfd602459ca3f0aa32586d"
+    },
+    {
+      "title": "Aeronautical Information Manual, Chapter 4 Section 3, Airport Operations",
+      "docNumber": "AIM",
+      "edition": "Change 3, effective 7/9/2026 (per faa.gov AIM HTML index)",
+      "url": "https://www.faa.gov/air_traffic/publications/atpubs/aim_html/chap4_section_3.html",
+      "retrievedUtc": "2026-10-17T10:58:01Z",
+      "sha256": "c619bc8203751a60415e34ef2c43b4d3a83139d04aab3a87326db078a86aa661"
+    }
+  ],
+  "instruments": [
+    {
+      "id": "asi",
+      "name": "Airspeed indicator (ASI)",
+      "shows": [
+        {
+          "text": "The ASI shows the difference between pitot (impact) pressure and static pressure as airspeed. It is marked in miles per hour, knots, or both.",
+          "cite": "PHAK FAA-H-8083-25C, ch. 8, p. 8-8"
+        }
+      ],
+      "works": [
+        {
+          "text": "It is the one instrument that uses both the pitot and the static systems.",
+          "cite": "PHAK FAA-H-8083-25C, ch. 8, p. 8-8"
+        },
+        {
+          "text": "Pitot pressure goes into a diaphragm and static pressure fills the case. The diaphragm expands or contracts and drives the airspeed needle through linkage.",
+          "cite": "PHAK FAA-H-8083-25C, ch. 8, p. 8-8"
+        }
+      ],
+      "read": [
+        {
+          "text": "White arc: the flap operating range. Its lower limit (VS0) is the stall speed or minimum steady flight speed in the landing configuration. Its upper limit (VFE) is the maximum speed with the flaps extended.",
+          "cite": "PHAK FAA-H-8083-25C, ch. 8, p. 8-9"
+        },
+        {
+          "text": "Green arc: the normal operating range. Its lower limit (VS1) is the stall speed or minimum steady flight speed in a specified configuration. Its upper limit (VNO) is the maximum structural cruising speed; do not exceed it except in smooth air.",
+          "cite": "PHAK FAA-H-8083-25C, ch. 8, p. 8-9"
+        },
+        {
+          "text": "Yellow arc: the caution range. Fly in it only in smooth air, and then only with caution.",
+          "cite": "PHAK FAA-H-8083-25C, ch. 8, p. 8-9"
+        },
+        {
+          "text": "Red line (VNE): the never-exceed speed. Operating above it is prohibited because it may cause damage or structural failure.",
+          "cite": "PHAK FAA-H-8083-25C, ch. 8, p. 8-9"
+        }
+      ],
+      "errors": [
+        {
+          "text": "Pitot tube blocked but drain hole open: the ASI reading drops to zero. The loss is not usually instant, but it happens very quickly.",
+          "cite": "PHAK FAA-H-8083-25C, ch. 8, p. 8-10"
+        },
+        {
+          "text": "Pitot tube and drain hole both blocked: the ASI does not change when airspeed changes. It shows a decrease in a descent and an increase in a climb, because only static pressure changes.",
+          "cite": "PHAK FAA-H-8083-25C, ch. 8, p. 8-10 to 8-11"
+        },
+        {
+          "text": "Static system blocked: the ASI still works but is inaccurate. It reads lower than actual above the altitude where the ports blocked, and faster than actual below it.",
+          "cite": "PHAK FAA-H-8083-25C, ch. 8, p. 8-11"
+        }
+      ]
+    },
+    {
+      "id": "ai",
+      "name": "Attitude indicator",
+      "shows": [
+        {
+          "text": "The miniature aircraft and horizon bar show a picture of the aircraft's attitude. Their relationship matches the real aircraft's relationship to the real horizon.",
+          "cite": "PHAK FAA-H-8083-25C, ch. 8, p. 8-18"
+        },
+        {
+          "text": "It gives an instant indication of even the smallest changes in attitude.",
+          "cite": "PHAK FAA-H-8083-25C, ch. 8, p. 8-18"
+        }
+      ],
+      "works": [
+        {
+          "text": "Its gyro is mounted in a horizontal plane and relies on rigidity in space. The horizon bar is fixed to the gyro and stays level as the aircraft pitches and banks.",
+          "cite": "PHAK FAA-H-8083-25C, ch. 8, p. 8-18"
+        },
+        {
+          "text": "In some aircraft a vacuum or pressure system spins the attitude and heading indicator gyros. The vacuum needed is usually between 4.5 \"Hg and 5.5 \"Hg.",
+          "cite": "PHAK FAA-H-8083-25C, ch. 8, p. 8-16"
+        }
+      ],
+      "read": [
+        {
+          "text": "An adjustment knob moves the miniature aircraft up or down. Normally its wings overlap the horizon bar in straight-and-level cruising flight.",
+          "cite": "PHAK FAA-H-8083-25C, ch. 8, p. 8-19"
+        },
+        {
+          "text": "Use the banking scale at the top only to control how much bank you want. Some scales move opposite to the bank, so use the miniature aircraft versus the horizon bar to tell the direction of bank.",
+          "cite": "PHAK FAA-H-8083-25C, ch. 8, p. 8-19"
+        },
+        {
+          "text": "Pitch and bank limits depend on make and model. Some have bank limits of 100° to 110° and pitch limits of 60° to 70°.",
+          "cite": "PHAK FAA-H-8083-25C, ch. 8, p. 8-19"
+        }
+      ],
+      "errors": [
+        {
+          "text": "Beyond its limits, an attitude indicator may \"peg\" (stop) or \"tumble\" and give wrong pitch and bank indications.",
+          "cite": "PHAK FAA-H-8083-25C, ch. 8, p. 8-19"
+        },
+        {
+          "text": "If vacuum suction drops, the attitude and heading indicator gyros slow down and may not give reliable information.",
+          "cite": "PHAK FAA-H-8083-25C, ch. 8, p. 8-16, 8-22"
+        }
+      ]
+    },
+    {
+      "id": "alt",
+      "name": "Altimeter",
+      "shows": [
+        {
+          "text": "The altimeter measures the aircraft's height above a given pressure level. It is the only instrument that can indicate altitude.",
+          "cite": "PHAK FAA-H-8083-25C, ch. 8, p. 8-3"
+        }
+      ],
+      "works": [
+        {
+          "text": "It is an aneroid barometer that uses static pressure. Sealed aneroid wafers expand as static pressure falls and compress as it rises, and linkage turns the needles.",
+          "cite": "PHAK FAA-H-8083-25C, ch. 8, p. 8-3"
+        }
+      ],
+      "read": [
+        {
+          "text": "Three hands: the long thin needle with the inverted triangle shows tens of thousands of feet. The short wide needle shows thousands. The long needle shows hundreds.",
+          "cite": "PHAK FAA-H-8083-25C, ch. 8, p. 8-3"
+        },
+        {
+          "text": "Set the current altimeter setting in the barometric pressure window, also called the Kollsman window, with the knob at the bottom. Only after it is set does it show the correct altitude.",
+          "cite": "PHAK FAA-H-8083-25C, ch. 8, p. 8-4, 8-5"
+        },
+        {
+          "text": "\"GOING FROM A HIGH TO A LOW, LOOK OUT BELOW.\" Fly from high to low pressure without resetting and the aircraft is lower than the altimeter shows.",
+          "cite": "PHAK FAA-H-8083-25C, ch. 8, p. 8-4"
+        },
+        {
+          "text": "Preflight: set the current altimeter setting. It should show field elevation. If it is off by more than 75 feet, the instrument should go to a certificated instrument repair station.",
+          "cite": "PHAK FAA-H-8083-25C, ch. 8, p. 8-7"
+        }
+      ],
+      "errors": [
+        {
+          "text": "\"FROM HOT TO COLD, LOOK OUT BELOW.\" In colder-than-standard air the aircraft is lower than the altimeter shows.",
+          "cite": "PHAK FAA-H-8083-25C, ch. 8, p. 8-4, 8-5"
+        },
+        {
+          "text": "A blocked static system makes the altimeter freeze at the altitude where the blockage happened.",
+          "cite": "PHAK FAA-H-8083-25C, ch. 8, p. 8-11"
+        },
+        {
+          "text": "Using the alternate static source makes the altimeter show a slightly higher altitude than actual.",
+          "cite": "PHAK FAA-H-8083-25C, ch. 8, p. 8-3"
+        }
+      ]
+    },
+    {
+      "id": "tc",
+      "name": "Turn coordinator",
+      "shows": [
+        {
+          "text": "The turn coordinator shows only the rate and direction of turn. It does not show a specific angle of bank.",
+          "cite": "PHAK FAA-H-8083-25C, ch. 8, p. 8-17"
+        },
+        {
+          "text": "It can first show roll rate, then rate of turn once the roll stabilizes.",
+          "cite": "PHAK FAA-H-8083-25C, ch. 8, p. 8-16"
+        }
+      ],
+      "works": [
+        {
+          "text": "It is a gyro instrument with a canted (tilted) gimbal, so the gyro senses both rate of roll and rate of turn. Turn indicators rely on controlled precession.",
+          "cite": "PHAK FAA-H-8083-25C, ch. 8, p. 8-16, 8-17"
+        },
+        {
+          "text": "In some aircraft the electrical system powers the turn coordinator while vacuum or pressure powers the heading and attitude indicators.",
+          "cite": "PHAK FAA-H-8083-25C, ch. 8, p. 8-16"
+        }
+      ],
+      "read": [
+        {
+          "text": "Each side has two marks. The first is wings-level, zero rate of turn. The second marks a standard-rate turn: 3° per second.",
+          "cite": "PHAK FAA-H-8083-25C, ch. 8, p. 8-17"
+        },
+        {
+          "text": "The inclinometer is a ball in a liquid-filled curved tube. Keep the ball centered for coordinated flight; center it with rudder: \"step on the ball.\"",
+          "cite": "PHAK FAA-H-8083-25C, ch. 8, p. 8-16, 8-18"
+        },
+        {
+          "text": "Slip: turn rate too slow for the bank, ball moves to the inside of the turn. Skid: turn rate too fast for the bank, ball moves to the outside.",
+          "cite": "PHAK FAA-H-8083-25C, ch. 8, p. 8-18"
+        },
+        {
+          "text": "It also serves as a backup source of bank information if the attitude indicator fails.",
+          "cite": "PHAK FAA-H-8083-25C, ch. 8, p. 8-16"
+        }
+      ],
+      "errors": [
+        {
+          "text": "Most aircraft have at least two power sources so that at least one source of bank information remains if one power source fails.",
+          "cite": "PHAK FAA-H-8083-25C, ch. 8, p. 8-16"
+        },
+        {
+          "text": "Preflight check: the inclinometer is full of fluid with no air bubbles, and the ball rests at its lowest point. While taxiing, it shows a turn in the correct direction and the ball moves opposite the turn.",
+          "cite": "PHAK FAA-H-8083-25C, ch. 8, p. 8-18"
+        }
+      ]
+    },
+    {
+      "id": "hi",
+      "name": "Heading indicator",
+      "shows": [
+        {
+          "text": "The heading indicator shows heading on a 360° scale with the final zero left off: \"6\" is 060° and \"21\" is 210°.",
+          "cite": "PHAK FAA-H-8083-25C, ch. 8, p. 8-20 (Fig. 8-25)"
+        },
+        {
+          "text": "It is designed to make the magnetic compass easier to use. It is not affected by the forces that make the compass hard to read.",
+          "cite": "PHAK FAA-H-8083-25C, ch. 8, p. 8-19, 8-20"
+        }
+      ],
+      "works": [
+        {
+          "text": "It relies on rigidity in space. The rotor turns in a vertical plane with the compass card fixed to it, and the aircraft turns around the gyro.",
+          "cite": "PHAK FAA-H-8083-25C, ch. 8, p. 8-20"
+        },
+        {
+          "text": "In some aircraft a vacuum or pressure system spins the heading indicator gyro.",
+          "cite": "PHAK FAA-H-8083-25C, ch. 8, p. 8-16"
+        }
+      ],
+      "read": [
+        {
+          "text": "A \"free\" gyro heading indicator needs periodic adjustment. Check it about every 15 minutes and reset it to match the magnetic compass when required.",
+          "cite": "PHAK FAA-H-8083-25C, ch. 8, p. 8-22"
+        },
+        {
+          "text": "Reset it to the compass heading when straight and level at a constant speed, to avoid compass errors. The adjustment knob does this.",
+          "cite": "PHAK FAA-H-8083-25C, ch. 8, p. 8-20 (Fig. 8-25), 8-22"
+        },
+        {
+          "text": "Heading indicators slaved to a magnetometer (such as an HSI) generally need no adjustment.",
+          "cite": "PHAK FAA-H-8083-25C, ch. 8, p. 8-20"
+        }
+      ],
+      "errors": [
+        {
+          "text": "Precession from friction makes it creep or drift from its set position. Worn, dirty, or poorly lubricated bearings can make drift excessive.",
+          "cite": "PHAK FAA-H-8083-25C, ch. 8, p. 8-20"
+        },
+        {
+          "text": "Because the Earth turns 15° per hour, it can show up to 15° of error per hour of operation, not counting friction.",
+          "cite": "PHAK FAA-H-8083-25C, ch. 8, p. 8-20"
+        },
+        {
+          "text": "On some light-aircraft heading indicators the limits are about 55° of pitch and 55° of bank. Beyond them it tumbles and gives wrong indications until reset. It may be reset with the caging knob.",
+          "cite": "PHAK FAA-H-8083-25C, ch. 8, p. 8-22"
+        }
+      ]
+    },
+    {
+      "id": "vsi",
+      "name": "Vertical speed indicator (VSI)",
+      "shows": [
+        {
+          "text": "The VSI shows whether the aircraft is climbing, descending, or level. The rate is in feet per minute, and it reads zero in level flight if properly calibrated.",
+          "cite": "PHAK FAA-H-8083-25C, ch. 8, p. 8-7"
+        }
+      ],
+      "works": [
+        {
+          "text": "It works only from static pressure but is a differential pressure instrument. A diaphragm gets static air directly, while the case gets it through a calibrated leak.",
+          "cite": "PHAK FAA-H-8083-25C, ch. 8, p. 8-7"
+        }
+      ],
+      "read": [
+        {
+          "text": "Trend: the needle's direction gives an immediate sign of an increase or decrease in climb or descent. Rate: a stabilized rate of altitude change.",
+          "cite": "PHAK FAA-H-8083-25C, ch. 8, p. 8-8"
+        },
+        {
+          "text": "Lag: after a change, the needle takes about 6 to 9 seconds to stabilize on the new rate. Rough control and turbulence can extend the lag.",
+          "cite": "PHAK FAA-H-8083-25C, ch. 8, p. 8-8"
+        },
+        {
+          "text": "Preflight: it should read near zero. If not exactly zero, use that reading as the zero mark.",
+          "cite": "PHAK FAA-H-8083-25C, ch. 8, p. 8-8"
+        },
+        {
+          "text": "An instantaneous VSI (IVSI) uses accelerometers to make up for the lag.",
+          "cite": "PHAK FAA-H-8083-25C, ch. 8, p. 8-8"
+        }
+      ],
+      "errors": [
+        {
+          "text": "A blocked static system gives a constant zero reading on the VSI.",
+          "cite": "PHAK FAA-H-8083-25C, ch. 8, p. 8-11"
+        },
+        {
+          "text": "Using the alternate static source makes the VSI show a momentary climb, then settle if altitude is held.",
+          "cite": "PHAK FAA-H-8083-25C, ch. 8, p. 8-3"
+        }
+      ]
+    }
+  ],
+  "airportOps": {
+    "pattern": [
+      {
+        "text": "Departure: the path after takeoff, straight ahead along the extended runway centerline. The departure climb continues to at least 1/2 mile beyond the runway's departure end and within 300 feet of pattern altitude.",
+        "cite": "AIM 4-3-2"
+      },
+      {
+        "text": "Upwind leg: a path after departure, straight ahead along the extended runway centerline. ATC uses it for separation, spacing, or sequencing.",
+        "cite": "AIM 4-3-2"
+      },
+      {
+        "text": "Crosswind leg: a path at right angles to the landing runway, off its takeoff end.",
+        "cite": "AIM 4-3-2"
+      },
+      {
+        "text": "Downwind leg: a path parallel to the landing runway, opposite the direction of landing.",
+        "cite": "AIM 4-3-2"
+      },
+      {
+        "text": "Base leg: a path at right angles to the landing runway, off its approach end, from the downwind leg to the extended runway centerline.",
+        "cite": "AIM 4-3-2"
+      },
+      {
+        "text": "Final approach: a path in the direction of landing along the extended runway centerline, from the base leg to the runway.",
+        "cite": "AIM 4-3-2"
+      },
+      {
+        "text": "At a towered airport, fixed-wing aircraft approaching to land must circle the airport to the left unless the tower says otherwise. A tower clearance is always required before landing.",
+        "cite": "AIM 4-3-2"
+      },
+      {
+        "text": "Recommended pattern altitude: propeller-driven aircraft enter at 1,000 feet AGL. Use another altitude if the Chart Supplement publishes one or cloud-distance rules (14 CFR 91.155) require it.",
+        "cite": "AIM 4-3-3"
+      },
+      {
+        "text": "Large and turbine-powered aircraft enter at not less than 1,500 feet AGL, or 500 feet above the established pattern altitude.",
+        "cite": "AIM 4-3-3"
+      },
+      {
+        "text": "Unless otherwise indicated, all pattern turns are to the left. On sectional and VFR terminal area charts, \"RP\" plus runway numbers marks right patterns.",
+        "cite": "AIM 4-3-3"
+      },
+      {
+        "text": "Entry: enter in level flight, abeam the midpoint of the runway, at pattern altitude. Keep pattern altitude on downwind until abeam the approach end of the landing runway.",
+        "cite": "AIM 4-3-3 (traffic pattern figure key)"
+      },
+      {
+        "text": "Complete the turn to final at least 1/4 mile from the runway.",
+        "cite": "AIM 4-3-3 (traffic pattern figure key)"
+      },
+      {
+        "text": "After takeoff, continue straight ahead until beyond the departure end. If staying in the pattern, start the crosswind turn beyond the departure end, within 300 feet of pattern altitude.",
+        "cite": "AIM 4-3-3 (traffic pattern figure key)"
+      },
+      {
+        "text": "If leaving the pattern, go straight out or make a 45° turn (left in a left pattern, right in a right pattern) beyond the departure end, after reaching pattern altitude.",
+        "cite": "AIM 4-3-3 (traffic pattern figure key)"
+      },
+      {
+        "text": "Straight-in approaches should not disrupt arriving and departing traffic. Pilots in the pattern should watch for straight-in traffic.",
+        "cite": "AIM 4-3-3"
+      },
+      {
+        "text": "At an airport without an operating tower, all turns are to the left unless a traffic pattern indicator shows right turns.",
+        "cite": "AIM 4-3-4"
+      }
+    ],
+    "signs": [
+      {
+        "type": "Mandatory instruction",
+        "colors": "White inscription on a red background",
+        "meaning": {
+          "text": "Marks an entrance to a runway or critical area, and areas where aircraft may not enter. Examples: runway holding position, ILS critical area, and No Entry signs.",
+          "cite": "AIM 2-3-8"
+        }
+      },
+      {
+        "type": "Location",
+        "colors": "Yellow inscription and yellow border on a black background",
+        "meaning": {
+          "text": "Identifies the taxiway or runway the aircraft is on.",
+          "cite": "AIM 2-3-9"
+        }
+      },
+      {
+        "type": "Direction",
+        "colors": "Black inscription on a yellow background",
+        "meaning": {
+          "text": "Shows the intersecting taxiways leading out of an intersection, each with an arrow for the direction of the turn.",
+          "cite": "AIM 2-3-10"
+        }
+      },
+      {
+        "type": "Destination",
+        "colors": "Black inscription on a yellow background",
+        "meaning": {
+          "text": "Shows a taxi route to a destination on the airport, always with an arrow.",
+          "cite": "AIM 2-3-11"
+        }
+      },
+      {
+        "type": "Information",
+        "colors": "Black inscription on a yellow background",
+        "meaning": {
+          "text": "Gives information such as areas the tower cannot see, radio frequencies, and noise abatement procedures.",
+          "cite": "AIM 2-3-12"
+        }
+      },
+      {
+        "type": "Runway distance remaining",
+        "colors": "White numeral on a black background",
+        "meaning": {
+          "text": "Shows the landing runway remaining, in thousands of feet. The last sign (\"1\") is at least 950 feet from the runway end.",
+          "cite": "AIM 2-3-13"
+        }
+      }
+    ],
+    "markings": [
+      {
+        "text": "Runway markings are white. Taxiway markings, closed or hazardous areas, and holding positions are yellow, even when on a runway.",
+        "cite": "AIM 2-3-2"
+      },
+      {
+        "text": "Runway holding position marking: four yellow lines, two solid and two dashed, across the taxiway or runway. The solid lines are always on the side where the aircraft must hold.",
+        "cite": "AIM 2-3-5"
+      },
+      {
+        "text": "When ATC says \"Hold short of Runway XX,\" stop so that no part of the aircraft extends beyond the holding position marking. At a towered airport, do not cross it without ATC clearance.",
+        "cite": "AIM 2-3-5"
+      },
+      {
+        "text": "An aircraft exiting a runway is not clear of the runway until all parts of it have crossed the holding position marking.",
+        "cite": "AIM 2-3-5"
+      },
+      {
+        "text": "ILS critical area holding position marking: two solid yellow lines 2 feet apart, joined by pairs of solid lines 10 feet apart, across the taxiway. A white-on-red sign stands next to it.",
+        "cite": "AIM 2-3-5"
+      },
+      {
+        "text": "When told to hold short of the ILS critical area, stop with no part of the aircraft beyond the marking, and do not cross without ATC clearance.",
+        "cite": "AIM 2-3-5"
+      },
+      {
+        "text": "Displaced threshold: a threshold located somewhere other than the start of the runway. It reduces the runway length available for landing.",
+        "cite": "AIM 2-3-3"
+      },
+      {
+        "text": "The runway behind a displaced threshold may be used for takeoffs in either direction and for landings from the opposite direction. It has white arrows along the centerline, white arrowheads, and a 10-foot white threshold bar.",
+        "cite": "AIM 2-3-3"
+      },
+      {
+        "text": "Normal taxiway centerline: a single continuous yellow line. Being centered on it does not guarantee wingtip clearance.",
+        "cite": "AIM 2-3-4"
+      },
+      {
+        "text": "Enhanced taxiway centerline: yellow dashed lines on both sides of the centerline, for up to 150 feet before a runway holding position marking. It warns you to prepare to stop unless ATC has cleared you onto or across the runway.",
+        "cite": "AIM 2-3-4"
+      },
+      {
+        "text": "Chevrons (yellow) show pavement aligned with the runway that cannot be used for landing, takeoff, or taxiing.",
+        "cite": "AIM 2-3-3"
+      },
+      {
+        "text": "Temporarily closed runways have yellow crosses at each end only. Permanently closed runways have yellow crosses at each end and every 1,000 feet.",
+        "cite": "AIM 2-3-6"
+      }
+    ]
+  }
+}

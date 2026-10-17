@@ -8,12 +8,12 @@ import 'package:intl/intl.dart' hide TextDirection;
 import '../services/weight_balance_service.dart';
 
 // App palette.
-const _kBg = Color(0xFF15181B);
-const _kCard = Color(0xFF1E2226);
-const _kCyan = Color(0xFFFF5A5F);
-const _kAmber = Color(0xFFE09F00);
-const _kRed = Color(0xFFFF5A5F);
-const _kGreen = Color(0xFF5CC277);
+const _kBg = Sky.canvas;
+const _kCard = Sky.card;
+const _kCyan = Sky.teal;
+const _kAmber = Sky.caution;
+const _kRed = Sky.stop;
+const _kGreen = Sky.go;
 
 class WeightBalanceScreen extends StatefulWidget {
   const WeightBalanceScreen({super.key});
@@ -174,7 +174,7 @@ class _WeightBalanceScreenState extends State<WeightBalanceScreen> {
             decoration: BoxDecoration(
               color: _kBg,
               borderRadius: BorderRadius.circular(10),
-              border: Border.all(color: Colors.white12),
+              border: Border.all(color: Sky.line),
             ),
             child: DropdownButtonHideUnderline(
               child: DropdownButton<String>(
@@ -182,7 +182,7 @@ class _WeightBalanceScreenState extends State<WeightBalanceScreen> {
                 dropdownColor: _kCard,
                 value: profile.id,
                 icon: const Icon(Icons.arrow_drop_down, color: _kCyan),
-                style: AppType.sans(fontSize: 13, color: Colors.white),
+                style: AppType.sans(fontSize: 13, color: Sky.ink),
                 items: _service.profiles
                     .map(
                       (p) => DropdownMenuItem(
@@ -309,7 +309,7 @@ class _WeightBalanceScreenState extends State<WeightBalanceScreen> {
                   s.name,
                   style: AppType.sans(
                     fontSize: 13,
-                    color: Colors.white,
+                    color: Sky.ink,
                     fontWeight: FontWeight.w500,
                   ),
                 ),
@@ -318,7 +318,7 @@ class _WeightBalanceScreenState extends State<WeightBalanceScreen> {
                   subtitle,
                   style: AppType.sans(
                     fontSize: 10,
-                    color: warn ? _kRed : Colors.white54,
+                    color: warn ? _kRed : Sky.muted,
                   ),
                 ),
               ],
@@ -344,14 +344,14 @@ class _WeightBalanceScreenState extends State<WeightBalanceScreen> {
                 isDense: true,
                 suffixText: isFuel ? 'gal' : 'lb',
                 suffixStyle:
-                    AppType.sans(fontSize: 10, color: Colors.white38),
+                    AppType.sans(fontSize: 10, color: Sky.muted),
                 contentPadding:
                     const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
                 filled: true,
                 fillColor: _kBg,
                 enabledBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(10),
-                  borderSide: const BorderSide(color: Colors.white12),
+                  borderSide: const BorderSide(color: Sky.line),
                 ),
                 focusedBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(10),
@@ -390,12 +390,12 @@ class _WeightBalanceScreenState extends State<WeightBalanceScreen> {
           Row(
             children: [
               _bigStat('TOTAL MOMENT',
-                  '${_num0.format(r.totalMoment)} in-lb', Colors.white70),
+                  '${_num0.format(r.totalMoment)} in-lb', Sky.inkSoft),
               const SizedBox(width: 10),
               _bigStat(
                 'CG LIMITS',
                 '${_num1.format(r.fwdLimit)}–${_num1.format(r.aftLimit)}',
-                Colors.white70,
+                Sky.inkSoft,
               ),
             ],
           ),
@@ -451,7 +451,7 @@ class _WeightBalanceScreenState extends State<WeightBalanceScreen> {
                 const SizedBox(height: 2),
                 Text(
                   detail,
-                  style: AppType.sans(fontSize: 11, color: Colors.white70),
+                  style: AppType.sans(fontSize: 11, color: Sky.inkSoft),
                 ),
               ],
             ),
@@ -479,7 +479,7 @@ class _WeightBalanceScreenState extends State<WeightBalanceScreen> {
           const SizedBox(height: 8),
           Text(
             'Weight (lb) vs. CG (in aft of datum)',
-            style: AppType.sans(fontSize: 10, color: Colors.white54),
+            style: AppType.sans(fontSize: 10, color: Sky.muted),
           ),
           const SizedBox(height: 12),
           AspectRatio(
@@ -516,7 +516,7 @@ class _WeightBalanceScreenState extends State<WeightBalanceScreen> {
           color: c, shape: BoxShape.circle)),
         const SizedBox(width: 6),
         Text(label,
-            style: AppType.sans(fontSize: 10, color: Colors.white54)),
+            style: AppType.sans(fontSize: 10, color: Sky.muted)),
       ],
     );
   }
@@ -537,7 +537,7 @@ class _WeightBalanceScreenState extends State<WeightBalanceScreen> {
           const SizedBox(height: 4),
           Text(
             'Rough approximation only — not a POH performance chart.',
-            style: AppType.sans(fontSize: 10, color: Colors.white54),
+            style: AppType.sans(fontSize: 10, color: Sky.muted),
           ),
           const SizedBox(height: 12),
           Row(
@@ -575,7 +575,7 @@ class _WeightBalanceScreenState extends State<WeightBalanceScreen> {
             '(rule of thumb: +10% per 1,000 ft density altitude). Always use '
             'the takeoff/landing charts in your POH.',
             style: AppType.sans(
-                fontSize: 10, color: Colors.white54, height: 1.4),
+                fontSize: 10, color: Sky.muted, height: 1.4),
           ),
         ],
       ),
@@ -589,7 +589,7 @@ class _WeightBalanceScreenState extends State<WeightBalanceScreen> {
       children: [
         Text(label,
             style: AppType.condensed(
-                fontSize: 9, color: Colors.white54, letterSpacing: 1)),
+                fontSize: 9, color: Sky.muted, letterSpacing: 1)),
         const SizedBox(height: 6),
         TextField(
           controller: c,
@@ -604,14 +604,14 @@ class _WeightBalanceScreenState extends State<WeightBalanceScreen> {
           decoration: InputDecoration(
             isDense: true,
             suffixText: suffix,
-            suffixStyle: AppType.sans(fontSize: 10, color: Colors.white38),
+            suffixStyle: AppType.sans(fontSize: 10, color: Sky.muted),
             contentPadding:
                 const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
             filled: true,
             fillColor: _kBg,
             enabledBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(10),
-              borderSide: const BorderSide(color: Colors.white12),
+              borderSide: const BorderSide(color: Sky.line),
             ),
             focusedBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(10),
@@ -631,7 +631,7 @@ class _WeightBalanceScreenState extends State<WeightBalanceScreen> {
       decoration: BoxDecoration(
         color: _kCard,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: Colors.white12),
+        border: Border.all(color: Sky.line),
       ),
       child: child,
     );
@@ -656,13 +656,13 @@ class _WeightBalanceScreenState extends State<WeightBalanceScreen> {
         decoration: BoxDecoration(
           color: _kBg,
           borderRadius: BorderRadius.circular(10),
-          border: Border.all(color: Colors.white12),
+          border: Border.all(color: Sky.line),
         ),
         child: Column(
           children: [
             Text(label,
                 style: AppType.condensed(
-                    fontSize: 8, color: Colors.white38, letterSpacing: 1)),
+                    fontSize: 8, color: Sky.muted, letterSpacing: 1)),
             const SizedBox(height: 4),
             FittedBox(
               child: Text(value,
@@ -684,14 +684,14 @@ class _WeightBalanceScreenState extends State<WeightBalanceScreen> {
         decoration: BoxDecoration(
           color: _kBg,
           borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: Colors.white12),
+          border: Border.all(color: Sky.line),
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(label,
                 style: AppType.condensed(
-                    fontSize: 8, color: Colors.white38, letterSpacing: 1)),
+                    fontSize: 8, color: Sky.muted, letterSpacing: 1)),
             const SizedBox(height: 6),
             FittedBox(
               fit: BoxFit.scaleDown,
@@ -715,14 +715,14 @@ class _WeightBalanceScreenState extends State<WeightBalanceScreen> {
       builder: (ctx) => AlertDialog(
         backgroundColor: _kCard,
         title: Text('Delete aircraft?',
-            style: AppType.condensed(fontSize: 14, color: Colors.white)),
+            style: AppType.condensed(fontSize: 14, color: Sky.ink)),
         content: Text('Remove "${profile.name}"? This cannot be undone.',
-            style: AppType.sans(fontSize: 13, color: Colors.white70)),
+            style: AppType.sans(fontSize: 13, color: Sky.inkSoft)),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx),
             child: Text('CANCEL',
-                style: AppType.condensed(fontSize: 11, color: Colors.white54)),
+                style: AppType.condensed(fontSize: 11, color: Sky.muted)),
           ),
           TextButton(
             onPressed: () {
@@ -813,7 +813,7 @@ class _EnvelopePainter extends CustomPainter {
 
     // Axes.
     final axisPaint = Paint()
-      ..color = Colors.white24
+      ..color = Sky.lineStrong
       ..strokeWidth = 1;
     canvas.drawLine(
         const Offset(left, top), Offset(left, top + plotH), axisPaint);
@@ -822,7 +822,7 @@ class _EnvelopePainter extends CustomPainter {
 
     // Grid + labels.
     final gridPaint = Paint()
-      ..color = Colors.white10
+      ..color = Sky.line
       ..strokeWidth = 1;
     const wSteps = 4;
     for (int i = 0; i <= wSteps; i++) {
@@ -1092,7 +1092,7 @@ class _ProfileEditorDialogState extends State<_ProfileEditorDialog> {
           onPressed: () => Navigator.pop(context),
           child: Text('CANCEL',
               style:
-                  AppType.condensed(fontSize: 11, color: Colors.white54)),
+                  AppType.condensed(fontSize: 11, color: Sky.muted)),
         ),
         TextButton(
           onPressed: _save,
@@ -1123,10 +1123,10 @@ class _ProfileEditorDialogState extends State<_ProfileEditorDialog> {
         inputFormatters: text
             ? null
             : [FilteringTextInputFormatter.allow(RegExp(r'[0-9.]'))],
-        style: AppType.sans(fontSize: 13, color: Colors.white),
+        style: AppType.sans(fontSize: 13, color: Sky.ink),
         decoration: InputDecoration(
           labelText: label,
-          labelStyle: AppType.sans(fontSize: 12, color: Colors.white54),
+          labelStyle: AppType.sans(fontSize: 12, color: Sky.muted),
           isDense: true,
           contentPadding:
               const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
@@ -1134,7 +1134,7 @@ class _ProfileEditorDialogState extends State<_ProfileEditorDialog> {
           fillColor: _kBg,
           enabledBorder: OutlineInputBorder(
             borderRadius: BorderRadius.circular(10),
-            borderSide: const BorderSide(color: Colors.white12),
+            borderSide: const BorderSide(color: Sky.line),
           ),
           focusedBorder: OutlineInputBorder(
             borderRadius: BorderRadius.circular(10),

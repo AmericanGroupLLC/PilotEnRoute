@@ -94,22 +94,14 @@ class _SettingsScreenState extends State<SettingsScreen> {
     String? subtitle,
     VoidCallback? onTap,
   }) {
-    final scheme = Theme.of(context).colorScheme;
-    return Container(
-      decoration: BoxDecoration(
-        border: Border(bottom: BorderSide(color: scheme.outlineVariant)),
-      ),
-      child: ListTile(
-        contentPadding: const EdgeInsets.symmetric(horizontal: 4),
-        leading: Icon(icon, color: scheme.primary),
-        title: Text(title,
-            style: const TextStyle(
-                fontFamily: AppFonts.heading,
-                fontWeight: FontWeight.w700,
-                fontSize: 17)),
-        subtitle: subtitle == null ? null : Text(subtitle),
-        trailing: onTap == null ? null : const Icon(Icons.chevron_right),
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 10),
+      child: NavRowCard(
+        icon: icon,
+        title: title,
+        subtitle: subtitle,
         onTap: onTap,
+        trailing: onTap == null ? const SizedBox.shrink() : null,
       ),
     );
   }
@@ -123,7 +115,11 @@ class _SettingsScreenState extends State<SettingsScreen> {
     final locale = context.read<AglLocaleController?>();
     final m = s.minimums;
     return Scaffold(
-      appBar: AppBar(title: const Text('Settings')),
+      appBar: AppBar(
+        title: const PageTitle('Settings',
+            subtitle: 'Profile, minimums and reminders'),
+        toolbarHeight: 78,
+      ),
       body: ListView(
         padding: const EdgeInsets.all(16),
         children: [

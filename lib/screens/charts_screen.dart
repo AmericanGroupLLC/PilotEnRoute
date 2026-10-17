@@ -9,10 +9,10 @@ import '../services/chart_service.dart';
 //
 // A geo-referenced moving-map overlay would need a licensed chart provider.
 
-const _kBg = Color(0xFF15181B);
-const _kCard = Color(0xFF1E2226);
-const _kCyan = Color(0xFFFF5A5F);
-const _kAmber = Color(0xFFE09F00);
+const _kBg = Sky.canvas;
+const _kCard = Sky.card;
+const _kCyan = Sky.teal;
+const _kAmber = Sky.caution;
 
 class ChartsScreen extends StatefulWidget {
   const ChartsScreen({super.key});
@@ -96,17 +96,17 @@ class _ChartsScreenState extends State<ChartsScreen> {
               textCapitalization: TextCapitalization.characters,
               textInputAction: TextInputAction.search,
               onSubmitted: (_) => _search(),
-              style: AppType.sans(color: Colors.white, fontSize: 14),
+              style: AppType.sans(color: Sky.ink, fontSize: 14),
               decoration: InputDecoration(
                 hintText: 'Airport ICAO (e.g. KLAX)',
-                hintStyle: AppType.sans(color: Colors.white38),
-                prefixIcon: const Icon(Icons.search, color: Colors.white38),
+                hintStyle: AppType.sans(color: Sky.muted),
+                prefixIcon: const Icon(Icons.search, color: Sky.faint),
                 filled: true,
                 fillColor: _kCard,
                 contentPadding: const EdgeInsets.symmetric(vertical: 14),
                 enabledBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(12),
-                  borderSide: const BorderSide(color: Colors.white12),
+                  borderSide: const BorderSide(color: Sky.line),
                 ),
                 focusedBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(12),
@@ -122,7 +122,7 @@ class _ChartsScreenState extends State<ChartsScreen> {
               onPressed: () => _search(),
               style: ElevatedButton.styleFrom(
                 backgroundColor: _kCyan,
-                foregroundColor: _kBg,
+                foregroundColor: Sky.ink,
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(12),
                 ),
@@ -159,7 +159,7 @@ class _ChartsScreenState extends State<ChartsScreen> {
                 'RECENT',
                 style: AppType.condensed(
                   fontSize: 9,
-                  color: Colors.white38,
+                  color: Sky.muted,
                   letterSpacing: 1.5,
                 ),
               ),
@@ -169,7 +169,7 @@ class _ChartsScreenState extends State<ChartsScreen> {
           return Center(
             child: ActionChip(
               backgroundColor: _kCard,
-              side: const BorderSide(color: Colors.white12),
+              side: const BorderSide(color: Sky.line),
               label: Text(
                 code,
                 style: AppType.condensed(
@@ -198,7 +198,7 @@ class _ChartsScreenState extends State<ChartsScreen> {
       'approaches, departures, arrivals and minimums — on the FAA\'s official '
       'd-TPP search (cycle ${dtppCycleFor(DateTime.now())}). Opens in your '
       'browser.',
-      Colors.white38,
+      Sky.muted,
     );
   }
 
@@ -216,7 +216,7 @@ class _ChartsScreenState extends State<ChartsScreen> {
               textAlign: TextAlign.center,
               style: AppType.sans(
                 fontSize: 13,
-                color: Colors.white54,
+                color: Sky.muted,
                 height: 1.4,
               ),
             ),
@@ -234,7 +234,7 @@ class _ChartsScreenState extends State<ChartsScreen> {
       child: Text(
         'Official FAA d-TPP charts on faa.gov — US airports only.',
         textAlign: TextAlign.center,
-        style: AppType.sans(fontSize: 10, color: Colors.white30),
+        style: AppType.sans(fontSize: 10, color: Sky.muted),
       ),
     );
   }

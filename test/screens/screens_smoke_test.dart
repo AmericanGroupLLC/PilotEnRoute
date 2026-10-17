@@ -9,7 +9,7 @@ import 'package:pilot_enroute/screens/airport_screen.dart';
 import 'package:pilot_enroute/screens/checklist_screen.dart';
 import 'package:pilot_enroute/screens/flight_plan_screen.dart';
 import 'package:pilot_enroute/screens/go_history_screen.dart';
-import 'package:pilot_enroute/screens/kit_screen.dart';
+import 'package:pilot_enroute/screens/plan_screen.dart';
 import 'package:pilot_enroute/screens/logbook_entry_screen.dart';
 import 'package:pilot_enroute/screens/logbook_screen.dart';
 import 'package:pilot_enroute/screens/minimums_screen.dart';
@@ -38,7 +38,7 @@ void main() {
     'LogbookScreen': () => const LogbookScreen(),
     'LogbookEntryScreen': () => const LogbookEntryScreen(),
     'WeatherScreen': () => const WeatherScreen(),
-    'KitScreen': () => const KitScreen(),
+    'PlanScreen': () => const PlanScreen(),
     'AirportScreen': () => const AirportScreen(),
     'ChecklistScreen': () => const ChecklistScreen(),
     'FlightPlanScreen': () => const FlightPlanScreen(),

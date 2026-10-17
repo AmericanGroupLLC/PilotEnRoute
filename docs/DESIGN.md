@@ -8,6 +8,31 @@ with its number, its limit and the date it lapses. Ground tool only; nothing
 here is for use in flight. No account: logbook, profile, minimums and check
 history live on the device.
 
+Since 2026-10-17 (founder's Clear Skies design, `pilotenroute-design/`) it is
+also a private-pilot study app: five tabs, **Home · Learn · Practice · Plan ·
+Logbook**. Home is first; the Go Card (`/go`) opens from Home and Plan.
+
+## Learn and Practice content
+Content is data with provenance, not prose in widgets: `content/*.json`
+records each FAA document (number, edition, URL, sha256 of the file read) and
+every line's page/paragraph; `tools/gen_content.py` compiles it to
+`lib/content/*.g.dart` (offline, testable). `test/content/sourced_content_test.dart`
+fails if the Dart is stale, a line has no cite, or anything says "safe".
+
+- Six-pack trainer: PHAK FAA-H-8083-25C ch. 8; generic dials
+  (`lib/ui/instruments.dart`), the POH/AFM gives real speeds.
+- Airport operations: AIM 2-3 and 4-3 (Change 3, 7/9/2026). The 45° entry is
+  shown only in an AIM figure we did not check, so it is not drawn.
+- FAA library: 13 documents checked HTTP 200 on 2026-10-17; opened in the
+  browser/PDF reader, not stored.
+- Knowledge test: the FAA's PAR sample questions (8/10/2021), word for word.
+  The FAA publishes no answer key, so an answer ships only if a verbatim FAA
+  quote decides it and an independent re-check agrees. Questions that need a
+  testing-supplement figure are left out (16 + 2 with inline images).
+  `PracticeStore` keeps the pilot's answers; readiness is the correct rate
+  over the last 40 (shown from 10), with the 70% pass mark and an 85–90%
+  practice aim stated, and no claim that it predicts the test.
+
 ## Layers
 | Layer | Contents | Rule |
 |---|---|---|
@@ -88,27 +113,47 @@ their expiry. Reminders at 09:00 local 30 and 7 days before; stable ids
 (`reminderId`); `ReminderService` reschedules on any logbook/profile/document
 change and cancels the previous ids first.
 
-## Identity — "Remove Before Flight" placard
-- Light: placard white `#F7F7F4`, panel black `#1B1D1F`, RBF red `#C1121F`
-  (primary), panel grey `#3A3F44`, go green `#2B8A3E`, caution amber `#E09F00`.
-  Dark: `#15181B` / `#ECEDEE` / `#FF5A5F`. Hand-built `ColorScheme`.
-- Kit tools always render on the dark instrument panel (`PanelTheme`).
-- Fonts bundled: Sofia Sans Condensed (headings, tabs, result), Sofia Sans
-  (body), Fira Mono (METAR/TAF, times, hours, ICAO). All SIL OFL 1.1, from
-  github.com/lettersoup/Sofia-Sans and github.com/google/fonts (ofl/firamono).
-- 6 px radius, punched-tag status chips (`TagPainter`), ruled ledger rows, no
-  gradients. Every status = word + icon + colour.
-- Flight-category colours keep their meaning: VFR green, MVFR blue, IFR red,
-  LIFR magenta.
-- Icon/mark: `assets/logo/pilot_enroute_icon.svg` (tag on panel black) and
-  `pilot_enroute_mark.svg` (tag alone). Rendered with
-  `rsvg-convert -w 1024 -h 1024 <svg> -o <png>`, then resized with PIL to every
-  iOS AppIcon size (RGB, no alpha) and Android mipmap (adaptive foreground at
-  66/108 of the canvas). Launch: placard white + mark on both platforms.
+## Identity — "Clear Skies"
+- Light: sky canvas `#F2F7FB`, white cards `#FFFFFF`, navy ink `#0E2235`,
+  muted `#5D7083`, deep-teal primary `#0A7887` (white text 5.2:1), icon
+  tiles `#E8F1F8` / `#1D4E78`. Status: go `#1C7F46`, caution `#9A5E00`,
+  stop `#C0343A`, each with a soft tint (`goSoft`, `cautionSoft`,
+  `stopSoft`). Every text colour is ≥ 4.5:1 on cards and canvas (tested).
+  Dark: canvas `#0B1621`, cards `#132331`, ink `#E6EEF5`, teal `#4CC3D0`.
+  Hand-built `ColorScheme` (`skyLightScheme` / `skyDarkScheme`), tokens in
+  `Sky` (`lib/ui/theme.dart`).
+- Shape: 16 px cards (`Sky.radius`), 12 px inputs and tiles (`radiusM`),
+  22 px hero panels and sheets (`radiusL`), pill chips, pill nav indicator,
+  14 px buttons (52 px tall primary). Cards carry a hairline border and a
+  soft two-layer shadow (`Sky.shadow`).
+- Building blocks (`lib/ui/widgets.dart`): `SkyCard` (`PlacardCard` is
+  kept as an alias), `PageTitle` (large title + caption in the app bar),
+  `SectionHeader` (sentence case), `IconTile`, `NavRowCard` (tile + title +
+  caption + chevron), `StatTile`, `ProgressStrip`, `SegmentedTabBar` (a
+  TabBar on a rounded track — the theme's tab indicator is a teal pill),
+  `NoticeLine`, `MonoBlock`.
+- Hero illustration: `SkyScene` (`lib/ui/sky_scene.dart`) — a flat,
+  layered CustomPainter scene of a high-wing trainer over hills and a lake.
+  No photos, no network, no gradients. Mood follows the planned flight:
+  `night` when Night is on, `overcast` when the result is outside minimums.
+- Status pills (`StatusTag`): soft tinted capsule, icon + word in the tone
+  colour; neutral states are outlined. Every status = word + icon + colour.
+- Kit tools render on the light theme (`PanelTheme` forces light so their
+  fixed tints stay legible in dark mode).
+- Fonts bundled: Sofia Sans (titles 800, headings 700, body), Sofia Sans
+  Condensed (instrument read-outs in the Kit tools), Fira Mono (METAR/TAF,
+  times, hours, ICAO). All SIL OFL 1.1.
+- Flight-category colours keep their meaning: VFR green, MVFR blue, IFR
+  red, LIFR magenta.
+- Icon/mark: `assets/logo/pilot_enroute_icon.svg` and
+  `pilot_enroute_mark.svg`, rendered with
+  `rsvg-convert -w 1024 -h 1024 <svg> -o <png>`, then resized with PIL to
+  every iOS AppIcon size and Android mipmap.
 
 ## Ads
 AdMob banner only, behind UMP consent: one in-list slot in Logbook (after the
-5th row) and one in Weather. Never on Today, the Go result or the entry form.
+5th row) and one in Weather. Never on Home, the Go Card, the Go result or the
+entry form.
 
 ## Testing
 `test/core` (engine, decoding, minimums, logbook depth, 61.109(a) progress,
@@ -117,4 +162,5 @@ SQLite migration), `test/services`, `test/screens` (Go Card with recorded AWC
 fixtures and a fake HTTP client, entry form, logbook, onboarding, settings),
 `test/foldable_layout_test.dart` (every screen at fold geometries and 1.6×
 text), `test/ui/theme_test.dart`, `test/services/honest_entry_points_test.dart`
-(scope/grep checks).
+(scope/grep checks), `test/content` (sourced content), `test/screens/clear_skies_screens_test.dart`
+and `practice_quiz_test.dart` (Home, Plan, Learn, Practice).

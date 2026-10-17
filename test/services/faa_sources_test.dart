@@ -278,12 +278,12 @@ void main() {
     testWidgets('shows AWC field details and the FAA charts link',
         (tester) async {
       await lookUpKlax(tester, 200);
-      expect(find.text('FIELD DETAILS'), findsOneWidget);
+      expect(find.text('Field details'), findsOneWidget);
       expect(find.text('LOS ANGELES/LOS ANGELES INTL'), findsOneWidget);
       expect(find.text('128 ft (39 m) MSL'), findsOneWidget);
       expect(find.text('Source: FAA data via aviationweather.gov'),
           findsOneWidget);
-      expect(find.text('CHARTS & PLATES'), findsOneWidget);
+      expect(find.text('Charts & plates'), findsOneWidget);
       expect(find.text('Open FAA terminal procedures'), findsOneWidget);
     });
 

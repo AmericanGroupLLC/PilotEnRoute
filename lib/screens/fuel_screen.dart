@@ -19,12 +19,12 @@ class FuelScreen extends StatefulWidget {
 
 class _FuelScreenState extends State<FuelScreen> {
   // ── Palette (matches app conventions) ──────────────────────────────────────
-  static const Color _bg = Color(0xFF15181B);
-  static const Color _card = Color(0xFF1E2226);
-  static const Color _cyan = Color(0xFFFF5A5F);
-  static const Color _amber = Color(0xFFE09F00);
-  static const Color _red = Color(0xFFFF5A5F);
-  static const Color _green = Color(0xFF5CC277);
+  static const Color _bg = Sky.canvas;
+  static const Color _card = Sky.card;
+  static const Color _cyan = Sky.teal;
+  static const Color _amber = Sky.caution;
+  static const Color _red = Sky.stop;
+  static const Color _green = Sky.go;
 
   static const String _kSwitchIntervalPref = 'fuel_switch_interval';
 
@@ -252,7 +252,7 @@ class _FuelScreenState extends State<FuelScreen> {
     // green  : comfortable margin (> 15 min above reserve)
     // amber  : thin margin (0–15 min above reserve)
     // red    : below reserve (usable <= 0)
-    Color statusColor = Colors.white54;
+    Color statusColor = Sky.muted;
     String statusLabel = 'ENTER FUEL & BURN';
     IconData statusIcon = Icons.help_outline;
     if (hasCore) {
@@ -357,19 +357,19 @@ class _FuelScreenState extends State<FuelScreen> {
           _resultRow(
             'Fuel for planned time',
             '${fuelForTimeGal.toStringAsFixed(1)} gal',
-            overUsable ? _red : Colors.white,
+            overUsable ? _red : Sky.ink,
           ),
         if (timeForDistMin != null && fuelForDistGal != null) ...[
           _resultRow('Time for planned dist', _fmtHM(timeForDistMin), _cyan),
           _resultRow('Fuel for planned dist',
-              '${fuelForDistGal.toStringAsFixed(1)} gal', Colors.white),
+              '${fuelForDistGal.toStringAsFixed(1)} gal', Sky.ink),
         ],
         if (plannedDist != null && plannedDist > 0 && (gs == null || gs <= 0))
           Padding(
             padding: const EdgeInsets.only(top: 6),
             child: Text(
               'Enter ground speed to compute distance-based fuel.',
-              style: AppType.sans(color: Colors.white38, fontSize: 11),
+              style: AppType.sans(color: Sky.muted, fontSize: 11),
             ),
           ),
 
@@ -428,13 +428,13 @@ class _FuelScreenState extends State<FuelScreen> {
         decoration: BoxDecoration(
           color: selected ? _cyan.withValues(alpha: 0.2) : _bg,
           borderRadius: BorderRadius.circular(10),
-          border: Border.all(color: selected ? _cyan : Colors.white12),
+          border: Border.all(color: selected ? _cyan : Sky.line),
         ),
         child: Text(
           label,
           style: AppType.condensed(
             fontSize: 8,
-            color: selected ? _cyan : Colors.white54,
+            color: selected ? _cyan : Sky.muted,
             fontWeight: FontWeight.bold,
             letterSpacing: 1,
           ),
@@ -493,7 +493,7 @@ class _FuelScreenState extends State<FuelScreen> {
                 const SizedBox(height: 2),
                 Text(
                   'Interval reached on ${_leftActive ? 'LEFT' : 'RIGHT'} tank',
-                  style: AppType.sans(color: Colors.white70, fontSize: 12),
+                  style: AppType.sans(color: Sky.inkSoft, fontSize: 12),
                 ),
               ],
             ),
@@ -514,7 +514,7 @@ class _FuelScreenState extends State<FuelScreen> {
                   'ACTIVE TANK',
                   style: AppType.condensed(
                     fontSize: 10,
-                    color: Colors.white54,
+                    color: Sky.muted,
                     letterSpacing: 2,
                   ),
                 ),
@@ -541,7 +541,7 @@ class _FuelScreenState extends State<FuelScreen> {
                 const SizedBox(height: 4),
                 Text(
                   'switch every $_switchIntervalMinutes min',
-                  style: AppType.sans(color: Colors.white54, fontSize: 12),
+                  style: AppType.sans(color: Sky.muted, fontSize: 12),
                 ),
               ],
             ),
@@ -559,7 +559,7 @@ class _FuelScreenState extends State<FuelScreen> {
             child: LinearProgressIndicator(
               value: progress,
               minHeight: 8,
-              backgroundColor: Colors.white12,
+              backgroundColor: Sky.line,
               valueColor: AlwaysStoppedAnimation<Color>(timerColor),
             ),
           ),
@@ -582,7 +582,7 @@ class _FuelScreenState extends State<FuelScreen> {
               child: _timerButton(
                 'RESET',
                 Icons.refresh,
-                Colors.white54,
+                Sky.muted,
                 _resetTimer,
               ),
             ),
@@ -628,7 +628,7 @@ class _FuelScreenState extends State<FuelScreen> {
           decoration: BoxDecoration(
             color: _bg,
             borderRadius: BorderRadius.circular(12),
-            border: Border.all(color: Colors.white12),
+            border: Border.all(color: Sky.line),
           ),
           child: Row(
             children: [
@@ -636,7 +636,7 @@ class _FuelScreenState extends State<FuelScreen> {
                 child: Text(
                   'Switch interval',
                   style:
-                      AppType.sans(color: Colors.white70, fontSize: 13),
+                      AppType.sans(color: Sky.inkSoft, fontSize: 13),
                 ),
               ),
               _stepButton(Icons.remove, 'Decrease switch interval', () {
@@ -685,7 +685,7 @@ class _FuelScreenState extends State<FuelScreen> {
         decoration: BoxDecoration(
           color: active ? _amber.withValues(alpha: 0.12) : _bg,
           borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: active ? _amber : Colors.white12),
+          border: Border.all(color: active ? _amber : Sky.line),
         ),
         child: Column(
           children: [
@@ -693,7 +693,7 @@ class _FuelScreenState extends State<FuelScreen> {
               '$label TOTAL',
               style: AppType.condensed(
                 fontSize: 9,
-                color: active ? _amber : Colors.white54,
+                color: active ? _amber : Sky.muted,
                 letterSpacing: 1.5,
               ),
             ),
@@ -703,7 +703,7 @@ class _FuelScreenState extends State<FuelScreen> {
               style: AppType.condensed(
                 fontSize: 16,
                 fontWeight: FontWeight.bold,
-                color: Colors.white,
+                color: Sky.ink,
               ),
             ),
           ],
@@ -787,7 +787,7 @@ class _FuelScreenState extends State<FuelScreen> {
       children: [
         Text(
           'Manual entry — no live price lookup.',
-          style: AppType.sans(color: Colors.white38, fontSize: 11),
+          style: AppType.sans(color: Sky.muted, fontSize: 11),
         ),
         const SizedBox(height: 12),
         Row(
@@ -817,7 +817,7 @@ class _FuelScreenState extends State<FuelScreen> {
                 'ESTIMATED TOTAL',
                 style: AppType.condensed(
                   fontSize: 10,
-                  color: Colors.white54,
+                  color: Sky.muted,
                   letterSpacing: 2,
                 ),
               ),
@@ -849,7 +849,7 @@ class _FuelScreenState extends State<FuelScreen> {
       decoration: BoxDecoration(
         color: _card,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: Colors.white12),
+        border: Border.all(color: Sky.line),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -899,13 +899,13 @@ class _FuelScreenState extends State<FuelScreen> {
     return TextField(
       controller: ctrl,
       keyboardType: const TextInputType.numberWithOptions(decimal: true),
-      style: AppType.sans(color: Colors.white, fontSize: 14),
+      style: AppType.sans(color: Sky.ink, fontSize: 14),
       onChanged: (_) => setState(() {}),
       decoration: InputDecoration(
         labelText: label,
         suffixText: suffix,
-        suffixStyle: AppType.sans(color: Colors.white38, fontSize: 12),
-        labelStyle: AppType.sans(color: Colors.white54, fontSize: 12),
+        suffixStyle: AppType.sans(color: Sky.muted, fontSize: 12),
+        labelStyle: AppType.sans(color: Sky.muted, fontSize: 12),
         isDense: true,
         contentPadding:
             const EdgeInsets.symmetric(horizontal: 12, vertical: 14),
@@ -913,11 +913,11 @@ class _FuelScreenState extends State<FuelScreen> {
         fillColor: _bg,
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
-          borderSide: const BorderSide(color: Colors.white12),
+          borderSide: const BorderSide(color: Sky.line),
         ),
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
-          borderSide: const BorderSide(color: Colors.white12),
+          borderSide: const BorderSide(color: Sky.line),
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
@@ -940,7 +940,7 @@ class _FuelScreenState extends State<FuelScreen> {
             Expanded(
               child: Text(
                 label,
-                style: AppType.sans(color: Colors.white70, fontSize: 13),
+                style: AppType.sans(color: Sky.inkSoft, fontSize: 13),
               ),
             ),
             Text(

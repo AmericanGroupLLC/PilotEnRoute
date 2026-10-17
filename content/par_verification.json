@@ -1,0 +1,366 @@
+{
+  "generatedUtc": "2026-10-17",
+  "method": "4 independent reviewer agents, 10 questions each; each decided the answer from the FAA text before reading the proposal, then checked the quote verbatim and the cite",
+  "verdicts": [
+    {
+      "id": "PAR-01",
+      "myAnswer": "C",
+      "quoteFoundVerbatim": true,
+      "citeCorrect": true,
+      "explanationAccurate": true,
+      "verdict": "confirmed",
+      "reason": "I fetched 91.413 from eCFR today: paragraph (a) contains the quote verbatim, 'No persons...' included. 24 calendar months from Sept 1, 2014 runs to Sept 30, 2016. The PHAK end-of-month rule is applied correctly."
+    },
+    {
+      "id": "PAR-02",
+      "myAnswer": "B",
+      "quoteFoundVerbatim": true,
+      "citeCorrect": true,
+      "explanationAccurate": true,
+      "verdict": "confirmed",
+      "reason": "In the eCFR 1.1 text, 'Category: (1)' says exactly what the quote says. The 'Class (1)' definition lists single engine, multiengine, land, water, gyroplane, helicopter, airship and free balloon, so A and C are classes, as the explanation says."
+    },
+    {
+      "id": "PAR-03",
+      "myAnswer": "C",
+      "quoteFoundVerbatim": true,
+      "citeCorrect": true,
+      "explanationAccurate": true,
+      "verdict": "confirmed",
+      "reason": "I fetched AIM 4-3-13 from faa.gov; TBL 4-3-13 is titled 'Airport Traffic Control Tower Light Gun Signals'. Its Flashing white row reads 'Return to starting point on airport' for aircraft on the ground and 'Not applicable' for aircraft in flight."
+    },
+    {
+      "id": "PAR-04",
+      "myAnswer": "A",
+      "quoteFoundVerbatim": true,
+      "citeCorrect": true,
+      "explanationAccurate": true,
+      "verdict": "confirmed",
+      "reason": "In the eCFR 91.155(a) table, the Class G row 'More than 1,200 feet above the surface but less than 10,000 feet MSL' gives 'Day 1 statute mile'. The two quote fragments joined by the ellipsis appear verbatim."
+    },
+    {
+      "id": "PAR-05",
+      "myAnswer": "A",
+      "quoteFoundVerbatim": true,
+      "citeCorrect": true,
+      "explanationAccurate": true,
+      "verdict": "confirmed",
+      "reason": "91.126(d), 'Communications with control towers', contains the quote verbatim: 'Unless otherwise authorized or required by ATC...two-way radio communications are maintained'. Nothing in it depends on weather, so A."
+    },
+    {
+      "id": "PAR-06",
+      "myAnswer": "A",
+      "quoteFoundVerbatim": true,
+      "citeCorrect": true,
+      "explanationAccurate": true,
+      "verdict": "confirmed",
+      "reason": "In the eCFR 91.155(a) table, the Class G row for more than 1,200 ft AGL and under 10,000 MSL reads 'Night 3 statute miles 500 feet below.' The quote fragments appear verbatim."
+    },
+    {
+      "id": "PAR-07",
+      "myAnswer": "A",
+      "quoteFoundVerbatim": true,
+      "citeCorrect": true,
+      "explanationAccurate": true,
+      "verdict": "confirmed",
+      "reason": "91.130(c)(1), 'Arrival or through flight', says to 'establish two-way radio communications with the ATC facility ... providing air traffic services prior to entering that airspace'. The quote fragments are verbatim; the ellipsis drops the foreign-ATC parenthetical."
+    },
+    {
+      "id": "PAR-08",
+      "myAnswer": "B",
+      "quoteFoundVerbatim": true,
+      "citeCorrect": true,
+      "explanationAccurate": true,
+      "verdict": "confirmed",
+      "reason": "In eCFR 91.107(a)(1), the PIC 'ensures that each person on board is briefed on how to fasten and unfasten that person's safety belt'. The quote is verbatim; the ellipsis removes the balloon/airship exception."
+    },
+    {
+      "id": "PAR-09",
+      "myAnswer": "C",
+      "quoteFoundVerbatim": true,
+      "citeCorrect": true,
+      "explanationAccurate": true,
+      "verdict": "confirmed",
+      "reason": "Both quoted sentences are verbatim in eCFR 91.409(b). The 7 hours over count toward the next interval, so it is due at 3302.5 + 100 = 3402.5."
+    },
+    {
+      "id": "PAR-10",
+      "myAnswer": "C",
+      "quoteFoundVerbatim": true,
+      "citeCorrect": true,
+      "explanationAccurate": true,
+      "verdict": "confirmed",
+      "reason": "I downloaded FAA-H-8083-28B from faa.gov. Section 3.3.1, printed page 3-3 (PDF page 26), contains the quote verbatim, including 'whether the flight will be conducted under VFR or IFR'. The PHAK note text appears in the local phak.txt."
+    },
+    {
+      "id": "PAR-11",
+      "myAnswer": "C",
+      "quoteFoundVerbatim": true,
+      "citeCorrect": true,
+      "explanationAccurate": true,
+      "verdict": "confirmed",
+      "reason": "Found verbatim in PHAK-25C 'Dew and Frost', PDF page 299, footer 12-15: 'Frost disrupts the flow of air over the wing and can drastically reduce the production of lift.' That supports C. A and B say frost improves lift or control, which the text contradicts."
+    },
+    {
+      "id": "PAR-13",
+      "myAnswer": "B",
+      "quoteFoundVerbatim": true,
+      "citeCorrect": true,
+      "explanationAccurate": true,
+      "verdict": "confirmed",
+      "reason": "PHAK 'Thunderstorms', page 12-22 (verbatim): at the mature stage, drops 'begin falling in the form of rain or hail.' PHAK places the anvil and spreading downdrafts in the dissipating stage. The AWH note was also found verbatim."
+    },
+    {
+      "id": "PAR-15",
+      "myAnswer": "C",
+      "quoteFoundVerbatim": true,
+      "citeCorrect": true,
+      "explanationAccurate": true,
+      "verdict": "confirmed",
+      "reason": "Fetched AIM 3-4-5 fresh from faa.gov; the quote is verbatim. The same paragraph says 'Prior to entering an active MOA, pilots should contact the controlling agency for traffic advisories.' 'No clearance needed' is an inference, but a reasonable one."
+    },
+    {
+      "id": "PAR-16",
+      "myAnswer": "A",
+      "quoteFoundVerbatim": true,
+      "citeCorrect": true,
+      "explanationAccurate": true,
+      "verdict": "confirmed",
+      "reason": "Fresh AIM 4-1-20 (Transponder and ADS-B Out Operation), verbatim: 'Unless otherwise instructed by an ATC facility, adjust transponder/ADS-B to reply on Mode 3/A Code 1200 regardless of altitude.' I did not re-check the 7600/7700 meanings, but they are standard."
+    },
+    {
+      "id": "PAR-17",
+      "myAnswer": "A",
+      "quoteFoundVerbatim": true,
+      "citeCorrect": true,
+      "explanationAccurate": true,
+      "verdict": "confirmed",
+      "reason": "AFH-3C ch. 9, PDF page 172, footer 9-1. Items 1 and 2 are verbatim; the ellipses only drop stray PDF numbers. 'Greater drag and permitting a steeper descent angle' plus 'lower approach and landing speeds' supports A."
+    },
+    {
+      "id": "PAR-18",
+      "myAnswer": "A",
+      "quoteFoundVerbatim": true,
+      "citeCorrect": true,
+      "explanationAccurate": true,
+      "verdict": "confirmed",
+      "reason": "PHAK-25C, PDF page 172, footer 7-12, verbatim: 'A fuel injection system is considered to be less susceptible to icing than a carburetor system.' So the float carburetor is more susceptible, which is A."
+    },
+    {
+      "id": "PAR-19",
+      "myAnswer": "C",
+      "quoteFoundVerbatim": true,
+      "citeCorrect": true,
+      "explanationAccurate": true,
+      "verdict": "confirmed",
+      "reason": "PHAK-25C ASI markings, PDF page 211, footer 8-9, verbatim: 'Red line (VNE)—never exceed speed. Operating above this speed is prohibited since it may result in damage or structural failure.'"
+    },
+    {
+      "id": "PAR-22",
+      "myAnswer": "A",
+      "quoteFoundVerbatim": true,
+      "citeCorrect": true,
+      "explanationAccurate": true,
+      "verdict": "confirmed",
+      "reason": "Fresh AIM 4-3-11, verbatim: 'The pilot-in-command has the final authority to accept or decline any land and hold short clearance.' AIM's decline test is 'will compromise safety'; the explanation says 'cannot comply with', a slight paraphrase."
+    },
+    {
+      "id": "PAR-26",
+      "myAnswer": "A",
+      "quoteFoundVerbatim": true,
+      "citeCorrect": true,
+      "explanationAccurate": true,
+      "verdict": "confirmed",
+      "reason": "AFH-3C Glossary, PDF page 374, footer G-2, verbatim: 'Angle of attack. The acute angle between the chord line of the airfoil and the direction of the relative wind.' That decides A over the axis/center-line choices."
+    },
+    {
+      "id": "PAR-27",
+      "myAnswer": "C",
+      "quoteFoundVerbatim": true,
+      "citeCorrect": true,
+      "explanationAccurate": true,
+      "verdict": "confirmed",
+      "reason": "Fresh AIM 1-1-4, verbatim: CDI centered reads 0° 'from' or 180° 'to', with no position condition. That rules out A and B. 'Same signal in every direction' is not in the cited text, but it is accurate."
+    },
+    {
+      "id": "PAR-35",
+      "myAnswer": "C",
+      "quoteFoundVerbatim": true,
+      "citeCorrect": true,
+      "explanationAccurate": true,
+      "verdict": "confirmed",
+      "reason": "PHAK 25C p.7-10, Carburetor Icing section (text sits between the 7-9 and 7-10 footers): 'first indication...fixed-pitch propeller is a decrease in engine rpm, which may be followed by engine roughness.' That picks C over B."
+    },
+    {
+      "id": "PAR-37",
+      "myAnswer": "A",
+      "quoteFoundVerbatim": true,
+      "citeCorrect": true,
+      "explanationAccurate": true,
+      "verdict": "confirmed",
+      "reason": "Freshly fetched AIM 6-3-1 (Distress and Urgency Communications) contains the quote, which lists 121.5 MHz and 243.0 MHz. Neither 122.5 nor 128.725 is an emergency frequency."
+    },
+    {
+      "id": "PAR-38",
+      "myAnswer": "B",
+      "quoteFoundVerbatim": true,
+      "citeCorrect": true,
+      "explanationAccurate": true,
+      "verdict": "confirmed",
+      "reason": "Fresh AIM 4-1-15: 'radar controller can only observe aircraft track (course)...traffic advisories are issued accordingly.' Its examples show traffic called at 12 o'clock seen at 2 or 10 o'clock when the pilot is crabbing, which matches the note."
+    },
+    {
+      "id": "PAR-39",
+      "myAnswer": "C",
+      "quoteFoundVerbatim": true,
+      "citeCorrect": true,
+      "explanationAccurate": true,
+      "verdict": "confirmed",
+      "reason": "PHAK p.4-6, Bernoulli's Principle of Differential Pressure: as velocity increases, pressure decreases, which 'explains what happens to air passing over the curved top of the airplane wing.' A and B are Newton's-law statements."
+    },
+    {
+      "id": "PAR-40",
+      "myAnswer": "B",
+      "quoteFoundVerbatim": true,
+      "citeCorrect": true,
+      "explanationAccurate": true,
+      "verdict": "confirmed",
+      "reason": "Fresh PHAK ch.16 PDF, p.16-8: 'magnetic influences within an aircraft, such as electrical circuits...magnetized metal parts...This deflection is called deviation.' C describes variation."
+    },
+    {
+      "id": "PAR-41",
+      "myAnswer": "C",
+      "quoteFoundVerbatim": true,
+      "citeCorrect": true,
+      "explanationAccurate": true,
+      "verdict": "confirmed",
+      "reason": "AFH 3C p.9-28, under 'Emergency Approaches and Landings (Simulated)': 'variations of gliding speed nullify all attempts at accuracy in judgment of gliding distance and the landing spot.' This matches C almost word for word."
+    },
+    {
+      "id": "PAR-42",
+      "myAnswer": "A",
+      "quoteFoundVerbatim": true,
+      "citeCorrect": true,
+      "explanationAccurate": true,
+      "verdict": "confirmed",
+      "reason": "Fresh PHAK ch.16, Basic Calculations, p.16-11, has both fragments. The arithmetic checks: 7.5/60 = 0.125 h, and 114 x 0.125 = 14.25 NM."
+    },
+    {
+      "id": "PAR-43",
+      "myAnswer": "B",
+      "quoteFoundVerbatim": true,
+      "citeCorrect": true,
+      "explanationAccurate": true,
+      "verdict": "confirmed",
+      "reason": "Fresh AIM 3-2-4: 'Normally this area is 20 NM from the primary Class C airspace airport.' The same paragraph says '(This outer area is not charted.)' and 'Pilot participation is voluntary within the outer area', so the explanation is accurate."
+    },
+    {
+      "id": "PAR-45",
+      "myAnswer": "B",
+      "quoteFoundVerbatim": true,
+      "citeCorrect": true,
+      "explanationAccurate": true,
+      "verdict": "confirmed",
+      "reason": "Fresh AIM 4-3-24 (Use of Aircraft Lights) says 'within 10 miles of any airport, or in conditions of reduced visibility.' C's '15 miles of a towered airport' does not match, so B is the answer."
+    },
+    {
+      "id": "PAR-46",
+      "myAnswer": "C",
+      "quoteFoundVerbatim": true,
+      "citeCorrect": true,
+      "explanationAccurate": true,
+      "verdict": "confirmed",
+      "reason": "Fresh AIM 4-1-20: 'pilots should avoid inadvertent selection of Codes 7500, 7600 or 7700.' Of the three choices, only 7500 is on that list."
+    },
+    {
+      "id": "PAR-47",
+      "myAnswer": "A",
+      "quoteFoundVerbatim": true,
+      "citeCorrect": true,
+      "explanationAccurate": true,
+      "verdict": "confirmed",
+      "reason": "I re-extracted phak.pdf with pdftotext. The quote is on PHAK 25C p.17-5: 'In addition to slowing the breathing rate, breathing into a paper bag or talking aloud...'. This matches choice A word for word."
+    },
+    {
+      "id": "PAR-51",
+      "myAnswer": "B",
+      "quoteFoundVerbatim": true,
+      "citeCorrect": true,
+      "explanationAccurate": true,
+      "verdict": "confirmed",
+      "reason": "I fetched the AIM chapter 1 HTML from faa.gov. The sentence 'Without RAIM capability, the pilot has no assurance of the accuracy of the GPS position.' is verbatim under 1-1-17 (GPS). It matches choice B directly."
+    },
+    {
+      "id": "PAR-53",
+      "myAnswer": "A",
+      "quoteFoundVerbatim": true,
+      "citeCorrect": true,
+      "explanationAccurate": true,
+      "verdict": "confirmed",
+      "reason": "Live eCFR 61.57(a)(1) has the quote verbatim: '...three takeoffs and three landings within the preceding 90 days'. Minor error in the note: (a)(1)(i) is sole manipulator and only (ii) is category/class/type."
+    },
+    {
+      "id": "PAR-54",
+      "myAnswer": "A",
+      "quoteFoundVerbatim": true,
+      "citeCorrect": true,
+      "explanationAccurate": true,
+      "verdict": "confirmed",
+      "reason": "Each quote fragment between the ellipses is verbatim in PHAK pp.5-30/5-31 (pdftotext pages 127-128): 'high propeller speeds and low forward speed'. High angle of attack is backed by the P-factor text on p.5-32. Only choice A pairs low airspeed with high power."
+    },
+    {
+      "id": "PAR-55",
+      "myAnswer": "B",
+      "quoteFoundVerbatim": true,
+      "citeCorrect": true,
+      "explanationAccurate": true,
+      "verdict": "confirmed",
+      "reason": "PHAK p.12-4 (Coriolis section) has the quote verbatim: 'within 2,000 feet of the ground, the friction ... wind direction at the surface varies somewhat'. This decides choice B (friction)."
+    },
+    {
+      "id": "PAR-56",
+      "myAnswer": "A",
+      "quoteFoundVerbatim": true,
+      "citeCorrect": true,
+      "explanationAccurate": true,
+      "verdict": "confirmed",
+      "reason": "I fetched AIM 8-1-6 (Vision in Flight) from faa.gov. It says verbatim: 'Each movement should not exceed 10 degrees, and each area should be observed for at least 1 second'. That is exactly choice A."
+    },
+    {
+      "id": "PAR-57",
+      "myAnswer": "C",
+      "quoteFoundVerbatim": true,
+      "citeCorrect": true,
+      "explanationAccurate": true,
+      "verdict": "confirmed",
+      "reason": "PHAK p.12-13 says verbatim 'When the temperature of the air rises with altitude, a temperature inversion exists.' The same paragraph backs the visibility claim: pollutants are 'trapped below' and visibility is 'diminished ... in the inversion layer'. That rules out B."
+    },
+    {
+      "id": "PAR-58",
+      "myAnswer": "A",
+      "quoteFoundVerbatim": true,
+      "citeCorrect": true,
+      "explanationAccurate": true,
+      "verdict": "confirmed",
+      "reason": "I inspected AWH 8083-28B 18.1.1.1.3 by hand (p.18-6 per pdftotext); my matching script reported it missing, which I traced to the script. The quote is there verbatim: moist stable air moving upslope gives fog/'low stratus clouds'. PHAK adds 'stable air mass can produce low stratus clouds'."
+    },
+    {
+      "id": "PAR-60",
+      "myAnswer": "C",
+      "quoteFoundVerbatim": true,
+      "citeCorrect": true,
+      "explanationAccurate": true,
+      "verdict": "confirmed",
+      "reason": "Live AIM 4-2-9 has the rule verbatim. Its example '12,500 one two thousand five hundred' means 5,500 is said 'five thousand five hundred', which is choice C."
+    },
+    {
+      "id": "PAR-61",
+      "myAnswer": "B",
+      "quoteFoundVerbatim": true,
+      "citeCorrect": true,
+      "explanationAccurate": true,
+      "verdict": "confirmed",
+      "reason": "Live eCFR 91.225(d)(3) has the quote verbatim: 'Above the ceiling and within the lateral boundaries of a Class B or Class C airspace area ... upward to 10,000 feet MSL'. Neither Class D nor the airspace under a Class C shelf is on the (d) list."
+    }
+  ]
+}

@@ -15,17 +15,34 @@ class StatusLook {
   const StatusLook(this.label, this.icon, this.tone);
 }
 
+/// Text-safe colour for a tone (icons, labels, borders).
 Color toneColor(BuildContext context, Tone tone) {
   final dark = Theme.of(context).brightness == Brightness.dark;
   switch (tone) {
     case Tone.go:
-      return dark ? const Color(0xFF5CC277) : Rbf.goGreen;
+      return dark ? Sky.nightGo : Sky.go;
     case Tone.caution:
-      return Rbf.caution;
+      return dark ? Sky.nightCaution : Sky.caution;
     case Tone.stop:
-      return dark ? Rbf.darkRed : Rbf.tagRed;
+      return dark ? Sky.nightStop : Sky.stop;
     case Tone.neutral:
-      return Theme.of(context).colorScheme.outline;
+      return Theme.of(context).colorScheme.onSurfaceVariant;
+  }
+}
+
+/// Soft tint behind a tone (pill and banner backgrounds).
+Color toneSoft(BuildContext context, Tone tone) {
+  final dark = Theme.of(context).brightness == Brightness.dark;
+  if (dark) return toneColor(context, tone).withValues(alpha: 0.16);
+  switch (tone) {
+    case Tone.go:
+      return Sky.goSoft;
+    case Tone.caution:
+      return Sky.cautionSoft;
+    case Tone.stop:
+      return Sky.stopSoft;
+    case Tone.neutral:
+      return Theme.of(context).colorScheme.surfaceContainer;
   }
 }
 
@@ -58,8 +75,11 @@ StatusLook lookForCheck(CheckState s) {
     case CheckState.outside:
       return const StatusLook('OUTSIDE', Icons.cancel, Tone.stop);
     case CheckState.notSet:
-      return const StatusLook('NOT SET', Icons.remove_circle_outline,
-          Tone.neutral);
+      return const StatusLook(
+        'NOT SET',
+        Icons.remove_circle_outline,
+        Tone.neutral,
+      );
     case CheckState.unknown:
       return const StatusLook('UNKNOWN', Icons.help, Tone.neutral);
   }
@@ -78,9 +98,9 @@ StatusLook lookForVerdict(GoVerdict v) {
   }
 }
 
-/// A status chip drawn as a Remove-Before-Flight tag: a pointed end with a
-/// punched hole, then the icon and the word. The word and the icon carry the
-/// meaning; the colour only repeats it.
+/// A status pill: a soft tinted capsule with the icon and the word in the
+/// tone colour. The word and the icon carry the meaning; the colour only
+/// repeats it. Neutral states get an outlined capsule.
 class StatusTag extends StatelessWidget {
   const StatusTag(this.look, {super.key, this.dense = false});
 
@@ -90,91 +110,43 @@ class StatusTag extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final color = toneColor(context, look.tone);
-    final filled = look.tone != Tone.neutral;
-    final fg = filled
-        ? (ThemeData.estimateBrightnessForColor(color) == Brightness.dark
-            ? Colors.white
-            : Rbf.panelBlack)
-        : color;
-    final h = dense ? 22.0 : 26.0;
+    final neutral = look.tone == Tone.neutral;
+    final h = dense ? 24.0 : 28.0;
     return Semantics(
       label: look.label,
       excludeSemantics: true,
-      child: CustomPaint(
-        painter: TagPainter(color: color, filled: filled),
-        child: Container(
-          height: h,
-          padding: EdgeInsets.only(left: h * 0.78, right: 8),
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Icon(look.icon, size: dense ? 13 : 15, color: fg),
-              const SizedBox(width: 4),
-              Text(
-                look.label,
-                style: TextStyle(
-                  fontFamily: AppFonts.heading,
-                  fontWeight: FontWeight.w700,
-                  fontSize: dense ? 11.5 : 13,
-                  letterSpacing: 0.6,
-                  color: fg,
-                ),
-              ),
-            ],
+      child: Container(
+        height: h,
+        padding: EdgeInsets.symmetric(horizontal: dense ? 8 : 10),
+        decoration: ShapeDecoration(
+          color: neutral ? Colors.transparent : toneSoft(context, look.tone),
+          shape: StadiumBorder(
+            side: neutral
+                ? BorderSide(
+                    color: Theme.of(context).colorScheme.outlineVariant,
+                    width: 1.2,
+                  )
+                : BorderSide.none,
           ),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(look.icon, size: dense ? 14 : 16, color: color),
+            const SizedBox(width: 5),
+            Text(
+              look.label,
+              style: TextStyle(
+                fontFamily: AppFonts.heading,
+                fontWeight: FontWeight.w700,
+                fontSize: dense ? 11 : 12.5,
+                letterSpacing: 0.5,
+                color: color,
+              ),
+            ),
+          ],
         ),
       ),
     );
   }
-}
-
-/// Tag outline: pointed left end, square right end with the 6 px radius, and
-/// a punched hole that shows the background through it.
-class TagPainter extends CustomPainter {
-  TagPainter({required this.color, required this.filled});
-
-  final Color color;
-  final bool filled;
-
-  static Path outline(Size size) {
-    final h = size.height;
-    final w = size.width;
-    final p = h * 0.42; // length of the pointed end
-    const r = Rbf.radius;
-    return Path()
-      ..moveTo(p, 0)
-      ..lineTo(w - r, 0)
-      ..quadraticBezierTo(w, 0, w, r)
-      ..lineTo(w, h - r)
-      ..quadraticBezierTo(w, h, w - r, h)
-      ..lineTo(p, h)
-      ..lineTo(0, h / 2)
-      ..close();
-  }
-
-  static Path hole(Size size) {
-    final h = size.height;
-    return Path()
-      ..addOval(Rect.fromCircle(
-          center: Offset(h * 0.46, h / 2), radius: h * 0.13));
-  }
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    final shape = Path.combine(PathOperation.difference, outline(size), hole(size));
-    if (filled) {
-      canvas.drawPath(shape, Paint()..color = color);
-    } else {
-      canvas.drawPath(
-          shape,
-          Paint()
-            ..color = color
-            ..style = PaintingStyle.stroke
-            ..strokeWidth = 1.4);
-    }
-  }
-
-  @override
-  bool shouldRepaint(TagPainter old) =>
-      old.color != color || old.filled != filled;
 }

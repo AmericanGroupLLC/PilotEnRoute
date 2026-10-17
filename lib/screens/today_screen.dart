@@ -11,6 +11,7 @@ import '../services/error_reporter.dart';
 import '../services/logbook_service.dart';
 import '../services/settings_store.dart';
 import '../services/weather_service.dart';
+import '../ui/sky_scene.dart';
 import '../ui/status_tag.dart';
 import '../ui/theme.dart';
 import '../ui/widgets.dart';
@@ -49,6 +50,10 @@ class _TodayScreenState extends State<TodayScreen> {
   bool _autoChecked = false;
   DateTime? _checkedAt;
 
+  /// The airports of the last check, for the result card: the fields can be
+  /// edited after a check, and the card must name what was checked.
+  String? _checkedDep, _checkedDest;
+
   DateTime _now() => (widget.clock ?? DateTime.now)();
 
   @override
@@ -67,7 +72,7 @@ class _TodayScreenState extends State<TodayScreen> {
       if (!mounted) return;
       if (!_autoChecked && _dep.text.trim().length >= 3) {
         _autoChecked = true;
-        _check();
+        _check(auto: true);
       }
     });
   }
@@ -79,6 +84,17 @@ class _TodayScreenState extends State<TodayScreen> {
     super.dispose();
   }
 
+  static bool _sameCheck(GoCheckRecord a, GoCheckRecord b) =>
+      a.departure == b.departure &&
+      a.destination == b.destination &&
+      a.plannedAt.isAtSameMomentAs(b.plannedAt) &&
+      a.passengers == b.passengers &&
+      a.night == b.night &&
+      a.ifr == b.ifr &&
+      a.categoryClass == b.categoryClass &&
+      a.verdict == b.verdict &&
+      a.metarRaw == b.metarRaw;
+
   PlannedFlight get _flight => PlannedFlight(
         date: _departure,
         categoryClass: _categoryClass,
@@ -88,7 +104,11 @@ class _TodayScreenState extends State<TodayScreen> {
         ifr: _ifr,
       );
 
-  Future<void> _check() async {
+  /// [auto]: the check made on opening the Go Card. It is not saved when
+  /// history already holds the same plan against the same METAR with the
+  /// same result, so opening the Go Card again adds nothing new. A check the
+  /// pilot asks for is always saved.
+  Future<void> _check({bool auto = false}) async {
     final station = _dep.text.trim().toUpperCase();
     if (station.length < 3) return;
     final weather = context.read<WeatherService>();
@@ -107,15 +127,20 @@ class _TodayScreenState extends State<TodayScreen> {
         _weather = snap;
         _loadingWeather = false;
         _checkedAt = _now();
+        _checkedDep = station;
+        _checkedDest = _dest.text.trim().toUpperCase();
       });
       final result = _result(logbook.entries, settings);
-      await logbook.saveCheck(GoCheckRecord.fromResult(
+      final record = GoCheckRecord.fromResult(
         result: result,
         departure: station,
         destination: _dest.text.trim().toUpperCase(),
         plannedAt: _departure,
         createdAt: _now(),
-      ));
+      );
+      if (!auto || !logbook.checks.any((c) => _sameCheck(c, record))) {
+        await logbook.saveCheck(record);
+      }
     } catch (e, st) {
       // Shown on the card, and recorded: a failed check must never leave
       // Today on "Checking…".
@@ -192,22 +217,28 @@ class _TodayScreenState extends State<TodayScreen> {
     final settings = context.watch<SettingsStore>();
     final logbook = context.watch<LogbookService>();
     final result = _result(logbook.entries, settings);
+    final scheme = Theme.of(context).colorScheme;
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Today'),
+        toolbarHeight: 78,
+        titleSpacing: 20,
+        title: PageTitle('Go Card',
+            subtitle: 'Legal + minimums · ${dayMonthYear(_now())}'),
         actions: [
-          IconButton(
+          _roundAction(
             tooltip: 'Check history',
-            icon: const Icon(Icons.history),
+            icon: Icons.history_rounded,
             onPressed: () => Navigator.of(context).push(
                 MaterialPageRoute(builder: (_) => const GoHistoryScreen())),
           ),
-          IconButton(
+          const SizedBox(width: 8),
+          _roundAction(
             tooltip: 'Settings',
-            icon: const Icon(Icons.settings_outlined),
+            icon: Icons.settings_outlined,
             onPressed: () => Navigator.of(context).push(
                 MaterialPageRoute(builder: (_) => const SettingsScreen())),
           ),
+          const SizedBox(width: 16),
         ],
       ),
       body: RefreshIndicator(
@@ -215,36 +246,49 @@ class _TodayScreenState extends State<TodayScreen> {
         child: ListView(
           padding: const EdgeInsets.fromLTRB(16, 4, 16, 32),
           children: [
-            _inputs(context, settings),
-            const SizedBox(height: 14),
             _verdict(context, result),
             const SizedBox(height: 16),
+            _inputs(context, settings),
+            const SizedBox(height: 22),
             _legal(context, result.legal, settings),
-            const SizedBox(height: 16),
+            const SizedBox(height: 22),
             _minimums(context, result, settings),
-            const SizedBox(height: 14),
-            Text(
-              GoResult.disclaimer,
-              style: TextStyle(
-                fontSize: 12.5,
-                fontStyle: FontStyle.italic,
-                color: Theme.of(context).colorScheme.onSurfaceVariant,
-              ),
-            ),
-            const SizedBox(height: 14),
-            Wrap(
-              spacing: 10,
-              runSpacing: 8,
+            const SizedBox(height: 18),
+            Row(
               children: [
-                FilledButton.icon(
-                  onPressed: _logThisFlight,
-                  icon: const Icon(Icons.edit_note),
-                  label: const Text('Log this flight'),
+                Expanded(
+                  child: FilledButton.icon(
+                    onPressed: _logThisFlight,
+                    icon: const Icon(Icons.edit_note_rounded),
+                    label: const Text('Log this flight'),
+                  ),
                 ),
-                OutlinedButton.icon(
-                  onPressed: _loadingWeather ? null : _check,
-                  icon: const Icon(Icons.refresh),
-                  label: const Text('Check again'),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: OutlinedButton.icon(
+                    onPressed: _loadingWeather ? null : _check,
+                    icon: const Icon(Icons.refresh_rounded),
+                    label: const Text('Check again'),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 16),
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Icon(Icons.shield_outlined,
+                    size: 16, color: scheme.onSurfaceVariant),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Text(
+                    GoResult.disclaimer,
+                    style: TextStyle(
+                      fontSize: 12.5,
+                      height: 1.35,
+                      color: scheme.onSurfaceVariant,
+                    ),
+                  ),
                 ),
               ],
             ),
@@ -254,6 +298,28 @@ class _TodayScreenState extends State<TodayScreen> {
     );
   }
 
+  Widget _roundAction({
+    required String tooltip,
+    required IconData icon,
+    required VoidCallback onPressed,
+  }) {
+    final scheme = Theme.of(context).colorScheme;
+    return IconButton(
+      tooltip: tooltip,
+      onPressed: onPressed,
+      style: IconButton.styleFrom(
+        backgroundColor: scheme.surfaceContainerLowest,
+        side: BorderSide(color: scheme.outlineVariant),
+        fixedSize: const Size(44, 44),
+      ),
+      icon: Icon(icon, size: 22),
+    );
+  }
+
+  String get _timeText => '${dayMonthYear(_departure)} '
+      '${_departure.hour.toString().padLeft(2, '0')}:'
+      '${_departure.minute.toString().padLeft(2, '0')}';
+
   Widget _inputs(BuildContext context, SettingsStore settings) {
     final scheme = Theme.of(context).colorScheme;
     final classes = <String>{
@@ -262,10 +328,32 @@ class _TodayScreenState extends State<TodayScreen> {
         settings.profile.homeCategoryClass,
       if (_categoryClass.isNotEmpty) _categoryClass,
     }.toList();
-    return PlacardCard(
+    return SkyCard(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          Row(
+            children: [
+              const IconTile(Icons.flight_rounded),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text('Your flight',
+                        style: TextStyle(
+                            fontFamily: AppFonts.heading,
+                            fontWeight: FontWeight.w700,
+                            fontSize: 18)),
+                    Text('Where, when and what you will carry',
+                        style: TextStyle(
+                            fontSize: 13, color: scheme.onSurfaceVariant)),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 16),
           Row(
             children: [
               Expanded(
@@ -273,10 +361,12 @@ class _TodayScreenState extends State<TodayScreen> {
                   key: const Key('go-departure'),
                   controller: _dep,
                   textCapitalization: TextCapitalization.characters,
-                  style: const TextStyle(fontFamily: AppFonts.mono),
+                  style: const TextStyle(
+                      fontFamily: AppFonts.mono, fontWeight: FontWeight.w500),
                   decoration: const InputDecoration(
                     labelText: 'Departure',
                     hintText: 'ICAO',
+                    prefixIcon: Icon(Icons.flight_takeoff_rounded, size: 20),
                   ),
                   onSubmitted: (_) => _check(),
                 ),
@@ -287,10 +377,12 @@ class _TodayScreenState extends State<TodayScreen> {
                   key: const Key('go-destination'),
                   controller: _dest,
                   textCapitalization: TextCapitalization.characters,
-                  style: const TextStyle(fontFamily: AppFonts.mono),
+                  style: const TextStyle(
+                      fontFamily: AppFonts.mono, fontWeight: FontWeight.w500),
                   decoration: const InputDecoration(
                     labelText: 'Destination',
                     hintText: 'Optional',
+                    prefixIcon: Icon(Icons.flight_land_rounded, size: 20),
                   ),
                 ),
               ),
@@ -302,32 +394,60 @@ class _TodayScreenState extends State<TodayScreen> {
               Expanded(
                 child: OutlinedButton.icon(
                   onPressed: _pickDeparture,
-                  icon: const Icon(Icons.schedule, size: 18),
+                  style: OutlinedButton.styleFrom(
+                    foregroundColor: scheme.onSurface,
+                    alignment: Alignment.centerLeft,
+                    padding: const EdgeInsets.symmetric(horizontal: 14),
+                  ),
+                  icon: Icon(Icons.schedule_rounded,
+                      size: 20, color: scheme.primary),
                   label: Text(
-                    '${dayMonthYear(_departure)} '
-                    '${_departure.hour.toString().padLeft(2, '0')}:'
-                    '${_departure.minute.toString().padLeft(2, '0')}',
-                    style: const TextStyle(fontFamily: AppFonts.mono),
+                    _timeText,
+                    style: const TextStyle(
+                        fontFamily: AppFonts.mono,
+                        fontWeight: FontWeight.w500,
+                        fontSize: 14),
                     overflow: TextOverflow.ellipsis,
                   ),
                 ),
               ),
               const SizedBox(width: 10),
-              DropdownButton<String>(
-                value: _categoryClass.isEmpty ? null : _categoryClass,
-                hint: const Text('Class'),
-                items: [
-                  for (final c in classes)
-                    DropdownMenuItem(value: c, child: Text(c)),
-                ],
-                onChanged: (v) => setState(() => _categoryClass = v ?? ''),
+              Container(
+                height: 48,
+                padding: const EdgeInsets.symmetric(horizontal: 12),
+                decoration: BoxDecoration(
+                  color: scheme.surfaceContainerLowest,
+                  borderRadius: const BorderRadius.all(Radius.circular(14)),
+                  border: Border.all(
+                      color: Theme.of(context).brightness == Brightness.light
+                          ? Sky.lineStrong
+                          : scheme.outlineVariant),
+                ),
+                child: DropdownButtonHideUnderline(
+                  child: DropdownButton<String>(
+                    value: _categoryClass.isEmpty ? null : _categoryClass,
+                    hint: const Text('Class'),
+                    borderRadius: Sky.cornersM,
+                    icon: const Icon(Icons.expand_more_rounded),
+                    style: TextStyle(
+                        fontFamily: AppFonts.heading,
+                        fontWeight: FontWeight.w700,
+                        fontSize: 15,
+                        color: scheme.onSurface),
+                    items: [
+                      for (final c in classes)
+                        DropdownMenuItem(value: c, child: Text(c)),
+                    ],
+                    onChanged: (v) => setState(() => _categoryClass = v ?? ''),
+                  ),
+                ),
               ),
             ],
           ),
-          const SizedBox(height: 8),
+          const SizedBox(height: 12),
           Wrap(
             spacing: 8,
-            runSpacing: 4,
+            runSpacing: 8,
             children: [
               FilterChip(
                 avatar: const Icon(Icons.groups_outlined, size: 18),
@@ -354,7 +474,7 @@ class _TodayScreenState extends State<TodayScreen> {
               ),
             ],
           ),
-          const SizedBox(height: 10),
+          const SizedBox(height: 16),
           SizedBox(
             width: double.infinity,
             child: FilledButton(
@@ -373,12 +493,23 @@ class _TodayScreenState extends State<TodayScreen> {
             ),
           if (_checkedAt != null)
             Padding(
-              padding: const EdgeInsets.only(top: 6),
-              child: Text(
-                'Checked ${_checkedAt!.hour.toString().padLeft(2, '0')}:'
-                '${_checkedAt!.minute.toString().padLeft(2, '0')} local · '
-                'saved to history',
-                style: TextStyle(fontSize: 12, color: scheme.onSurfaceVariant),
+              padding: const EdgeInsets.only(top: 10),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(Icons.check_circle_outline_rounded,
+                      size: 14, color: scheme.onSurfaceVariant),
+                  const SizedBox(width: 6),
+                  Flexible(
+                    child: Text(
+                      'Checked ${_checkedAt!.hour.toString().padLeft(2, '0')}:'
+                      '${_checkedAt!.minute.toString().padLeft(2, '0')} local · '
+                      'saved to history',
+                      style: TextStyle(
+                          fontSize: 12, color: scheme.onSurfaceVariant),
+                    ),
+                  ),
+                ],
               ),
             ),
         ],
@@ -395,34 +526,94 @@ class _TodayScreenState extends State<TodayScreen> {
     final headline = weatherPending && result.verdict != GoVerdict.notLegal
         ? 'Legal for this flight. Fetching the latest METAR and TAF…'
         : result.headline;
-    return Container(
+    final mood = _night
+        ? SkyMood.night
+        : result.verdict == GoVerdict.outside
+            ? SkyMood.overcast
+            : SkyMood.day;
+    final dep = _checkedDep ?? _dep.text.trim().toUpperCase();
+    final dest = _checkedDest ?? _dest.text.trim().toUpperCase();
+    final route = dep.isEmpty
+        ? 'No departure yet'
+        : dest.isEmpty || dest == dep
+            ? dep
+            : '$dep → $dest';
+    return SkyCard(
       key: const Key('go-verdict'),
-      padding: const EdgeInsets.all(14),
-      decoration: BoxDecoration(
-        color: scheme.surfaceContainerLowest,
-        borderRadius: Rbf.corners,
-        border: Border.all(color: toneColor(context, look.tone), width: 2),
-      ),
+      padding: EdgeInsets.zero,
+      radius: Sky.cornersL,
+      borderColor:
+          look.tone == Tone.neutral ? null : toneColor(context, look.tone),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          StatusTag(look),
-          const SizedBox(height: 8),
-          Text(
-            headline,
-            style: const TextStyle(
-              fontFamily: AppFonts.heading,
-              fontWeight: FontWeight.w700,
-              fontSize: 21,
-              height: 1.15,
+          Stack(
+            children: [
+              SkyScene(mood: mood, height: 150),
+              Positioned(
+                left: 14,
+                top: 14,
+                right: 14,
+                child: Align(
+                  alignment: Alignment.centerLeft,
+                  child: Container(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                  decoration: ShapeDecoration(
+                    color: scheme.surfaceContainerLowest.withValues(alpha: 0.92),
+                    shape: const StadiumBorder(),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(Icons.near_me_rounded,
+                          size: 15, color: scheme.primary),
+                      const SizedBox(width: 6),
+                      Flexible(
+                        child: Text(route,
+                            overflow: TextOverflow.ellipsis,
+                            style: TextStyle(
+                                fontFamily: AppFonts.mono,
+                                fontWeight: FontWeight.w500,
+                                fontSize: 12.5,
+                                color: scheme.onSurface)),
+                      ),
+                    ],
+                  ),
+                ),
+                ),
+              ),
+            ],
+          ),
+          Padding(
+            padding: const EdgeInsets.fromLTRB(16, 14, 16, 16),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                StatusTag(look),
+                const SizedBox(height: 10),
+                Text(
+                  headline,
+                  style: TextStyle(
+                    fontFamily: AppFonts.heading,
+                    fontWeight: FontWeight.w800,
+                    fontSize: 21,
+                    height: 1.2,
+                    letterSpacing: -0.2,
+                    color: scheme.onSurface,
+                  ),
+                ),
+                if (result.secondLine != null) ...[
+                  const SizedBox(height: 4),
+                  Text(result.secondLine!,
+                      style: TextStyle(
+                          fontSize: 15,
+                          height: 1.3,
+                          color: scheme.onSurfaceVariant)),
+                ],
+              ],
             ),
           ),
-          if (result.secondLine != null) ...[
-            const SizedBox(height: 4),
-            Text(result.secondLine!,
-                style: const TextStyle(
-                    fontFamily: AppFonts.heading, fontSize: 17)),
-          ],
         ],
       ),
     );
@@ -450,6 +641,11 @@ class _TodayScreenState extends State<TodayScreen> {
 
   Widget _legal(BuildContext context, LegalityReport report, SettingsStore s) {
     final scheme = Theme.of(context).colorScheme;
+    final needed = report.rules.where((r) => r.required).toList();
+    final met = needed
+        .where((r) =>
+            r.state == RuleState.valid || r.state == RuleState.exempt)
+        .length;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -457,13 +653,31 @@ class _TodayScreenState extends State<TodayScreen> {
             subtitle: 'From your logbook and profile · '
                 '${_categoryClass.isEmpty ? 'no class chosen' : _categoryClass}'
                 '${_tailwheel ? ' tailwheel' : ''}'),
-        if (!report.hasEntries)
-          const NoticeLine(
-            icon: Icons.menu_book_outlined,
-            text: "No flights logged yet. Log your recent flights and this "
-                "shows what you're current for.",
+        SkyCard(
+          padding: const EdgeInsets.fromLTRB(16, 14, 16, 6),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              if (needed.isNotEmpty) ...[
+                ProgressStrip(
+                  label: 'Requirements met for this flight',
+                  trailing: '$met of ${needed.length}',
+                  value: met / needed.length,
+                ),
+                const SizedBox(height: 8),
+              ],
+              if (!report.hasEntries)
+                const NoticeLine(
+                  icon: Icons.menu_book_outlined,
+                  text: "No flights logged yet. Log your recent flights and "
+                      "this shows what you're current for.",
+                ),
+              for (var i = 0; i < report.rules.length; i++)
+                _ruleRow(context, report.rules[i],
+                    last: i == report.rules.length - 1),
+            ],
           ),
-        for (final r in report.rules) _ruleRow(context, r),
+        ),
         if (_night && _nightLine() != null)
           Padding(
             padding: const EdgeInsets.only(top: 8),
@@ -474,7 +688,7 @@ class _TodayScreenState extends State<TodayScreen> {
             ),
           ),
         Padding(
-          padding: const EdgeInsets.only(top: 6),
+          padding: const EdgeInsets.fromLTRB(4, 8, 4, 0),
           child: Text(
             'Not checked here: type ratings, endorsements other than student '
             'solo, and the 61.57(e) exceptions.',
@@ -485,16 +699,38 @@ class _TodayScreenState extends State<TodayScreen> {
     );
   }
 
-  Widget _ruleRow(BuildContext context, RuleStatus r) {
+  static IconData _ruleIcon(RuleId id) {
+    switch (id) {
+      case RuleId.dayPassengers:
+        return Icons.groups_outlined;
+      case RuleId.nightPassengers:
+        return Icons.nightlight_outlined;
+      case RuleId.ifr:
+        return Icons.cloud_outlined;
+      case RuleId.flightReview:
+        return Icons.verified_outlined;
+      case RuleId.medical:
+        return Icons.medical_services_outlined;
+      case RuleId.studentSolo:
+      case RuleId.studentPassengers:
+        return Icons.school_outlined;
+    }
+  }
+
+  Widget _ruleRow(BuildContext context, RuleStatus r, {bool last = false}) {
     final scheme = Theme.of(context).colorScheme;
     return Container(
-      padding: const EdgeInsets.symmetric(vertical: 9),
+      padding: const EdgeInsets.symmetric(vertical: 12),
       decoration: BoxDecoration(
-        border: Border(bottom: BorderSide(color: scheme.outlineVariant)),
+        border: last
+            ? null
+            : Border(bottom: BorderSide(color: scheme.outlineVariant)),
       ),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          IconTile(_ruleIcon(r.id), size: 40),
+          const SizedBox(width: 12),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -502,21 +738,23 @@ class _TodayScreenState extends State<TodayScreen> {
                 Text.rich(TextSpan(children: [
                   TextSpan(
                     text: r.title,
-                    style: const TextStyle(
+                    style: TextStyle(
                         fontFamily: AppFonts.heading,
                         fontWeight: FontWeight.w700,
-                        fontSize: 16.5),
+                        fontSize: 16,
+                        color: scheme.onSurface),
                   ),
                   TextSpan(
                     text: '  ${r.cite}',
                     style: TextStyle(
                         fontFamily: AppFonts.mono,
-                        fontSize: 11,
+                        fontSize: 10.5,
                         color: scheme.onSurfaceVariant),
                   ),
                 ])),
-                const SizedBox(height: 2),
-                Text(r.summary),
+                const SizedBox(height: 3),
+                Text(r.summary,
+                    style: TextStyle(fontSize: 14, color: scheme.onSurface)),
                 if (!r.required)
                   Text('Not needed for this flight',
                       style: TextStyle(
@@ -545,13 +783,7 @@ class _TodayScreenState extends State<TodayScreen> {
     final scheme = Theme.of(context).colorScheme;
     final set = s.minimums.forFlight(night: _night);
     final w = _weather;
-    final children = <Widget>[
-      SectionHeader(
-        'Minimums',
-        subtitle: 'Your ${_night ? 'night' : 'day'} limits vs. live '
-            'aviationweather.gov data',
-      ),
-    ];
+    final children = <Widget>[];
     if (set.isEmpty) {
       children.add(NoticeLine(
         icon: Icons.tune,
@@ -566,7 +798,7 @@ class _TodayScreenState extends State<TodayScreen> {
     }
     if (_loadingWeather) {
       children.add(const Padding(
-        padding: EdgeInsets.all(12),
+        padding: EdgeInsets.all(16),
         child: Center(child: CircularProgressIndicator()),
       ));
     } else if (w == null) {
@@ -585,16 +817,18 @@ class _TodayScreenState extends State<TodayScreen> {
       final m = w.metar!;
       final age = m.ageMinutes(_now());
       children.addAll([
-        MonoBlock(m.raw),
-        const SizedBox(height: 6),
         Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            const IconTile(Icons.cell_tower_rounded, size: 40),
+            const SizedBox(width: 12),
             Expanded(
               child: Text(
                 '${m.icao}${m.name.isEmpty ? '' : ' · ${m.name}'}\n'
                 'Observed ${m.observedUtc == null ? 'time unknown' : zuluTime(m.observedUtc!)}'
                 '${age == null ? '' : ' · $age min ago'}',
-                style: TextStyle(fontSize: 12.5, color: scheme.onSurfaceVariant),
+                style: TextStyle(
+                    fontSize: 13, height: 1.35, color: scheme.onSurfaceVariant),
               ),
             ),
             if (result.metarStale)
@@ -603,7 +837,9 @@ class _TodayScreenState extends State<TodayScreen> {
                   dense: true),
           ],
         ),
-        const SizedBox(height: 6),
+        const SizedBox(height: 10),
+        MonoBlock(m.raw),
+        const SizedBox(height: 4),
         if (result.metarCheck != null)
           for (final l in result.metarCheck!.lines) _lineRow(context, l),
         if (w.airportStatus != FetchStatus.ok)
@@ -616,20 +852,29 @@ class _TodayScreenState extends State<TodayScreen> {
     }
 
     if (w != null) {
-      children.add(const SizedBox(height: 12));
-      children.add(const Text('TAF, departure ±1 h',
-          style: TextStyle(
-              fontFamily: AppFonts.heading,
-              fontWeight: FontWeight.w700,
-              fontSize: 15)));
+      children.add(const SizedBox(height: 14));
+      children.add(Row(children: [
+        Icon(Icons.schedule_rounded, size: 18, color: scheme.secondary),
+        const SizedBox(width: 6),
+        const Flexible(
+          child: Text('TAF, departure ±1 h',
+              style: TextStyle(
+                  fontFamily: AppFonts.heading,
+                  fontWeight: FontWeight.w700,
+                  fontSize: 15)),
+        ),
+      ]));
       if (result.tafNote != null) {
         children.add(NoticeLine(icon: Icons.info_outline, text: result.tafNote!));
       }
       for (final t in result.tafChecks) {
         children.add(Padding(
-          padding: const EdgeInsets.only(top: 6),
+          padding: const EdgeInsets.only(top: 8, bottom: 2),
           child: Text(t.source,
-              style: const TextStyle(fontFamily: AppFonts.mono, fontSize: 12.5)),
+              style: TextStyle(
+                  fontFamily: AppFonts.mono,
+                  fontSize: 12,
+                  color: scheme.onSurfaceVariant)),
         ));
         for (final l in t.lines) {
           children.add(_lineRow(context, l, compact: true));
@@ -637,33 +882,66 @@ class _TodayScreenState extends State<TodayScreen> {
       }
     }
     return Column(
-        crossAxisAlignment: CrossAxisAlignment.start, children: children);
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        SectionHeader(
+          'Minimums',
+          subtitle: 'Your ${_night ? 'night' : 'day'} limits vs. live '
+              'aviationweather.gov data',
+        ),
+        SkyCard(
+          padding: const EdgeInsets.fromLTRB(16, 14, 16, 12),
+          child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: children),
+        ),
+      ],
+    );
+  }
+
+  static IconData _lineIcon(String label) {
+    final l = label.toLowerCase();
+    if (l.contains('ceil')) return Icons.cloud_outlined;
+    if (l.contains('vis')) return Icons.visibility_outlined;
+    if (l.contains('cross')) return Icons.swap_horiz_rounded;
+    if (l.contains('gust')) return Icons.storm_outlined;
+    if (l.contains('wind')) return Icons.air_rounded;
+    return Icons.tune_rounded;
   }
 
   Widget _lineRow(BuildContext context, MinimumLine l, {bool compact = false}) {
     final scheme = Theme.of(context).colorScheme;
     return Container(
-      padding: EdgeInsets.symmetric(vertical: compact ? 5 : 8),
+      padding: EdgeInsets.symmetric(vertical: compact ? 6 : 10),
       decoration: BoxDecoration(
         border: Border(bottom: BorderSide(color: scheme.outlineVariant)),
       ),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          Padding(
+            padding: const EdgeInsets.only(top: 1),
+            child: Icon(_lineIcon(l.label),
+                size: compact ? 16 : 20, color: scheme.secondary),
+          ),
+          const SizedBox(width: 10),
           SizedBox(
-            width: 82,
+            width: 76,
             child: Text(l.label,
-                style: const TextStyle(
+                style: TextStyle(
                     fontFamily: AppFonts.heading,
                     fontWeight: FontWeight.w700,
-                    fontSize: 15)),
+                    fontSize: compact ? 13.5 : 15)),
           ),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(l.observed,
-                    style: const TextStyle(fontFamily: AppFonts.mono, fontSize: 13)),
+                    style: TextStyle(
+                        fontFamily: AppFonts.mono,
+                        fontWeight: FontWeight.w500,
+                        fontSize: compact ? 12 : 13)),
                 Text('Your limit ${l.limit}',
                     style: TextStyle(fontSize: 12, color: scheme.onSurfaceVariant)),
                 if (l.detail != null)
@@ -672,6 +950,7 @@ class _TodayScreenState extends State<TodayScreen> {
               ],
             ),
           ),
+          const SizedBox(width: 6),
           StatusTag(lookForCheck(l.state), dense: true),
         ],
       ),

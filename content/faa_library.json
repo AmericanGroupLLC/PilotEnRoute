@@ -1,0 +1,486 @@
+[
+  {
+    "id": "phak",
+    "title": "Pilot's Handbook of Aeronautical Knowledge",
+    "docNumber": "FAA-H-8083-25C",
+    "edition": "2023 (front matter; supersedes FAA-H-8083-25B dated 2016 and Addenda A-C). MOSAIC addendum also published.",
+    "url": "https://www.faa.gov/regulations_policies/handbooks_manuals/aviation/faa-h-8083-25c.pdf",
+    "landingUrl": "https://www.faa.gov/regulations_policies/handbooks_manuals/aviation/phak",
+    "format": "pdf",
+    "pages": 522,
+    "addenda": [
+      "https://www.faa.gov/regulations_policies/handbooks_manuals/aviation/PHAK_Addendum_(MOSAIC).pdf"
+    ],
+    "chapters": [
+      {
+        "n": "front",
+        "title": "Front Matter",
+        "url": "https://www.faa.gov/sites/faa.gov/files/01_phak_front.pdf",
+        "httpStatus": 200,
+        "checkedUtc": "2026-10-17T11:02:53Z"
+      },
+      {
+        "n": "toc",
+        "title": "Table of Contents",
+        "url": "https://www.faa.gov/sites/faa.gov/files/02_phak_toc.pdf",
+        "httpStatus": 200,
+        "checkedUtc": "2026-10-17T11:02:54Z"
+      },
+      {
+        "n": "1",
+        "title": "Introduction to Flying",
+        "url": "https://www.faa.gov/sites/faa.gov/files/03_phak_ch1.pdf",
+        "httpStatus": 200,
+        "checkedUtc": "2026-10-17T11:02:54Z"
+      },
+      {
+        "n": "2",
+        "title": "Aeronautical Decision-Making",
+        "url": "https://www.faa.gov/sites/faa.gov/files/04_phak_ch2.pdf",
+        "httpStatus": 200,
+        "checkedUtc": "2026-10-17T11:02:54Z"
+      },
+      {
+        "n": "3",
+        "title": "Aircraft Construction",
+        "url": "https://www.faa.gov/sites/faa.gov/files/05_phak_ch3_0.pdf",
+        "httpStatus": 200,
+        "checkedUtc": "2026-10-17T11:02:54Z"
+      },
+      {
+        "n": "4",
+        "title": "Principles of Flight",
+        "url": "https://www.faa.gov/sites/faa.gov/files/06_phak_ch4_0.pdf",
+        "httpStatus": 200,
+        "checkedUtc": "2026-10-17T11:02:54Z"
+      },
+      {
+        "n": "5",
+        "title": "Aerodynamics of Flight",
+        "url": "https://www.faa.gov/sites/faa.gov/files/07_phak_ch5_0.pdf",
+        "httpStatus": 200,
+        "checkedUtc": "2026-10-17T11:02:54Z"
+      },
+      {
+        "n": "6",
+        "title": "Flight Controls",
+        "url": "https://www.faa.gov/sites/faa.gov/files/08_phak_ch6.pdf",
+        "httpStatus": 200,
+        "checkedUtc": "2026-10-17T11:02:55Z"
+      },
+      {
+        "n": "7",
+        "title": "Aircraft Systems",
+        "url": "https://www.faa.gov/sites/faa.gov/files/09_phak_ch7.pdf",
+        "httpStatus": 200,
+        "checkedUtc": "2026-10-17T11:02:55Z"
+      },
+      {
+        "n": "8",
+        "title": "Flight Instruments",
+        "url": "https://www.faa.gov/sites/faa.gov/files/10_phak_ch8.pdf",
+        "httpStatus": 200,
+        "checkedUtc": "2026-10-17T11:02:55Z"
+      },
+      {
+        "n": "9",
+        "title": "Flight Manuals and Other Documents",
+        "url": "https://www.faa.gov/sites/faa.gov/files/11_phak_ch9.pdf",
+        "httpStatus": 200,
+        "checkedUtc": "2026-10-17T11:02:55Z"
+      },
+      {
+        "n": "10",
+        "title": "Weight and Balance",
+        "url": "https://www.faa.gov/sites/faa.gov/files/12_phak_ch10.pdf",
+        "httpStatus": 200,
+        "checkedUtc": "2026-10-17T11:02:55Z"
+      },
+      {
+        "n": "11",
+        "title": "Aircraft Performance",
+        "url": "https://www.faa.gov/sites/faa.gov/files/13_phak_ch11.pdf",
+        "httpStatus": 200,
+        "checkedUtc": "2026-10-17T11:02:55Z"
+      },
+      {
+        "n": "12",
+        "title": "Weather Theory",
+        "url": "https://www.faa.gov/sites/faa.gov/files/14_phak_ch12.pdf",
+        "httpStatus": 200,
+        "checkedUtc": "2026-10-17T11:02:55Z"
+      },
+      {
+        "n": "13",
+        "title": "Aviation Weather Services",
+        "url": "https://www.faa.gov/sites/faa.gov/files/15_phak_ch13.pdf",
+        "httpStatus": 200,
+        "checkedUtc": "2026-10-17T11:02:56Z"
+      },
+      {
+        "n": "14",
+        "title": "Airport Operations",
+        "url": "https://www.faa.gov/sites/faa.gov/files/16_phak_ch14_0.pdf",
+        "httpStatus": 200,
+        "checkedUtc": "2026-10-17T11:02:56Z"
+      },
+      {
+        "n": "15",
+        "title": "Airspace",
+        "url": "https://www.faa.gov/sites/faa.gov/files/17_phak_ch15.pdf",
+        "httpStatus": 200,
+        "checkedUtc": "2026-10-17T11:02:56Z"
+      },
+      {
+        "n": "16",
+        "title": "Navigation",
+        "url": "https://www.faa.gov/sites/faa.gov/files/18_phak_ch16.pdf",
+        "httpStatus": 200,
+        "checkedUtc": "2026-10-17T11:02:56Z"
+      },
+      {
+        "n": "17",
+        "title": "Aeromedical Factors",
+        "url": "https://www.faa.gov/sites/faa.gov/files/19_phak_ch17.pdf",
+        "httpStatus": 200,
+        "checkedUtc": "2026-10-17T11:02:56Z"
+      },
+      {
+        "n": "appendices",
+        "title": "Appendices",
+        "url": "https://www.faa.gov/sites/faa.gov/files/20_phak_appendices.pdf",
+        "httpStatus": 200,
+        "checkedUtc": "2026-10-17T11:02:57Z"
+      },
+      {
+        "n": "glossary",
+        "title": "Glossary",
+        "url": "https://www.faa.gov/sites/faa.gov/files/21_phak_glossary.pdf",
+        "httpStatus": 200,
+        "checkedUtc": "2026-10-17T11:02:57Z"
+      },
+      {
+        "n": "index",
+        "title": "Index",
+        "url": "https://www.faa.gov/sites/faa.gov/files/22_phak_index.pdf",
+        "httpStatus": 200,
+        "checkedUtc": "2026-10-17T11:02:57Z"
+      }
+    ],
+    "httpStatus": 200,
+    "contentType": "application/pdf",
+    "checkedUtc": "2026-10-17T11:02:53Z"
+  },
+  {
+    "id": "afh",
+    "title": "Airplane Flying Handbook",
+    "docNumber": "FAA-H-8083-3C",
+    "edition": "2021 (front matter; supersedes FAA-H-8083-3B dated 2016). MOSAIC addendum also published.",
+    "url": "https://www.faa.gov/sites/faa.gov/files/regulations_policies/handbooks_manuals/aviation/airplane_handbook/00_afh_full.pdf",
+    "landingUrl": "https://www.faa.gov/regulations_policies/handbooks_manuals/aviation/airplane_handbook",
+    "format": "pdf",
+    "pages": 406,
+    "addenda": [
+      "https://www.faa.gov/regulations_policies/handbooks_manuals/aviation/AFH_Addendum_(MOSAIC).pdf"
+    ],
+    "chapters": [
+      {
+        "n": "front",
+        "title": "Front Matter: Cover, Preface, Acknowledgments, Major Revisions, & Table of Contents",
+        "url": "https://www.faa.gov/sites/faa.gov/files/regulations_policies/handbooks_manuals/aviation/airplane_handbook/01_afh_front.pdf",
+        "httpStatus": 200,
+        "checkedUtc": "2026-10-17T11:02:57Z"
+      },
+      {
+        "n": "1",
+        "title": "Introduction to Flight Training",
+        "url": "https://www.faa.gov/sites/faa.gov/files/regulations_policies/handbooks_manuals/aviation/airplane_handbook/02_afh_ch1.pdf",
+        "httpStatus": 200,
+        "checkedUtc": "2026-10-17T11:02:57Z"
+      },
+      {
+        "n": "2",
+        "title": "Ground Operations",
+        "url": "https://www.faa.gov/sites/faa.gov/files/regulations_policies/handbooks_manuals/aviation/airplane_handbook/03_afh_ch2.pdf",
+        "httpStatus": 200,
+        "checkedUtc": "2026-10-17T11:02:58Z"
+      },
+      {
+        "n": "3",
+        "title": "Basic Flight Maneuvers",
+        "url": "https://www.faa.gov/sites/faa.gov/files/regulations_policies/handbooks_manuals/aviation/airplane_handbook/04_afh_ch3.pdf",
+        "httpStatus": 200,
+        "checkedUtc": "2026-10-17T11:02:58Z"
+      },
+      {
+        "n": "4",
+        "title": "Energy Management: Mastering Altitude and Airspeed Control",
+        "url": "https://www.faa.gov/sites/faa.gov/files/regulations_policies/handbooks_manuals/aviation/airplane_handbook/05_afh_ch4.pdf",
+        "httpStatus": 200,
+        "checkedUtc": "2026-10-17T11:02:58Z"
+      },
+      {
+        "n": "5",
+        "title": "Maintaining Aircraft Control: Upset Prevention and Recovery Training",
+        "url": "https://www.faa.gov/sites/faa.gov/files/regulations_policies/handbooks_manuals/aviation/airplane_handbook/06_afh_ch5.pdf",
+        "httpStatus": 200,
+        "checkedUtc": "2026-10-17T11:02:58Z"
+      },
+      {
+        "n": "6",
+        "title": "Takeoffs and Departure Climbs",
+        "url": "https://www.faa.gov/sites/faa.gov/files/regulations_policies/handbooks_manuals/aviation/airplane_handbook/07_afh_ch6.pdf",
+        "httpStatus": 200,
+        "checkedUtc": "2026-10-17T11:02:58Z"
+      },
+      {
+        "n": "7",
+        "title": "Ground Reference Maneuvers",
+        "url": "https://www.faa.gov/sites/faa.gov/files/regulations_policies/handbooks_manuals/aviation/airplane_handbook/08_afh_ch7.pdf",
+        "httpStatus": 200,
+        "checkedUtc": "2026-10-17T11:02:59Z"
+      },
+      {
+        "n": "8",
+        "title": "Airport Traffic Patterns",
+        "url": "https://www.faa.gov/sites/faa.gov/files/regulations_policies/handbooks_manuals/aviation/airplane_handbook/09_afh_ch8.pdf",
+        "httpStatus": 200,
+        "checkedUtc": "2026-10-17T11:02:59Z"
+      },
+      {
+        "n": "9",
+        "title": "Approaches and Landings",
+        "url": "https://www.faa.gov/sites/faa.gov/files/regulations_policies/handbooks_manuals/aviation/airplane_handbook/10_afh_ch9.pdf",
+        "httpStatus": 200,
+        "checkedUtc": "2026-10-17T11:02:59Z"
+      },
+      {
+        "n": "10",
+        "title": "Performance Maneuvers",
+        "url": "https://www.faa.gov/sites/faa.gov/files/regulations_policies/handbooks_manuals/aviation/airplane_handbook/11_afh_ch10.pdf",
+        "httpStatus": 200,
+        "checkedUtc": "2026-10-17T11:02:59Z"
+      },
+      {
+        "n": "11",
+        "title": "Night Operations",
+        "url": "https://www.faa.gov/sites/faa.gov/files/regulations_policies/handbooks_manuals/aviation/airplane_handbook/12_afh_ch11.pdf",
+        "httpStatus": 200,
+        "checkedUtc": "2026-10-17T11:03:00Z"
+      },
+      {
+        "n": "12",
+        "title": "Transition to Complex Airplanes",
+        "url": "https://www.faa.gov/sites/faa.gov/files/regulations_policies/handbooks_manuals/aviation/airplane_handbook/13_afh_ch12.pdf",
+        "httpStatus": 200,
+        "checkedUtc": "2026-10-17T11:03:00Z"
+      },
+      {
+        "n": "13",
+        "title": "Transition to Multiengine Airplanes",
+        "url": "https://www.faa.gov/sites/faa.gov/files/regulations_policies/handbooks_manuals/aviation/airplane_handbook/14_afh_ch13.pdf",
+        "httpStatus": 200,
+        "checkedUtc": "2026-10-17T11:03:00Z"
+      },
+      {
+        "n": "14",
+        "title": "Transition to Tailwheel Airplanes",
+        "url": "https://www.faa.gov/sites/faa.gov/files/regulations_policies/handbooks_manuals/aviation/airplane_handbook/15_afh_ch14.pdf",
+        "httpStatus": 200,
+        "checkedUtc": "2026-10-17T11:03:00Z"
+      },
+      {
+        "n": "15",
+        "title": "Transition to Turbopropeller-Powered Airplanes",
+        "url": "https://www.faa.gov/sites/faa.gov/files/regulations_policies/handbooks_manuals/aviation/airplane_handbook/16_afh_ch15.pdf",
+        "httpStatus": 200,
+        "checkedUtc": "2026-10-17T11:03:00Z"
+      },
+      {
+        "n": "16",
+        "title": "Transition to Jet-Powered Airplanes",
+        "url": "https://www.faa.gov/sites/faa.gov/files/regulations_policies/handbooks_manuals/aviation/airplane_handbook/17_afh_ch16.pdf",
+        "httpStatus": 200,
+        "checkedUtc": "2026-10-17T11:03:00Z"
+      },
+      {
+        "n": "17",
+        "title": "Transition to Light Sport Airplanes (LSA)",
+        "url": "https://www.faa.gov/sites/faa.gov/files/regulations_policies/handbooks_manuals/aviation/airplane_handbook/18_afh_ch17.pdf",
+        "httpStatus": 200,
+        "checkedUtc": "2026-10-17T11:03:00Z"
+      },
+      {
+        "n": "18",
+        "title": "Emergency Procedures",
+        "url": "https://www.faa.gov/sites/faa.gov/files/regulations_policies/handbooks_manuals/aviation/airplane_handbook/19_afh_ch18.pdf",
+        "httpStatus": 200,
+        "checkedUtc": "2026-10-17T11:03:01Z"
+      },
+      {
+        "n": "glossary",
+        "title": "Glossary",
+        "url": "https://www.faa.gov/sites/faa.gov/files/regulations_policies/handbooks_manuals/aviation/airplane_handbook/20_afh_glossary.pdf",
+        "httpStatus": 200,
+        "checkedUtc": "2026-10-17T11:03:01Z"
+      },
+      {
+        "n": "index",
+        "title": "Index",
+        "url": "https://www.faa.gov/sites/faa.gov/files/regulations_policies/handbooks_manuals/aviation/airplane_handbook/21_afh_index.pdf",
+        "httpStatus": 200,
+        "checkedUtc": "2026-10-17T11:03:01Z"
+      }
+    ],
+    "httpStatus": 200,
+    "contentType": "application/pdf",
+    "checkedUtc": "2026-10-17T11:02:57Z"
+  },
+  {
+    "id": "aim",
+    "title": "Aeronautical Information Manual (Basic with Change 1, 2 and 3)",
+    "docNumber": "AIM",
+    "edition": "Basic dated February 20, 2025; Change 1 eff. 8/7/2025; Change 2 eff. 1/22/2026; Change 3 eff. 7/9/2026 (consolidated PDF/HTML effective 7/9/2026)",
+    "url": "https://www.faa.gov/air_traffic/publications/media/AIM_Basic_w_Chg_1_and_2_and_3_dtd_7-9-26_FINAL.pdf",
+    "landingUrl": "https://www.faa.gov/air_traffic/publications/",
+    "format": "pdf",
+    "pages": 918,
+    "httpStatus": 200,
+    "contentType": "application/pdf",
+    "checkedUtc": "2026-10-17T11:03:02Z",
+    "editionShort": "Change 3, effective 7/9/2026"
+  },
+  {
+    "id": "aim-html",
+    "title": "Aeronautical Information Manual (HTML, Basic with Change 1, 2 and 3)",
+    "docNumber": "AIM",
+    "edition": "effective 7/9/2026 per FAA Air Traffic Publications page",
+    "url": "https://www.faa.gov/air_traffic/publications/atpubs/aim_html/index.html",
+    "format": "html",
+    "httpStatus": 200,
+    "contentType": "text/html;charset=utf-8",
+    "checkedUtc": "2026-10-17T11:03:02Z",
+    "editionShort": "Change 3, effective 7/9/2026"
+  },
+  {
+    "id": "awh",
+    "title": "Aviation Weather Handbook",
+    "docNumber": "FAA-H-8083-28B",
+    "edition": "2026; signed/published April 2, 2026",
+    "url": "https://www.faa.gov/sites/faa.gov/files/FAA-H-8083-28B.pdf",
+    "landingUrl": "https://www.faa.gov/regulationspolicies/handbooksmanuals/aviation/faa-h-8083-28-aviation-weather-handbook",
+    "format": "pdf",
+    "pages": 514,
+    "httpStatus": 200,
+    "contentType": "application/pdf",
+    "checkedUtc": "2026-10-17T11:03:02Z"
+  },
+  {
+    "id": "acs-ppl-asel",
+    "title": "Private Pilot for Airplane Category Airman Certification Standards",
+    "docNumber": "FAA-S-ACS-6C",
+    "edition": "November 2023 (PDF cover); FAA ACS page lists publication April 2024, effective May 31, 2024, change n/a",
+    "url": "https://www.faa.gov/training_testing/testing/acs/private_airplane_acs_6.pdf",
+    "landingUrl": "https://www.faa.gov/training_testing/testing/acs",
+    "format": "pdf",
+    "pages": 87,
+    "httpStatus": 200,
+    "contentType": "application/pdf",
+    "checkedUtc": "2026-10-17T11:03:02Z"
+  },
+  {
+    "id": "akts-private",
+    "title": "Airman Knowledge Testing Supplement for Sport Pilot, Recreational Pilot, Remote Pilot, and Private Pilot",
+    "docNumber": "FAA-CT-8080-2H",
+    "edition": "2018 (FAA supplements page: 2018, June 11, 2018; supersedes FAA-CT-8080-2G dated 2016)",
+    "url": "https://www.faa.gov/sites/faa.gov/files/training_testing/testing/supplements/sport_rec_private_akts.pdf",
+    "landingUrl": "https://www.faa.gov/training_testing/testing/supplements",
+    "format": "pdf",
+    "pages": 113,
+    "httpStatus": 200,
+    "contentType": "application/pdf",
+    "checkedUtc": "2026-10-17T11:03:02Z"
+  },
+  {
+    "id": "rmh",
+    "title": "Risk Management Handbook",
+    "docNumber": "FAA-H-8083-2A",
+    "edition": "2022",
+    "url": "https://www.faa.gov/sites/faa.gov/files/2022-06/risk_management_handbook_2A.pdf",
+    "landingUrl": "https://www.faa.gov/regulationspolicies/handbooksmanuals/risk-management-handbook-faa-h-8083-2a",
+    "format": "pdf",
+    "pages": 80,
+    "httpStatus": 200,
+    "contentType": "application/pdf",
+    "checkedUtc": "2026-10-17T11:03:03Z"
+  },
+  {
+    "id": "ifh",
+    "title": "Instrument Flying Handbook",
+    "docNumber": "FAA-H-8083-15B",
+    "edition": "2012 (with errata sheet and Addendum 4/10/2015, Addendum B 11/5/2019 published separately)",
+    "url": "https://www.faa.gov/sites/faa.gov/files/regulations_policies/handbooks_manuals/aviation/FAA-H-8083-15B.pdf",
+    "landingUrl": "https://www.faa.gov/regulations_policies/handbooks_manuals/aviation",
+    "format": "pdf",
+    "pages": 371,
+    "addenda": [
+      "https://www.faa.gov/sites/faa.gov/files/regulations_policies/handbooks_manuals/aviation/ifh_errata.pdf",
+      "https://www.faa.gov/sites/faa.gov/files/regulations_policies/handbooks_manuals/aviation/ifh_addendum.pdf",
+      "https://www.faa.gov/sites/faa.gov/files/regulations_policies/handbooks_manuals/aviation/ifh_addendum_b.pdf"
+    ],
+    "httpStatus": 200,
+    "contentType": "application/pdf",
+    "checkedUtc": "2026-10-17T11:03:03Z"
+  },
+  {
+    "id": "wbh",
+    "title": "Weight & Balance Handbook",
+    "docNumber": "FAA-H-8083-1B",
+    "edition": "2016 (supersedes FAA-H-8083-1A dated 2007). MOSAIC addendum also published.",
+    "url": "https://www.faa.gov/sites/faa.gov/files/regulations_policies/handbooks_manuals/aviation/FAA-H-8083-1.pdf",
+    "landingUrl": "https://www.faa.gov/regulations_policies/handbooks_manuals/aviation",
+    "format": "pdf",
+    "pages": 114,
+    "addenda": [
+      "https://www.faa.gov/regulations_policies/handbooks_manuals/aviation/Weight_Balance_HB_Addendum_(MOSAIC).pdf"
+    ],
+    "httpStatus": 200,
+    "contentType": "application/pdf",
+    "checkedUtc": "2026-10-17T11:03:03Z"
+  },
+  {
+    "id": "cfr-14-61",
+    "title": "14 CFR Part 61 - Certification: Pilots, Flight Instructors, and Ground Instructors",
+    "docNumber": "14 CFR Part 61",
+    "edition": "eCFR current; Title 14 up to date as of 2026-10-15",
+    "url": "https://www.ecfr.gov/current/title-14/chapter-I/subchapter-D/part-61",
+    "format": "html",
+    "httpStatus": 200,
+    "contentType": "text/html; charset=utf-8",
+    "checkedUtc": "2026-10-17T11:03:06Z"
+  },
+  {
+    "id": "cfr-14-91",
+    "title": "14 CFR Part 91 - General Operating and Flight Rules",
+    "docNumber": "14 CFR Part 91",
+    "edition": "eCFR current; Title 14 up to date as of 2026-10-15",
+    "url": "https://www.ecfr.gov/current/title-14/chapter-I/subchapter-F/part-91",
+    "format": "html",
+    "httpStatus": 200,
+    "contentType": "text/html; charset=utf-8",
+    "checkedUtc": "2026-10-17T11:03:08Z"
+  },
+  {
+    "id": "cug",
+    "title": "Aeronautical Chart Users' Guide",
+    "docNumber": "FAA Aeronautical Chart Users' Guide",
+    "edition": "Effective 9 July 2026 (PDF cover). Note: the FAA landing page body also says information is effective as of 22 January 2026.",
+    "url": "https://aeronav.faa.gov/user_guide/cug-complete_20260709.pdf",
+    "landingUrl": "https://www.faa.gov/air_traffic/flight_info/aeronav/digital_products/aero_guide/",
+    "format": "pdf",
+    "pages": 140,
+    "httpStatus": 200,
+    "contentType": "application/pdf",
+    "checkedUtc": "2026-10-17T11:03:08Z"
+  }
+]

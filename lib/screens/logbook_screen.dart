@@ -188,7 +188,12 @@ class _LogbookScreenState extends State<LogbookScreen>
     final svc = context.watch<LogbookService>();
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Logbook'),
+        toolbarHeight: 78,
+        titleSpacing: 20,
+        title: PageTitle('Logbook',
+            subtitle: '${svc.entries.length} '
+                'flight${svc.entries.length == 1 ? '' : 's'} · '
+                '${totalsWithin(svc.entries, now: _now(), days: null).totalTime.toStringAsFixed(1)} h total'),
         actions: [
           if (_busy)
             const Padding(
@@ -201,7 +206,14 @@ class _LogbookScreenState extends State<LogbookScreen>
           PopupMenuButton<String>(
             tooltip: 'Export',
             enabled: !_busy,
-            icon: const Icon(Icons.ios_share),
+            icon: const Icon(Icons.ios_share_rounded),
+            style: IconButton.styleFrom(
+              backgroundColor:
+                  Theme.of(context).colorScheme.surfaceContainerLowest,
+              side: BorderSide(
+                  color: Theme.of(context).colorScheme.outlineVariant),
+              fixedSize: const Size(44, 44),
+            ),
             onSelected: (a) => _export(a, svc),
             itemBuilder: (_) => const [
               PopupMenuItem(
@@ -226,18 +238,21 @@ class _LogbookScreenState extends State<LogbookScreen>
                       title: Text('Paste CSV'))),
             ],
           ),
+          const SizedBox(width: 16),
         ],
-        bottom: TabBar(
+        bottom: SegmentedTabBar(
           controller: _tabs,
           tabs: const [Tab(text: 'Flights'), Tab(text: 'Totals')],
         ),
       ),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () => _openEntry(),
-        icon: const Icon(Icons.add),
+        icon: const Icon(Icons.add_rounded),
         label: const Text('Log flight',
             style: TextStyle(
-                fontFamily: AppFonts.heading, fontWeight: FontWeight.w700)),
+                fontFamily: AppFonts.heading,
+                fontWeight: FontWeight.w700,
+                fontSize: 15.5)),
       ),
       body: TabBarView(
         controller: _tabs,
@@ -276,7 +291,7 @@ class _LogbookScreenState extends State<LogbookScreen>
     return Column(
       children: [
         Padding(
-          padding: const EdgeInsets.fromLTRB(16, 10, 16, 6),
+          padding: const EdgeInsets.fromLTRB(16, 2, 16, 8),
           child: Row(
             children: [
               Expanded(
@@ -307,7 +322,14 @@ class _LogbookScreenState extends State<LogbookScreen>
                 label: Text('${_query.filterCount}'),
                 child: IconButton.outlined(
                   tooltip: 'Filters',
-                  icon: const Icon(Icons.filter_list),
+                  icon: const Icon(Icons.tune_rounded),
+                  style: IconButton.styleFrom(
+                    fixedSize: const Size(50, 50),
+                    backgroundColor: scheme.surfaceContainerLowest,
+                    side: BorderSide(color: scheme.outlineVariant),
+                    shape: const RoundedRectangleBorder(
+                        borderRadius: Sky.cornersM),
+                  ),
                   onPressed: _filters,
                 ),
               ),
@@ -353,8 +375,9 @@ class _LogbookScreenState extends State<LogbookScreen>
                   : ListView(
                       padding: const EdgeInsets.only(bottom: 96),
                       children: [
+                        _summary(context, svc),
                         Padding(
-                          padding: const EdgeInsets.fromLTRB(16, 0, 16, 4),
+                          padding: const EdgeInsets.fromLTRB(20, 4, 16, 2),
                           child: Text(
                             '${filtered.length} of ${svc.entries.length} '
                             'flights · swipe left to delete',
@@ -370,26 +393,68 @@ class _LogbookScreenState extends State<LogbookScreen>
     );
   }
 
+  Widget _summary(BuildContext context, LogbookService svc) {
+    final now = _now();
+    final d30 = totalsWithin(svc.entries, now: now, days: 30);
+    final d90 = totalsWithin(svc.entries, now: now, days: 90);
+    final all = totalsWithin(svc.entries, now: now, days: null);
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(16, 4, 16, 8),
+      child: SkyCard(
+        padding: const EdgeInsets.all(12),
+        child: Row(
+          children: [
+            Expanded(
+                child: StatTile(
+                    label: 'Hours\nlast 30 days',
+                    value: d30.totalTime.toStringAsFixed(1),
+                    unit: 'h')),
+            const SizedBox(width: 8),
+            Expanded(
+                child: StatTile(
+                    label: 'Landings\nlast 90 days',
+                    value: '${d90.dayLandings + d90.nightLandings}')),
+            const SizedBox(width: 8),
+            Expanded(
+                child: StatTile(
+                    label: 'Night\nall time',
+                    value: all.night.toStringAsFixed(1),
+                    unit: 'h')),
+          ],
+        ),
+      ),
+    );
+  }
+
   Widget _monthHeader(BuildContext context, MonthGroup g) {
     final scheme = Theme.of(context).colorScheme;
-    return Container(
-      color: scheme.surfaceContainer,
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(20, 14, 16, 6),
       child: Row(
         children: [
           Expanded(
             child: Text(monthYear(g.month).toUpperCase(),
                 overflow: TextOverflow.ellipsis,
-                style: const TextStyle(
+                style: TextStyle(
                     fontFamily: AppFonts.heading,
-                    fontWeight: FontWeight.w700,
-                    letterSpacing: 1.1)),
+                    fontWeight: FontWeight.w800,
+                    fontSize: 13,
+                    color: scheme.onSurfaceVariant,
+                    letterSpacing: 1.2)),
           ),
-          Flexible(
-            child: Text('${g.entries.length} · ${g.hours.toStringAsFixed(1)} h',
-                overflow: TextOverflow.ellipsis,
-                style: const TextStyle(fontFamily: AppFonts.mono, fontSize: 12)),
-          ),
+          Container(
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 3),
+              decoration: ShapeDecoration(
+                  color: scheme.primaryContainer, shape: const StadiumBorder()),
+              child: Text(
+                  '${g.entries.length} · ${g.hours.toStringAsFixed(1)} h',
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                      fontFamily: AppFonts.mono,
+                      fontSize: 11.5,
+                      fontWeight: FontWeight.w500,
+                      color: scheme.onPrimaryContainer)),
+            ),
         ],
       ),
     );
@@ -405,52 +470,66 @@ class _LogbookScreenState extends State<LogbookScreen>
       if (e.ipc) 'IPC',
       if (e.practicalTest) 'PT',
     ];
-    return Dismissible(
-      key: ValueKey('entry-${e.id}'),
-      direction: DismissDirection.endToStart,
-      background: Container(
-        color: scheme.error,
-        alignment: Alignment.centerRight,
-        padding: const EdgeInsets.only(right: 20),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(Icons.delete_outline, color: scheme.onError),
-            const SizedBox(width: 6),
-            Text('Delete', style: TextStyle(color: scheme.onError)),
-          ],
-        ),
-      ),
-      onDismissed: (_) => _delete(e, svc),
-      child: InkWell(
-        onTap: () => _openEntry(existing: e),
-        child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 9),
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 5),
+      child: Dismissible(
+        key: ValueKey('entry-${e.id}'),
+        direction: DismissDirection.endToStart,
+        background: Container(
           decoration: BoxDecoration(
-            border: Border(bottom: BorderSide(color: scheme.outlineVariant)),
+            color: scheme.error,
+            borderRadius: Sky.corners,
           ),
+          alignment: Alignment.centerRight,
+          padding: const EdgeInsets.only(right: 20),
           child: Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min,
             children: [
-              SizedBox(
-                width: 52,
+              Icon(Icons.delete_outline, color: scheme.onError),
+              const SizedBox(width: 6),
+              Text('Delete', style: TextStyle(color: scheme.onError)),
+            ],
+          ),
+        ),
+        onDismissed: (_) => _delete(e, svc),
+        child: SkyCard(
+          onTap: () => _openEntry(existing: e),
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              Container(
+                width: 50,
+                height: 50,
+                decoration: BoxDecoration(
+                  color: Sky.tileOf(context),
+                  borderRadius: Sky.cornersM,
+                ),
+                alignment: Alignment.center,
+                padding: const EdgeInsets.all(4),
                 child: FittedBox(
                   fit: BoxFit.scaleDown,
-                  alignment: Alignment.topLeft,
                   child: Text(
-                  '${e.date.day.toString().padLeft(2, '0')}\n'
-                  '${monthYear(e.date).substring(0, 3).toUpperCase()}',
-                  style: mono.copyWith(height: 1.15),
-                ),
+                    '${e.date.day.toString().padLeft(2, '0')}\n'
+                    '${monthYear(e.date).substring(0, 3).toUpperCase()}',
+                    textAlign: TextAlign.center,
+                    style: mono.copyWith(
+                        height: 1.15,
+                        fontWeight: FontWeight.w700,
+                        color: Sky.tileInkOf(context)),
+                  ),
                 ),
               ),
+              const SizedBox(width: 12),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text('${e.from.isEmpty ? '----' : e.from} → '
                         '${e.to.isEmpty ? '----' : e.to}',
-                        style: mono.copyWith(fontWeight: FontWeight.w700)),
+                        style: mono.copyWith(
+                            fontWeight: FontWeight.w700, fontSize: 14.5)),
+                    const SizedBox(height: 2),
                     Text(
                       [
                         if (e.aircraftType.isNotEmpty) e.aircraftType,
@@ -474,12 +553,19 @@ class _LogbookScreenState extends State<LogbookScreen>
                   ],
                 ),
               ),
+              const SizedBox(width: 8),
               Column(
                 crossAxisAlignment: CrossAxisAlignment.end,
                 children: [
                   Text(e.totalTime.toStringAsFixed(1),
-                      style: mono.copyWith(fontWeight: FontWeight.w700)),
-                  Text('${e.totalLandings} ldg', style: mono.copyWith(fontSize: 11)),
+                      style: TextStyle(
+                          fontFamily: AppFonts.heading,
+                          fontWeight: FontWeight.w800,
+                          fontSize: 20,
+                          color: scheme.primary)),
+                  Text('${e.totalLandings} ldg',
+                      style: mono.copyWith(
+                          fontSize: 11, color: scheme.onSurfaceVariant)),
                 ],
               ),
             ],
@@ -543,7 +629,9 @@ class _LogbookScreenState extends State<LogbookScreen>
           const SizedBox(height: 16),
         ],
         const SectionHeader('Totals', subtitle: 'Hours and counts by window'),
-        Table(
+        SkyCard(
+          padding: const EdgeInsets.fromLTRB(14, 6, 14, 6),
+          child: Table(
           columnWidths: const {0: FlexColumnWidth(1.5)},
           border: TableBorder(
               horizontalInside: BorderSide(color: scheme.outlineVariant)),
@@ -555,9 +643,11 @@ class _LogbookScreenState extends State<LogbookScreen>
                   padding: const EdgeInsets.symmetric(vertical: 6),
                   child: Text(w.$1,
                       textAlign: TextAlign.right,
-                      style: const TextStyle(
+                      style: TextStyle(
                           fontFamily: AppFonts.heading,
-                          fontWeight: FontWeight.w700)),
+                          fontWeight: FontWeight.w700,
+                          fontSize: 13,
+                          color: scheme.primary)),
                 ),
             ]),
             for (final r in rows)
@@ -573,6 +663,7 @@ class _LogbookScreenState extends State<LogbookScreen>
                   ),
               ]),
           ],
+        ),
         ),
         const SizedBox(height: 10),
         Text(

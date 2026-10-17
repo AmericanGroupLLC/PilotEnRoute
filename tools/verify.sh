@@ -26,6 +26,8 @@
 #                    Mac has no internet), false elsewhere.
 #   TAIL_LINES       log lines shown for a failing step (default 25)
 set -uo pipefail
+# With pipefail, `cmd | grep -q` fails when grep exits early and cmd gets
+# SIGPIPE; read the whole stream instead (`grep … >/dev/null`).
 
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 cd "$ROOT" || exit 2
@@ -130,7 +132,7 @@ s_ios_launch() {
   sleep 12
   xcrun simctl io "$u" screenshot "$OUT/ios-launch.png"
   # Still running 12 s after launch = no crash on start (the 2.1(a) failure).
-  if xcrun simctl spawn "$u" launchctl list | grep -q "UIKitApplication:$IOS_BUNDLE"; then
+  if xcrun simctl spawn "$u" launchctl list | grep "UIKitApplication:$IOS_BUNDLE" >/dev/null; then
     echo "launched and still running after 12 s"
   else
     echo "app is not running 12 s after launch"; return 1
@@ -189,7 +191,7 @@ s_android_launch() {
   adb -s "$s" shell am start -W -n "$act"
   sleep 12
   adb -s "$s" exec-out screencap -p >"$OUT/android-launch.png"
-  if adb -s "$s" logcat -d | grep -q 'FATAL EXCEPTION'; then
+  if adb -s "$s" logcat -d | grep 'FATAL EXCEPTION' >/dev/null; then
     adb -s "$s" logcat -d | grep -A20 'FATAL EXCEPTION'; return 1
   fi
   if [ -n "$(adb -s "$s" shell pidof "$ANDROID_PKG" | tr -d '\r')" ]; then
@@ -234,10 +236,10 @@ for s in "${PLAN[@]}"; do
   # A failed build makes its launch/drive steps meaningless; skip them.
   case "$s" in
     ios-launch|ios-drive)
-      if printf '%s\n' "${RESULTS[@]:-}" | grep -q '^ios-build|FAIL'; then
+      if printf '%s\n' "${RESULTS[@]:-}" | grep '^ios-build|FAIL' >/dev/null; then
         record "$s" SKIP 0 "ios-build failed"; printf 'SKIP %-15s       ios-build failed\n' "$s"; continue; fi ;;
     android-launch|android-drive)
-      if printf '%s\n' "${RESULTS[@]:-}" | grep -q '^android-build|FAIL'; then
+      if printf '%s\n' "${RESULTS[@]:-}" | grep '^android-build|FAIL' >/dev/null; then
         record "$s" SKIP 0 "android-build failed"; printf 'SKIP %-15s       android-build failed\n' "$s"; continue; fi ;;
   esac
   step "$s" "s_${s//-/_}"

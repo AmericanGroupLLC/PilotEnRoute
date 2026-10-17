@@ -171,12 +171,12 @@ class _ChecklistScreenState extends State<ChecklistScreen> {
         context: context,
         builder: (ctx) {
           return AlertDialog(
-            backgroundColor: const Color(0xFF1E2226),
+            backgroundColor: Sky.card,
             title: Text(
               'ADD ITEM',
               style: AppType.condensed(
                 fontSize: 14,
-                color: const Color(0xFFFF5A5F),
+                color: Sky.teal,
                 letterSpacing: 2,
               ),
             ),
@@ -186,30 +186,30 @@ class _ChecklistScreenState extends State<ChecklistScreen> {
                 TextField(
                   controller: actionController,
                   autofocus: true,
-                  style: AppType.sans(color: Colors.white, fontSize: 13),
+                  style: AppType.sans(color: Sky.ink, fontSize: 13),
                   decoration: InputDecoration(
                     labelText: 'Action (required)',
-                    labelStyle: AppType.sans(color: Colors.white54, fontSize: 12),
+                    labelStyle: AppType.sans(color: Sky.muted, fontSize: 12),
                     enabledBorder: const UnderlineInputBorder(
-                      borderSide: BorderSide(color: Colors.white24),
+                      borderSide: BorderSide(color: Sky.lineStrong),
                     ),
                     focusedBorder: const UnderlineInputBorder(
-                      borderSide: BorderSide(color: Color(0xFFFF5A5F)),
+                      borderSide: BorderSide(color: Sky.teal),
                     ),
                   ),
                 ),
                 const SizedBox(height: 8),
                 TextField(
                   controller: valueController,
-                  style: AppType.sans(color: Colors.white, fontSize: 13),
+                  style: AppType.sans(color: Sky.ink, fontSize: 13),
                   decoration: InputDecoration(
                     labelText: 'Value (optional)',
-                    labelStyle: AppType.sans(color: Colors.white54, fontSize: 12),
+                    labelStyle: AppType.sans(color: Sky.muted, fontSize: 12),
                     enabledBorder: const UnderlineInputBorder(
-                      borderSide: BorderSide(color: Colors.white24),
+                      borderSide: BorderSide(color: Sky.lineStrong),
                     ),
                     focusedBorder: const UnderlineInputBorder(
-                      borderSide: BorderSide(color: Color(0xFFFF5A5F)),
+                      borderSide: BorderSide(color: Sky.teal),
                     ),
                   ),
                 ),
@@ -218,11 +218,11 @@ class _ChecklistScreenState extends State<ChecklistScreen> {
             actions: [
               TextButton(
                 onPressed: () => Navigator.of(ctx).pop(false),
-                child: Text('CANCEL', style: AppType.sans(color: Colors.white54)),
+                child: Text('CANCEL', style: AppType.sans(color: Sky.muted)),
               ),
               TextButton(
                 onPressed: () => Navigator.of(ctx).pop(true),
-                child: Text('ADD', style: AppType.sans(color: const Color(0xFFFF5A5F))),
+                child: Text('ADD', style: AppType.sans(color: Sky.teal)),
               ),
             ],
           );
@@ -284,7 +284,7 @@ class _ChecklistScreenState extends State<ChecklistScreen> {
         checkableItems.where((it) => _checked[it['key']] == true).length;
 
     return Scaffold(
-      backgroundColor: const Color(0xFF15181B),
+      backgroundColor: Sky.canvas,
       appBar: AppBar(
         title: const Text('CHECKLISTS'),
         actions: [
@@ -296,10 +296,10 @@ class _ChecklistScreenState extends State<ChecklistScreen> {
         ],
       ),
       floatingActionButton: FloatingActionButton(
-        backgroundColor: const Color(0xFFFF5A5F),
+        backgroundColor: Sky.teal,
         onPressed: _addCustomItem,
         tooltip: 'Add custom item',
-        child: const Icon(Icons.add, color: Colors.black),
+        child: const Icon(Icons.add, color: Colors.white),
       ),
       body: Column(
         children: [
@@ -329,10 +329,10 @@ class _ChecklistScreenState extends State<ChecklistScreen> {
                     margin: const EdgeInsets.only(right: 8),
                     padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 4),
                     decoration: BoxDecoration(
-                      color: selected ? const Color(0xFFFF5A5F) : const Color(0xFF1E2226),
+                      color: selected ? Sky.teal : Sky.card,
                       borderRadius: BorderRadius.circular(20),
                       border: Border.all(
-                        color: selected ? const Color(0xFFFF5A5F) : Colors.white24,
+                        color: selected ? Sky.teal : Sky.lineStrong,
                       ),
                     ),
                     child: Text(
@@ -340,7 +340,7 @@ class _ChecklistScreenState extends State<ChecklistScreen> {
                       style: AppType.sans(
                         fontSize: 11,
                         fontWeight: FontWeight.w600,
-                        color: selected ? Colors.black : Colors.white70,
+                        color: selected ? Colors.white : Sky.inkSoft,
                       ),
                     ),
                   ),
@@ -376,22 +376,22 @@ class _ChecklistScreenState extends State<ChecklistScreen> {
                     margin: const EdgeInsets.only(right: 8),
                     padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 4),
                     decoration: BoxDecoration(
-                      color: selected ? color.withValues(alpha: 0.2) : const Color(0xFF1E2226),
+                      color: selected ? color.withValues(alpha: 0.2) : Sky.card,
                       borderRadius: BorderRadius.circular(20),
                       border: Border.all(
-                        color: selected ? color : Colors.white12,
+                        color: selected ? color : Sky.line,
                       ),
                     ),
                     child: Row(
                       children: [
-                        Icon(phase['icon'] as IconData, color: selected ? color : Colors.white38, size: 12),
+                        Icon(phase['icon'] as IconData, color: selected ? color : Sky.faint, size: 12),
                         const SizedBox(width: 4),
                         Text(
                           phase['name'] as String,
                           style: AppType.sans(
                             fontSize: 11,
                             fontWeight: FontWeight.w600,
-                            color: selected ? color : Colors.white54,
+                            color: selected ? color : Sky.muted,
                           ),
                         ),
                       ],
@@ -416,7 +416,7 @@ class _ChecklistScreenState extends State<ChecklistScreen> {
                   Text(
                     '$doneCount / ${checkableItems.length}',
                     style: AppType.condensed(
-                        fontSize: 11, color: Colors.white54),
+                        fontSize: 11, color: Sky.muted),
                   ),
                   const SizedBox(width: 12),
                   Expanded(
@@ -426,9 +426,9 @@ class _ChecklistScreenState extends State<ChecklistScreen> {
                         value: checkableItems.isEmpty
                             ? 0
                             : doneCount / checkableItems.length,
-                        backgroundColor: Colors.white12,
+                        backgroundColor: Sky.line,
                         valueColor:
-                            const AlwaysStoppedAnimation(Color(0xFF5CC277)),
+                            const AlwaysStoppedAnimation(Sky.go),
                         minHeight: 4,
                       ),
                     ),
@@ -442,7 +442,7 @@ class _ChecklistScreenState extends State<ChecklistScreen> {
             padding: const EdgeInsets.fromLTRB(16, 0, 16, 2),
             child: Text(
               'Representative only — always verify against your aircraft POH/AFM.',
-              style: AppType.sans(fontSize: 9, color: Colors.white38),
+              style: AppType.sans(fontSize: 9, color: Sky.muted),
             ),
           ),
           // Checklist items
@@ -466,7 +466,7 @@ class _ChecklistScreenState extends State<ChecklistScreen> {
                         item['text'] as String,
                         style: AppType.condensed(
                           fontSize: 10,
-                          color: const Color(0xFFFF5A5F),
+                          color: Sky.teal,
                           letterSpacing: 2,
                         ),
                       ),
@@ -487,13 +487,13 @@ class _ChecklistScreenState extends State<ChecklistScreen> {
                     padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
                     decoration: BoxDecoration(
                       color: isChecked
-                          ? const Color(0xFF5CC277).withValues(alpha: 0.1)
-                          : const Color(0xFF1E2226),
+                          ? Sky.go.withValues(alpha: 0.1)
+                          : Sky.card,
                       borderRadius: BorderRadius.circular(12),
                       border: Border.all(
                         color: isChecked
-                            ? const Color(0xFF5CC277).withValues(alpha: 0.5)
-                            : Colors.white12,
+                            ? Sky.go.withValues(alpha: 0.5)
+                            : Sky.line,
                       ),
                     ),
                     child: Row(
@@ -504,18 +504,18 @@ class _ChecklistScreenState extends State<ChecklistScreen> {
                           height: 24,
                           decoration: BoxDecoration(
                             color: isChecked
-                                ? const Color(0xFF5CC277)
+                                ? Sky.go
                                 : Colors.transparent,
                             borderRadius: BorderRadius.circular(6),
                             border: Border.all(
                               color: isChecked
-                                  ? const Color(0xFF5CC277)
-                                  : Colors.white38,
+                                  ? Sky.go
+                                  : Sky.faint,
                               width: 2,
                             ),
                           ),
                           child: isChecked
-                              ? const Icon(Icons.check, color: Colors.black, size: 14)
+                              ? const Icon(Icons.check, color: Colors.white, size: 14)
                               : null,
                         ),
                         const SizedBox(width: 12),
@@ -529,7 +529,7 @@ class _ChecklistScreenState extends State<ChecklistScreen> {
                                 style: AppType.sans(
                                   fontSize: 13,
                                   fontWeight: FontWeight.w600,
-                                  color: isChecked ? Colors.white54 : Colors.white,
+                                  color: isChecked ? Sky.muted : Sky.ink,
                                   decoration: isChecked ? TextDecoration.lineThrough : null,
                                 ),
                               ),
@@ -539,8 +539,8 @@ class _ChecklistScreenState extends State<ChecklistScreen> {
                                   style: AppType.condensed(
                                     fontSize: 10,
                                     color: isChecked
-                                        ? Colors.white24
-                                        : const Color(0xFFFF5A5F),
+                                        ? Sky.lineStrong
+                                        : Sky.teal,
                                     letterSpacing: 1,
                                   ),
                                 ),
@@ -554,14 +554,14 @@ class _ChecklistScreenState extends State<ChecklistScreen> {
                             margin: const EdgeInsets.only(right: 4),
                             padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                             decoration: BoxDecoration(
-                              color: const Color(0xFFFF5A5F).withValues(alpha: 0.15),
+                              color: Sky.teal.withValues(alpha: 0.15),
                               borderRadius: BorderRadius.circular(4),
                             ),
                             child: Text(
                               'CUSTOM',
                               style: AppType.condensed(
                                 fontSize: 7,
-                                color: const Color(0xFFFF5A5F),
+                                color: Sky.teal,
                                 letterSpacing: 1,
                               ),
                             ),
@@ -572,14 +572,14 @@ class _ChecklistScreenState extends State<ChecklistScreen> {
                           child: Container(
                             padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                             decoration: BoxDecoration(
-                              color: const Color(0xFFFF5A5F).withValues(alpha: 0.15),
+                              color: Sky.teal.withValues(alpha: 0.15),
                               borderRadius: BorderRadius.circular(4),
                             ),
                             child: Text(
                               'CRITICAL',
                               style: AppType.condensed(
                                 fontSize: 7,
-                                color: const Color(0xFFFF5A5F),
+                                color: Sky.teal,
                                 letterSpacing: 1,
                               ),
                             ),
@@ -587,7 +587,7 @@ class _ChecklistScreenState extends State<ChecklistScreen> {
                           ),
                         if (isCustom)
                           IconButton(
-                            icon: const Icon(Icons.delete_outline, size: 18, color: Colors.white38),
+                            icon: const Icon(Icons.delete_outline, size: 18, color: Sky.faint),
                             padding: EdgeInsets.zero,
                             constraints: const BoxConstraints(minWidth: 32, minHeight: 32),
                             tooltip: 'Delete ${item['action']}',
@@ -609,14 +609,14 @@ class _ChecklistScreenState extends State<ChecklistScreen> {
   List<Map<String, dynamic>> _getPhases(String aircraft) {
     return [
       {'name': 'Preflight', 'icon': Icons.search, 'color': const Color(0xFF2196F3)},
-      {'name': 'Before Start', 'icon': Icons.power_settings_new, 'color': const Color(0xFFE09F00)},
+      {'name': 'Before Start', 'icon': Icons.power_settings_new, 'color': Sky.caution},
       {'name': 'Engine Start', 'icon': Icons.settings, 'color': const Color(0xFFFF9800)},
       {'name': 'Before Taxi', 'icon': Icons.directions_car, 'color': const Color(0xFF9C27B0)},
-      {'name': 'Run-Up', 'icon': Icons.speed, 'color': const Color(0xFF5CC277)},
-      {'name': 'Before Takeoff', 'icon': Icons.flight_takeoff, 'color': const Color(0xFFFF5A5F)},
+      {'name': 'Run-Up', 'icon': Icons.speed, 'color': Sky.go},
+      {'name': 'Before Takeoff', 'icon': Icons.flight_takeoff, 'color': Sky.teal},
       {'name': 'Cruise', 'icon': Icons.flight, 'color': const Color(0xFF3F51B5)},
       {'name': 'Descent', 'icon': Icons.flight_land, 'color': const Color(0xFFFF5722)},
-      {'name': 'Landing', 'icon': Icons.flight_land, 'color': const Color(0xFFFF5A5F)},
+      {'name': 'Landing', 'icon': Icons.flight_land, 'color': Sky.teal},
       {'name': 'Shutdown', 'icon': Icons.power_off, 'color': const Color(0xFF607D8B)},
     ];
   }

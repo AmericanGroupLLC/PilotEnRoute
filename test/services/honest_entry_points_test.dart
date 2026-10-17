@@ -70,13 +70,17 @@ void main() {
     }
   });
 
+  // Home and the knowledge-test quiz came back on 2026-10-17 (founder's
+  // Clear Skies design, decision-log), built only on the pilot's own data and
+  // FAA-sourced content; test/content/sourced_content_test.dart holds them
+  // to that. The rest stay removed.
   test('the removed modules are gone from lib/', () {
     for (final name in [
-      'simulation', 'emergency', 'drone', 'education', 'quiz', 'exam',
+      'simulation', 'emergency', 'drone', 'education', 'exam',
       'flashcard', 'glossary', 'regulations', 'career', 'icara', 'garmin',
       'integrations', 'ai_assistant', 'notam', 'radio', 'wind', 'map',
       'navdb', 'flight_tracker', 'debrief', 'alerts', 'news',
-      'notifications', 'endorsements', 'account', 'login', 'home',
+      'notifications', 'endorsements', 'account', 'login',
     ]) {
       expect(File('lib/screens/${name}_screen.dart').existsSync(), isFalse,
           reason: name);

@@ -5,7 +5,7 @@ import '../core/legality/pilot_profile.dart';
 import '../core/minimums/personal_minimums.dart';
 import '../services/settings_store.dart';
 import '../services/weather_service.dart';
-import '../ui/status_tag.dart';
+import '../ui/sky_scene.dart';
 import '../ui/theme.dart';
 import '../ui/widgets.dart';
 import 'minimums_screen.dart';
@@ -105,21 +105,47 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
           children: [
             Padding(
               padding: const EdgeInsets.fromLTRB(20, 16, 20, 4),
-              child: Row(
+              child: Column(
                 children: [
-                  const Expanded(
-                    child: Align(
-                      alignment: Alignment.centerLeft,
-                      child: FittedBox(
-                        fit: BoxFit.scaleDown,
-                        child: StatusTag(
-                            StatusLook('PILOTENROUTE', Icons.check, Tone.stop)),
+                  Row(
+                    children: [
+                      Container(
+                        width: 34,
+                        height: 34,
+                        decoration: BoxDecoration(
+                          color: Theme.of(context).colorScheme.primary,
+                          shape: BoxShape.circle,
+                        ),
+                        alignment: Alignment.center,
+                        child: const Icon(Icons.flight_takeoff_rounded,
+                            size: 19, color: Colors.white),
                       ),
-                    ),
+                      const SizedBox(width: 10),
+                      const Expanded(
+                        child: Text('PilotEnRoute',
+                            overflow: TextOverflow.ellipsis,
+                            style: TextStyle(
+                                fontFamily: AppFonts.heading,
+                                fontWeight: FontWeight.w800,
+                                fontSize: 18,
+                                letterSpacing: -0.2)),
+                      ),
+                      const SizedBox(width: 8),
+                      Text('${_page + 1} of 3',
+                          style: TextStyle(
+                              fontFamily: AppFonts.heading,
+                              fontWeight: FontWeight.w600,
+                              color: Theme.of(context)
+                                  .colorScheme
+                                  .onSurfaceVariant)),
+                    ],
                   ),
-                  const SizedBox(width: 8),
-                  Text('${_page + 1} of 3',
-                      style: const TextStyle(fontFamily: AppFonts.mono)),
+                  const SizedBox(height: 12),
+                  ClipRRect(
+                    borderRadius: const BorderRadius.all(Radius.circular(999)),
+                    child: LinearProgressIndicator(
+                        value: (_page + 1) / 3, minHeight: 6),
+                  ),
                 ],
               ),
             ),
@@ -146,11 +172,21 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
       children: [
         Expanded(
           child: ListView(
-            padding: const EdgeInsets.fromLTRB(20, 8, 20, 20),
+            padding: const EdgeInsets.fromLTRB(20, 12, 20, 20),
             children: [
+              ClipRRect(
+                borderRadius: Sky.cornersL,
+                child: SkyScene(
+                    height: 130,
+                    mood: _page == 1 ? SkyMood.night : SkyMood.day),
+              ),
+              const SizedBox(height: 18),
               Text(title, style: Theme.of(context).textTheme.headlineMedium),
               const SizedBox(height: 6),
-              Text(lead),
+              Text(lead,
+                  style: TextStyle(
+                      height: 1.4,
+                      color: Theme.of(context).colorScheme.onSurfaceVariant)),
               const SizedBox(height: 18),
               ...body,
             ],

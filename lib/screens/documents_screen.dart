@@ -10,12 +10,12 @@ import 'package:printing/printing.dart';
 import '../services/document_service.dart';
 import 'package:agl_i18n/agl_i18n.dart';
 
-const Color _bg = Color(0xFF15181B);
-const Color _card = Color(0xFF1E2226);
-const Color _cyan = Color(0xFFFF5A5F);
-const Color _amber = Color(0xFFE09F00);
-const Color _red = Color(0xFFFF5A5F);
-const Color _green = Color(0xFF5CC277);
+const Color _bg = Sky.canvas;
+const Color _card = Sky.card;
+const Color _cyan = Sky.teal;
+const Color _amber = Sky.caution;
+const Color _red = Sky.stop;
+const Color _green = Sky.go;
 
 /// Offline document vault: store aircraft/pilot documents (insurance, POH,
 /// AFM, certificates, checklists) as images or generated PDFs.
@@ -87,7 +87,7 @@ class _DocumentsScreenState extends State<DocumentsScreen> {
       case DocCategory.checklist:
         return const Color(0xFF2196F3);
       case DocCategory.other:
-        return Colors.white54;
+        return Sky.muted;
     }
   }
 
@@ -111,7 +111,7 @@ class _DocumentsScreenState extends State<DocumentsScreen> {
       ),
       floatingActionButton: FloatingActionButton.extended(
         backgroundColor: _cyan,
-        foregroundColor: _bg,
+        foregroundColor: Sky.ink,
         onPressed: _busy ? null : _showAddSheet,
         icon: const Icon(Icons.add),
         label: Text(
@@ -166,7 +166,7 @@ class _DocumentsScreenState extends State<DocumentsScreen> {
               child: Text(
                 'File storage is only available on mobile/desktop. '
                 'Documents are not persisted on web.',
-                style: AppType.sans(fontSize: 12, color: Colors.white70),
+                style: AppType.sans(fontSize: 12, color: Sky.inkSoft),
               ),
             ),
           ],
@@ -227,7 +227,7 @@ class _DocumentsScreenState extends State<DocumentsScreen> {
                           overflow: TextOverflow.ellipsis,
                           style: AppType.sans(
                             fontSize: 13,
-                            color: Colors.white,
+                            color: Sky.ink,
                           ),
                         ),
                       ),
@@ -298,7 +298,7 @@ class _DocumentsScreenState extends State<DocumentsScreen> {
           color: selected ? _cyan.withValues(alpha: 0.15) : _card,
           borderRadius: BorderRadius.circular(10),
           border: Border.all(
-            color: selected ? _cyan : Colors.white12,
+            color: selected ? _cyan : Sky.line,
           ),
         ),
         child: Text(
@@ -307,7 +307,7 @@ class _DocumentsScreenState extends State<DocumentsScreen> {
             fontSize: 9,
             letterSpacing: 1,
             fontWeight: FontWeight.bold,
-            color: selected ? _cyan : Colors.white54,
+            color: selected ? _cyan : Sky.muted,
           ),
         ),
       ),
@@ -342,7 +342,7 @@ class _DocumentsScreenState extends State<DocumentsScreen> {
         decoration: BoxDecoration(
           color: _card,
           borderRadius: BorderRadius.circular(14),
-          border: Border.all(color: Colors.white12),
+          border: Border.all(color: Sky.line),
         ),
         clipBehavior: Clip.antiAlias,
         child: Column(
@@ -375,7 +375,7 @@ class _DocumentsScreenState extends State<DocumentsScreen> {
                           d.isExpired
                               ? Icons.error_outline
                               : Icons.schedule,
-                          color: Colors.white,
+                          color: Sky.ink,
                           size: 14,
                         ),
                       ),
@@ -416,7 +416,7 @@ class _DocumentsScreenState extends State<DocumentsScreen> {
                     style: AppType.sans(
                       fontSize: 13,
                       fontWeight: FontWeight.bold,
-                      color: Colors.white,
+                      color: Sky.ink,
                     ),
                   ),
                   const SizedBox(height: 2),
@@ -430,7 +430,7 @@ class _DocumentsScreenState extends State<DocumentsScreen> {
                       fontSize: 10,
                       color: d.isExpiringSoon
                           ? (d.isExpired ? _red : _amber)
-                          : Colors.white54,
+                          : Sky.muted,
                     ),
                   ),
                 ],
@@ -460,13 +460,13 @@ class _DocumentsScreenState extends State<DocumentsScreen> {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          const Icon(Icons.folder_open, color: Colors.white24, size: 64),
+          const Icon(Icons.folder_open, color: Sky.lineStrong, size: 64),
           const SizedBox(height: 16),
           Text(
             'NO DOCUMENTS',
             style: AppType.condensed(
               fontSize: 14,
-              color: Colors.white54,
+              color: Sky.muted,
               letterSpacing: 2,
             ),
           ),
@@ -479,7 +479,7 @@ class _DocumentsScreenState extends State<DocumentsScreen> {
                       'Everything is stored offline on this device.'
                   : 'No ${_filter!.label} documents yet.',
               textAlign: TextAlign.center,
-              style: AppType.sans(fontSize: 13, color: Colors.white38),
+              style: AppType.sans(fontSize: 13, color: Sky.muted),
             ),
           ),
         ],
@@ -539,7 +539,7 @@ class _DocumentsScreenState extends State<DocumentsScreen> {
             ListTile(
               leading: const Icon(Icons.open_in_full, color: _cyan),
               title: Text('Open',
-                  style: AppType.sans(color: Colors.white)),
+                  style: AppType.sans(color: Sky.ink)),
               onTap: () {
                 Navigator.pop(ctx);
                 _openDocument(d);
@@ -548,7 +548,7 @@ class _DocumentsScreenState extends State<DocumentsScreen> {
             ListTile(
               leading: const Icon(Icons.edit, color: _amber),
               title: Text('Edit details',
-                  style: AppType.sans(color: Colors.white)),
+                  style: AppType.sans(color: Sky.ink)),
               onTap: () {
                 Navigator.pop(ctx);
                 _showEditSheet(d);
@@ -557,7 +557,7 @@ class _DocumentsScreenState extends State<DocumentsScreen> {
             ListTile(
               leading: const Icon(Icons.delete_outline, color: _red),
               title: Text('Delete',
-                  style: AppType.sans(color: Colors.white)),
+                  style: AppType.sans(color: Sky.ink)),
               onTap: () {
                 Navigator.pop(ctx);
                 _confirmDelete(d);
@@ -575,16 +575,16 @@ class _DocumentsScreenState extends State<DocumentsScreen> {
       builder: (ctx) => AlertDialog(
         backgroundColor: _card,
         title: Text('Delete document?',
-            style: AppType.condensed(color: Colors.white, fontSize: 14)),
+            style: AppType.condensed(color: Sky.ink, fontSize: 14)),
         content: Text(
           'This permanently removes "${d.title}" from this device.',
-          style: AppType.sans(color: Colors.white70),
+          style: AppType.sans(color: Sky.inkSoft),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx, false),
             child: Text('Cancel',
-                style: AppType.sans(color: Colors.white54)),
+                style: AppType.sans(color: Sky.muted)),
           ),
           TextButton(
             onPressed: () => Navigator.pop(ctx, true),
@@ -628,7 +628,7 @@ class _DocumentsScreenState extends State<DocumentsScreen> {
             ListTile(
               leading: const Icon(Icons.photo_camera, color: _cyan),
               title: Text('Capture photo',
-                  style: AppType.sans(color: Colors.white)),
+                  style: AppType.sans(color: Sky.ink)),
               onTap: () {
                 Navigator.pop(ctx);
                 _addImage(ImageSource.camera);
@@ -637,7 +637,7 @@ class _DocumentsScreenState extends State<DocumentsScreen> {
             ListTile(
               leading: const Icon(Icons.photo_library, color: _cyan),
               title: Text('Import from gallery',
-                  style: AppType.sans(color: Colors.white)),
+                  style: AppType.sans(color: Sky.ink)),
               onTap: () {
                 Navigator.pop(ctx);
                 _addImage(ImageSource.gallery);
@@ -646,10 +646,10 @@ class _DocumentsScreenState extends State<DocumentsScreen> {
             ListTile(
               leading: const Icon(Icons.picture_as_pdf, color: _amber),
               title: Text('Generate cover sheet PDF',
-                  style: AppType.sans(color: Colors.white)),
+                  style: AppType.sans(color: Sky.ink)),
               subtitle: Text('Sample aircraft doc, printable',
                   style: AppType.sans(
-                      color: Colors.white38, fontSize: 11)),
+                      color: Sky.muted, fontSize: 11)),
               onTap: () {
                 Navigator.pop(ctx);
                 _generateSamplePdf(save: true);
@@ -756,7 +756,7 @@ class _DocumentsScreenState extends State<DocumentsScreen> {
     if (!mounted) return;
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text(msg, style: AppType.sans(color: Colors.white)),
+        content: Text(msg, style: AppType.sans(color: Sky.ink)),
         backgroundColor: _card,
       ),
     );
@@ -852,7 +852,7 @@ class _MetadataDialogState extends State<_MetadataDialog> {
           children: [
             TextField(
               controller: _titleCtrl,
-              style: AppType.sans(color: Colors.white),
+              style: AppType.sans(color: Sky.ink),
               decoration: _inputDeco('Title'),
             ),
             const SizedBox(height: 14),
@@ -860,13 +860,13 @@ class _MetadataDialogState extends State<_MetadataDialog> {
               initialValue: _category,
               dropdownColor: _card,
               isExpanded: true,
-              style: AppType.sans(color: Colors.white),
+              style: AppType.sans(color: Sky.ink),
               decoration: _inputDeco('Category'),
               items: DocCategory.values
                   .map((c) => DropdownMenuItem(
                         value: c,
                         child: Text(c.label,
-                            style: AppType.sans(color: Colors.white)),
+                            style: AppType.sans(color: Sky.ink)),
                       ))
                   .toList(),
               onChanged: (v) {
@@ -881,7 +881,7 @@ class _MetadataDialogState extends State<_MetadataDialog> {
                 decoration: _inputDeco('Expiry date (optional)'),
                 child: Row(
                   children: [
-                    const Icon(Icons.event, color: Colors.white54, size: 18),
+                    const Icon(Icons.event, color: Sky.muted, size: 18),
                     const SizedBox(width: 10),
                     Expanded(
                       child: Text(
@@ -890,7 +890,7 @@ class _MetadataDialogState extends State<_MetadataDialog> {
                             : 'None',
                         style: AppType.sans(
                           color:
-                              _expiry != null ? Colors.white : Colors.white38,
+                              _expiry != null ? Sky.ink : Sky.muted,
                         ),
                       ),
                     ),
@@ -898,7 +898,7 @@ class _MetadataDialogState extends State<_MetadataDialog> {
                       GestureDetector(
                         onTap: () => setState(() => _expiry = null),
                         child: const Icon(Icons.clear,
-                            color: Colors.white38, size: 18),
+                            color: Sky.muted, size: 18),
                       ),
                   ],
                 ),
@@ -907,7 +907,7 @@ class _MetadataDialogState extends State<_MetadataDialog> {
             const SizedBox(height: 14),
             TextField(
               controller: _notesCtrl,
-              style: AppType.sans(color: Colors.white),
+              style: AppType.sans(color: Sky.ink),
               maxLines: 2,
               decoration: _inputDeco('Notes (optional)'),
             ),
@@ -918,7 +918,7 @@ class _MetadataDialogState extends State<_MetadataDialog> {
         TextButton(
           onPressed: () => Navigator.pop(context),
           child:
-              Text((AglL10n.of(context)?.actionCancel ?? 'Cancel'), style: AppType.sans(color: Colors.white54)),
+              Text((AglL10n.of(context)?.actionCancel ?? 'Cancel'), style: AppType.sans(color: Sky.muted)),
         ),
         TextButton(
           onPressed: () {
@@ -944,12 +944,12 @@ class _MetadataDialogState extends State<_MetadataDialog> {
   InputDecoration _inputDeco(String label) {
     return InputDecoration(
       labelText: label,
-      labelStyle: AppType.sans(color: Colors.white54, fontSize: 13),
+      labelStyle: AppType.sans(color: Sky.muted, fontSize: 13),
       filled: true,
       fillColor: _bg,
       enabledBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(12),
-        borderSide: const BorderSide(color: Colors.white12),
+        borderSide: const BorderSide(color: Sky.line),
       ),
       focusedBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(12),
@@ -957,7 +957,7 @@ class _MetadataDialogState extends State<_MetadataDialog> {
       ),
       border: OutlineInputBorder(
         borderRadius: BorderRadius.circular(12),
-        borderSide: const BorderSide(color: Colors.white12),
+        borderSide: const BorderSide(color: Sky.line),
       ),
     );
   }
@@ -982,7 +982,7 @@ class _ImageViewer extends StatelessWidget {
       body: Center(
         child: kIsWeb
             ? const Text('Not available on web',
-                style: TextStyle(color: Colors.white54))
+                style: TextStyle(color: Sky.muted))
             : InteractiveViewer(
                 minScale: 0.5,
                 maxScale: 5,
@@ -991,7 +991,7 @@ class _ImageViewer extends StatelessWidget {
                   fit: BoxFit.contain,
                   errorBuilder: (_, __, ___) => const Icon(
                     Icons.broken_image,
-                    color: Colors.white24,
+                    color: Sky.lineStrong,
                     size: 64,
                   ),
                 ),

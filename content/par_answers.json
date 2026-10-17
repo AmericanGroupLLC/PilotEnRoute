@@ -1,0 +1,608 @@
+{
+  "generatedUtc": "2026-10-17T11:10:23Z",
+  "questionSource": "par_sample_questions.json (FAA PAR Sample Questions, 8/10/2021); figure/inlineImage questions skipped",
+  "quoteConventions": "Quotes are verbatim source text. \"…\" separates non-contiguous fragments from the same cited paragraph. Line breaks, PDF end-of-line hyphenation and typographic quote/apostrophe glyphs are normalized; words are unchanged. eCFR paragraph markers such as \"( c )\" are omitted.",
+  "sources": [
+    {
+      "id": "cfr-1.1",
+      "title": "14 CFR 1.1",
+      "docNumber": "14 CFR 1.1",
+      "edition": "eCFR current, Title 14 up to date as of 2026-10-15 (retrieved 2026-10-17)",
+      "url": "https://www.ecfr.gov/api/renderer/v1/content/enhanced/current/title-14?part=1&section=1.1",
+      "sha256": "d69adfe60f5a0145490c624862b3f75a1cbec85ed8b0b25fb3658bbd731096b8",
+      "localFile": "answer-sources/ecfr_1.1.html"
+    },
+    {
+      "id": "cfr-61.3",
+      "title": "14 CFR 61.3",
+      "docNumber": "14 CFR 61.3",
+      "edition": "eCFR current, Title 14 up to date as of 2026-10-15 (retrieved 2026-10-17)",
+      "url": "https://www.ecfr.gov/api/renderer/v1/content/enhanced/current/title-14?part=61&section=61.3",
+      "sha256": "675aedcd128ac6679373b445a5966de3a1a265b15b9b5563e23e3286d7194fee",
+      "localFile": "answer-sources/ecfr_61.3.html"
+    },
+    {
+      "id": "cfr-61.57",
+      "title": "14 CFR 61.57",
+      "docNumber": "14 CFR 61.57",
+      "edition": "eCFR current, Title 14 up to date as of 2026-10-15 (retrieved 2026-10-17)",
+      "url": "https://www.ecfr.gov/api/renderer/v1/content/enhanced/current/title-14?part=61&section=61.57",
+      "sha256": "742ee9309c7d0c3a66bd8b91b468f9db1d054da372db0c432fc236d140036a93",
+      "localFile": "answer-sources/ecfr_61.57.html"
+    },
+    {
+      "id": "cfr-91.107",
+      "title": "14 CFR 91.107",
+      "docNumber": "14 CFR 91.107",
+      "edition": "eCFR current, Title 14 up to date as of 2026-10-15 (retrieved 2026-10-17)",
+      "url": "https://www.ecfr.gov/api/renderer/v1/content/enhanced/current/title-14?part=91&section=91.107",
+      "sha256": "99aba230e17a84375a22dae4a5a6ed55aee23cedd787acfca4e705f252536f4a",
+      "localFile": "answer-sources/ecfr_91.107.html"
+    },
+    {
+      "id": "cfr-91.126",
+      "title": "14 CFR 91.126",
+      "docNumber": "14 CFR 91.126",
+      "edition": "eCFR current, Title 14 up to date as of 2026-10-15 (retrieved 2026-10-17)",
+      "url": "https://www.ecfr.gov/api/renderer/v1/content/enhanced/current/title-14?part=91&section=91.126",
+      "sha256": "a370c991ecb2e971baabc08efcbcb68a1523f6348af4193d85360d4a1080fb00",
+      "localFile": "answer-sources/ecfr_91.126.html"
+    },
+    {
+      "id": "cfr-91.130",
+      "title": "14 CFR 91.130",
+      "docNumber": "14 CFR 91.130",
+      "edition": "eCFR current, Title 14 up to date as of 2026-10-15 (retrieved 2026-10-17)",
+      "url": "https://www.ecfr.gov/api/renderer/v1/content/enhanced/current/title-14?part=91&section=91.130",
+      "sha256": "6b9b0bd920929c9a53f7c89aed2049ad23bb2acb691e59227d1d4e8eedd14351",
+      "localFile": "answer-sources/ecfr_91.130.html"
+    },
+    {
+      "id": "cfr-91.155",
+      "title": "14 CFR 91.155",
+      "docNumber": "14 CFR 91.155",
+      "edition": "eCFR current, Title 14 up to date as of 2026-10-15 (retrieved 2026-10-17)",
+      "url": "https://www.ecfr.gov/api/renderer/v1/content/enhanced/current/title-14?part=91&section=91.155",
+      "sha256": "cedbb6ac4da9c3289e33050dcc8906b749a1964837b6113f816e7731725f98cf",
+      "localFile": "answer-sources/ecfr_91.155.html"
+    },
+    {
+      "id": "cfr-91.225",
+      "title": "14 CFR 91.225",
+      "docNumber": "14 CFR 91.225",
+      "edition": "eCFR current, Title 14 up to date as of 2026-10-15 (retrieved 2026-10-17)",
+      "url": "https://www.ecfr.gov/api/renderer/v1/content/enhanced/current/title-14?part=91&section=91.225",
+      "sha256": "d076b359705449dbecf540a69d1b6dc98d0e88d0e18b7ef547b5fc8adee11651",
+      "localFile": "answer-sources/ecfr_91.225.html"
+    },
+    {
+      "id": "cfr-91.409",
+      "title": "14 CFR 91.409",
+      "docNumber": "14 CFR 91.409",
+      "edition": "eCFR current, Title 14 up to date as of 2026-10-15 (retrieved 2026-10-17)",
+      "url": "https://www.ecfr.gov/api/renderer/v1/content/enhanced/current/title-14?part=91&section=91.409",
+      "sha256": "a613ad58d8024fd053d203f3c2192af608a1a2aef4cf4b1a6d32977c62c6e370",
+      "localFile": "answer-sources/ecfr_91.409.html"
+    },
+    {
+      "id": "cfr-91.413",
+      "title": "14 CFR 91.413",
+      "docNumber": "14 CFR 91.413",
+      "edition": "eCFR current, Title 14 up to date as of 2026-10-15 (retrieved 2026-10-17)",
+      "url": "https://www.ecfr.gov/api/renderer/v1/content/enhanced/current/title-14?part=91&section=91.413",
+      "sha256": "5828d9626f0ff5fe0089126decf94d928330b5bd31c49ee63a5c4d145dd2394b",
+      "localFile": "answer-sources/ecfr_91.413.html"
+    },
+    {
+      "id": "aim-1-1",
+      "title": "Aeronautical Information Manual, Chapter 1 Section 1",
+      "docNumber": "AIM",
+      "edition": "AIM Basic with Change 3, effective 7/9/2026 (HTML, retrieved 2026-10-17)",
+      "url": "https://www.faa.gov/air_traffic/publications/atpubs/aim_html/chap1_section_1.html",
+      "sha256": "471cdf4b696ed24d5a8bc1e4b5cdc4ccbe5f515d79ed6c53d765fe311bc3f9c2",
+      "localFile": "answer-sources/aim_chap1_section_1.html"
+    },
+    {
+      "id": "aim-3-2",
+      "title": "Aeronautical Information Manual, Chapter 3 Section 2",
+      "docNumber": "AIM",
+      "edition": "AIM Basic with Change 3, effective 7/9/2026 (HTML, retrieved 2026-10-17)",
+      "url": "https://www.faa.gov/air_traffic/publications/atpubs/aim_html/chap3_section_2.html",
+      "sha256": "e70e0842b631132db6dd11748cd0477d8aa26c8e1dac9ca4b3ec17955bcf53ce",
+      "localFile": "answer-sources/aim_chap3_section_2.html"
+    },
+    {
+      "id": "aim-3-3",
+      "title": "Aeronautical Information Manual, Chapter 3 Section 3",
+      "docNumber": "AIM",
+      "edition": "AIM Basic with Change 3, effective 7/9/2026 (HTML, retrieved 2026-10-17)",
+      "url": "https://www.faa.gov/air_traffic/publications/atpubs/aim_html/chap3_section_3.html",
+      "sha256": "c4bdbcdf8d26a94d1e68fa02724085cb9203885d24c4f4824d8ecd2d81aa8d20",
+      "localFile": "answer-sources/aim_chap3_section_3.html"
+    },
+    {
+      "id": "aim-3-4",
+      "title": "Aeronautical Information Manual, Chapter 3 Section 4",
+      "docNumber": "AIM",
+      "edition": "AIM Basic with Change 3, effective 7/9/2026 (HTML, retrieved 2026-10-17)",
+      "url": "https://www.faa.gov/air_traffic/publications/atpubs/aim_html/chap3_section_4.html",
+      "sha256": "dc43215f1425cada58b7a93cdb81d615d0cbad83392c1a22afabecdcf5307182",
+      "localFile": "answer-sources/aim_chap3_section_4.html"
+    },
+    {
+      "id": "aim-4-1",
+      "title": "Aeronautical Information Manual, Chapter 4 Section 1",
+      "docNumber": "AIM",
+      "edition": "AIM Basic with Change 3, effective 7/9/2026 (HTML, retrieved 2026-10-17)",
+      "url": "https://www.faa.gov/air_traffic/publications/atpubs/aim_html/chap4_section_1.html",
+      "sha256": "dccf566419e967c74638035642d4466bb6428ad1f8533dba5b8e9695fe5d020f",
+      "localFile": "answer-sources/aim_chap4_section_1.html"
+    },
+    {
+      "id": "aim-4-2",
+      "title": "Aeronautical Information Manual, Chapter 4 Section 2",
+      "docNumber": "AIM",
+      "edition": "AIM Basic with Change 3, effective 7/9/2026 (HTML, retrieved 2026-10-17)",
+      "url": "https://www.faa.gov/air_traffic/publications/atpubs/aim_html/chap4_section_2.html",
+      "sha256": "bc57ea161962555803766d94b103b6920cd0844a4f0793888c81629a774b1aa1",
+      "localFile": "answer-sources/aim_chap4_section_2.html"
+    },
+    {
+      "id": "aim-4-3",
+      "title": "Aeronautical Information Manual, Chapter 4 Section 3",
+      "docNumber": "AIM",
+      "edition": "AIM Basic with Change 3, effective 7/9/2026 (HTML, retrieved 2026-10-17)",
+      "url": "https://www.faa.gov/air_traffic/publications/atpubs/aim_html/chap4_section_3.html",
+      "sha256": "c619bc8203751a60415e34ef2c43b4d3a83139d04aab3a87326db078a86aa661",
+      "localFile": "answer-sources/aim_chap4_section_3.html"
+    },
+    {
+      "id": "aim-6-3",
+      "title": "Aeronautical Information Manual, Chapter 6 Section 3",
+      "docNumber": "AIM",
+      "edition": "AIM Basic with Change 3, effective 7/9/2026 (HTML, retrieved 2026-10-17)",
+      "url": "https://www.faa.gov/air_traffic/publications/atpubs/aim_html/chap6_section_3.html",
+      "sha256": "8990ad29884faacbd6a24af12d04c8b3d2b5c51703f8f00713b387143c03c1ea",
+      "localFile": "answer-sources/aim_chap6_section_3.html"
+    },
+    {
+      "id": "aim-8-1",
+      "title": "Aeronautical Information Manual, Chapter 8 Section 1",
+      "docNumber": "AIM",
+      "edition": "AIM Basic with Change 3, effective 7/9/2026 (HTML, retrieved 2026-10-17)",
+      "url": "https://www.faa.gov/air_traffic/publications/atpubs/aim_html/chap8_section_1.html",
+      "sha256": "18e2326bd6ab8e51b7f26f0735f25cab424cb6d8208475aefd2c959ed3d94ed2",
+      "localFile": "answer-sources/aim_chap8_section_1.html"
+    },
+    {
+      "id": "phak",
+      "title": "Pilot's Handbook of Aeronautical Knowledge",
+      "docNumber": "FAA-H-8083-25C",
+      "edition": "25C (2023)",
+      "url": "https://www.faa.gov/regulations_policies/handbooks_manuals/aviation/faa-h-8083-25c.pdf",
+      "sha256": "247929cace0ab56b376e683eba540cc4c8f39f199ab35414e8b604e24f395cb7",
+      "localFile": "answer-sources/phak.pdf"
+    },
+    {
+      "id": "afh",
+      "title": "Airplane Flying Handbook",
+      "docNumber": "FAA-H-8083-3C",
+      "edition": "3C (2021)",
+      "url": "https://www.faa.gov/sites/faa.gov/files/regulations_policies/handbooks_manuals/aviation/airplane_handbook/00_afh_full.pdf",
+      "sha256": "90dda95dcbe992bd798f1932b02b5a02d620d8344565c0516a6917f29dea1f8d",
+      "localFile": "answer-sources/afh.pdf"
+    },
+    {
+      "id": "awh",
+      "title": "Aviation Weather Handbook",
+      "docNumber": "FAA-H-8083-28B",
+      "edition": "28B (signed April 2, 2026)",
+      "url": "https://www.faa.gov/sites/faa.gov/files/FAA-H-8083-28B.pdf",
+      "sha256": "2a87e4a5613e2a8e060aaf83a95dfc55b61b0e576f5b783df9fdcebe62da62c3",
+      "localFile": "answer-sources/awh.pdf"
+    }
+  ],
+  "answers": [
+    {
+      "id": "PAR-01",
+      "answer": "C",
+      "status": "proven",
+      "sourceId": "cfr-91.413",
+      "cite": "14 CFR 91.413(a)",
+      "quote": "No persons may use an ATC transponder that is specified in 91.215(a), 121.345(c), or § 135.143(c) of this chapter unless, within the preceding 24 calendar months, the ATC transponder has been tested and inspected",
+      "explanation": "Transponder checks are due within 24 calendar months. Calendar months run to the end of the month, so an inspection on September 1, 2014 stays current through September 30, 2016.",
+      "note": "End-of-month counting per PHAK FAA-H-8083-25C, ch. 9, p. 9-8 (annual inspection): \"A period of 12 calendar months extends from any day of a month to the last day of the same month the following year.\" Applied to 24 calendar months."
+    },
+    {
+      "id": "PAR-02",
+      "answer": "B",
+      "status": "proven",
+      "sourceId": "cfr-1.1",
+      "cite": "14 CFR 1.1, definition of \"Category\" (1)",
+      "quote": "As used with respect to the certification, ratings, privileges, and limitations of airmen, means a broad classification of aircraft. Examples include: airplane; rotorcraft; glider; and lighter-than-air;",
+      "explanation": "For pilot certificates, a category is a broad grouping of aircraft: airplane, rotorcraft, glider, and lighter-than-air. Single-engine land or sea are classes, and helicopter or gyroplane are classes within rotorcraft."
+    },
+    {
+      "id": "PAR-03",
+      "answer": "C",
+      "status": "proven",
+      "sourceId": "aim-4-3",
+      "cite": "AIM 4-3-13, Airport Traffic Control Tower Light Gun Signals table",
+      "quote": "Flashing white Return to starting point on airport Return to starting point on airport Not applicable",
+      "explanation": "A flashing white light from the tower means an aircraft on the ground should return to its starting point on the airport. The signal has no meaning for aircraft in flight.",
+      "note": "Table row; columns in order: Color and Type of Signal; Movement of Vehicles, Equipment and Personnel; Aircraft on the Ground; Aircraft in Flight."
+    },
+    {
+      "id": "PAR-04",
+      "answer": "A",
+      "status": "proven",
+      "sourceId": "cfr-91.155",
+      "cite": "14 CFR 91.155(a) table, Class G",
+      "quote": "Class G: … More than 1,200 feet above the surface but less than 10,000 feet MSL Day 1 statute mile",
+      "explanation": "Outside controlled airspace is Class G. Between 1,200 feet AGL and 10,000 feet MSL in daytime, VFR flight needs at least 1 statute mile of flight visibility.",
+      "note": "Class G is the uncontrolled airspace: AIM 3-3-1 \"Class G airspace (uncontrolled) is that portion of airspace that has not been designated as Class A, Class B, Class C, Class D, or Class E airspace.\""
+    },
+    {
+      "id": "PAR-05",
+      "answer": "A",
+      "status": "proven",
+      "sourceId": "cfr-91.126",
+      "cite": "14 CFR 91.126(d) (same text in 91.127(c); Class D: 91.129(c))",
+      "quote": "Unless otherwise authorized or required by ATC, no person may operate an aircraft to, from, through, or on an airport having an operational control tower unless two-way radio communications are maintained between that aircraft and the control tower.",
+      "explanation": "At any airport with an operating control tower, two-way radio contact with the tower is required unless ATC authorizes otherwise. The rule does not depend on the weather."
+    },
+    {
+      "id": "PAR-06",
+      "answer": "A",
+      "status": "proven",
+      "sourceId": "cfr-91.155",
+      "cite": "14 CFR 91.155(a) table, Class G",
+      "quote": "Class G: … More than 1,200 feet above the surface but less than 10,000 feet MSL Day 1 statute mile 500 feet below. 1,000 feet above. 2,000 feet horizontal. Night 3 statute miles 500 feet below.",
+      "explanation": "In Class G airspace above 1,200 feet AGL but below 10,000 feet MSL at night, VFR flight requires staying at least 500 feet below clouds, with 3 miles visibility.",
+      "note": "Class G is the uncontrolled airspace: AIM 3-3-1."
+    },
+    {
+      "id": "PAR-07",
+      "answer": "A",
+      "status": "proven",
+      "sourceId": "cfr-91.130",
+      "cite": "14 CFR 91.130(c)(1)",
+      "quote": "Each person operating an aircraft in Class C airspace must meet the following two-way radio communications requirements: … Each person must establish two-way radio communications with the ATC facility … providing air traffic services prior to entering that airspace",
+      "explanation": "Before entering Class C airspace you must establish two-way radio communication with the ATC facility serving it. Class E and Class G have no such entry requirement for VFR flights."
+    },
+    {
+      "id": "PAR-08",
+      "answer": "B",
+      "status": "proven",
+      "sourceId": "cfr-91.107",
+      "cite": "14 CFR 91.107(a)(1)",
+      "quote": "No pilot may take off a U.S.-registered civil aircraft … unless the pilot in command of that aircraft ensures that each person on board is briefed on how to fasten and unfasten that person's safety belt and, if installed, shoulder harness.",
+      "explanation": "The pilot in command must make sure every person on board is briefed on fastening and unfastening their seat belt and shoulder harness before takeoff."
+    },
+    {
+      "id": "PAR-09",
+      "answer": "C",
+      "status": "proven",
+      "sourceId": "cfr-91.409",
+      "cite": "14 CFR 91.409(b)",
+      "quote": "The 100-hour limitation may be exceeded by not more than 10 hours while en route to reach a place where the inspection can be done. The excess time used to reach a place where the inspection can be done must be included in computing the next 100 hours of time in service.",
+      "explanation": "The 7 hours flown past the due time count against the next interval. The next inspection is still due 100 hours after the original due time: 3302.5 + 100 = 3402.5 hours."
+    },
+    {
+      "id": "PAR-10",
+      "answer": "C",
+      "status": "proven",
+      "sourceId": "awh",
+      "cite": "Aviation Weather Handbook FAA-H-8083-28B, 3.3.1 Weather Briefings, p. 3-3",
+      "quote": "Other necessary information includes whether the flight will be conducted under VFR or IFR, aircraft identification and type, departure point, and the estimated time of departure, desired flight altitude, route of flight, destination, and estimated time en route.",
+      "explanation": "Tell the briefer whether the flight is VFR or IFR, along with aircraft identification and type, departure point, time, altitude, route, destination, and time en route. Your home address and qualifications are not on the list.",
+      "note": "PHAK FAA-H-8083-25C, ch. 13, gives the same list: \"Other helpful information is whether the flight is visual flight rules (VFR) or IFR, aircraft identification and type, departure point...\""
+    },
+    {
+      "id": "PAR-11",
+      "answer": "C",
+      "status": "proven",
+      "sourceId": "phak",
+      "cite": "PHAK FAA-H-8083-25C, ch. 12, Dew and Frost, p. 12-15",
+      "quote": "Frost disrupts the flow of air over the wing and can drastically reduce the production of lift. It also increases drag, which when combined with lowered lift production, can adversely affect the ability to take off.",
+      "explanation": "Frost roughens the wing surface and disrupts the smooth airflow over it. That cuts the lift the wing can make and adds drag, which can keep an airplane from taking off."
+    },
+    {
+      "id": "PAR-13",
+      "answer": "B",
+      "status": "proven",
+      "sourceId": "phak",
+      "cite": "PHAK FAA-H-8083-25C, ch. 12, Thunderstorms, p. 12-22",
+      "quote": "the thunderstorm reaches the mature stage, which is the most violent time period of the thunderstorm's life cycle. At this point, drops of moisture, whether rain or ice, are too heavy for the cloud to support and begin falling in the form of rain or hail.",
+      "explanation": "A thunderstorm enters its mature stage when precipitation starts falling from the cloud. The anvil top and widespread downdrafts come later, as the storm dissipates.",
+      "note": "AWH FAA-H-8083-28B ch. 22 words it as \"The cell transitions to the mature stage when precipitation reaches the surface.\""
+    },
+    {
+      "id": "PAR-15",
+      "answer": "C",
+      "status": "proven",
+      "sourceId": "aim-3-4",
+      "cite": "AIM 3-4-5",
+      "quote": "Pilots operating under VFR should exercise extreme caution while flying within a MOA when military activity is being conducted.",
+      "explanation": "VFR pilots need no clearance to enter a MOA, but they should use extreme caution when military activity is under way. Contacting the controlling agency for traffic advisories is recommended."
+    },
+    {
+      "id": "PAR-16",
+      "answer": "A",
+      "status": "proven",
+      "sourceId": "aim-4-1",
+      "cite": "AIM 4-1-20",
+      "quote": "Transponder and ADS-B Operation Under Visual Flight Rules (VFR). Unless otherwise instructed by an ATC facility, adjust transponder/ADS-B to reply on Mode 3/A Code 1200 regardless of altitude.",
+      "explanation": "Under VFR, set the transponder to code 1200 unless ATC assigns a different code. Codes 7600 and 7700 are for radio failure and emergencies."
+    },
+    {
+      "id": "PAR-17",
+      "answer": "A",
+      "status": "proven",
+      "sourceId": "afh",
+      "cite": "Airplane Flying Handbook FAA-H-8083-3C, ch. 9, p. 9-1",
+      "quote": "Flap extension during approaches and landings provides several advantages by: … 1. Producing greater lift and permitting lower approach and landing speeds, … 2. Producing greater drag and permitting a steeper descent angle,",
+      "explanation": "Flaps add lift and drag. That lets the airplane descend at a steeper angle while flying slower, so a pilot can make a steep approach without building up airspeed."
+    },
+    {
+      "id": "PAR-18",
+      "answer": "A",
+      "status": "proven",
+      "sourceId": "phak",
+      "cite": "PHAK FAA-H-8083-25C, ch. 7, Fuel Injection Systems, p. 7-12",
+      "quote": "A fuel injection system is considered to be less susceptible to icing than a carburetor system, but impact icing on the air intake is a possibility in either system.",
+      "explanation": "Fuel injection systems are less prone to icing than carburetors, so a float-type carburetor system is the more susceptible of the two. Impact ice on the air intake can affect either system."
+    },
+    {
+      "id": "PAR-19",
+      "answer": "C",
+      "status": "proven",
+      "sourceId": "phak",
+      "cite": "PHAK FAA-H-8083-25C, ch. 8, Airspeed Indicator Markings, p. 8-9",
+      "quote": "Red line (VNE)—never exceed speed. Operating above this speed is prohibited since it may result in damage or structural failure.",
+      "explanation": "The red line marks the never-exceed speed, VNE. Flying faster is prohibited because it can damage the airplane or cause structural failure."
+    },
+    {
+      "id": "PAR-22",
+      "answer": "A",
+      "status": "proven",
+      "sourceId": "aim-4-3",
+      "cite": "AIM 4-3-11",
+      "quote": "The pilot-in-command has the final authority to accept or decline any land and hold short clearance.",
+      "explanation": "Only the pilot in command decides whether to accept a land and hold short (LAHSO) clearance. Pilots are expected to decline one they cannot comply with."
+    },
+    {
+      "id": "PAR-26",
+      "answer": "A",
+      "status": "proven",
+      "sourceId": "afh",
+      "cite": "Airplane Flying Handbook FAA-H-8083-3C, Glossary, \"Angle of attack\", p. G-2",
+      "quote": "Angle of attack. The acute angle between the chord line of the airfoil and the direction of the relative wind.",
+      "explanation": "Angle of attack is the angle between the wing's chord line and the relative wind. It is not measured from the airplane's longitudinal axis or center line."
+    },
+    {
+      "id": "PAR-27",
+      "answer": "C",
+      "status": "proven",
+      "sourceId": "aim-1-1",
+      "cite": "AIM 1-1-4",
+      "quote": "With the Course Deviation Indicator (CDI) centered, the omni-bearing selector should read 0 degrees with the to/from indication showing \"from\" or the omni-bearing selector should read 180 degrees with the to/from indication showing \"to.\"",
+      "explanation": "A VOT broadcasts the same test signal in every direction. With the CDI centered, a good receiver shows 0° FROM or 180° TO, no matter where you are relative to the VOT."
+    },
+    {
+      "id": "PAR-34",
+      "answer": null,
+      "status": "unproven",
+      "sourceId": null,
+      "cite": null,
+      "quote": null,
+      "explanation": "This is a judgment question. No FAA source sentence found decides which of the three choices is best, so no answer is given.",
+      "note": "Searched PHAK 25C, AFH 3C for density-altitude/takeoff-decision text (e.g. waiting for cooler temperatures); no quote decides between the choices."
+    },
+    {
+      "id": "PAR-35",
+      "answer": "C",
+      "status": "proven",
+      "sourceId": "phak",
+      "cite": "PHAK FAA-H-8083-25C, ch. 7, Carburetor Icing, p. 7-10",
+      "quote": "The first indication of carburetor icing in an aircraft with a fixed-pitch propeller is a decrease in engine rpm, which may be followed by engine roughness.",
+      "explanation": "With a fixed-pitch propeller, carburetor ice first shows up as a drop in engine rpm. Engine roughness may follow later."
+    },
+    {
+      "id": "PAR-37",
+      "answer": "A",
+      "status": "proven",
+      "sourceId": "aim-6-3",
+      "cite": "AIM 6-3-1",
+      "quote": "Although the frequency in use or other frequencies assigned by ATC are preferable, the following emergency frequencies can be used for distress or urgency communications, if necessary or desirable: 121.5 MHz and 243.0 MHz.",
+      "explanation": "121.5 MHz is the civil VHF emergency frequency. If you are not talking to ATC, it can be used for distress or urgency calls."
+    },
+    {
+      "id": "PAR-38",
+      "answer": "B",
+      "status": "proven",
+      "sourceId": "aim-4-1",
+      "cite": "AIM 4-1-15",
+      "quote": "Since the radar controller can only observe aircraft track (course) on the radar display, traffic advisories are issued accordingly, and pilots should give due consideration to this fact when looking for reported traffic.",
+      "explanation": "Radar shows the controller your track over the ground, not your heading. Clock positions in traffic advisories are based on that ground track, so with a wind correction the traffic may appear off the called position.",
+      "note": "AIM 4-1-15 examples show traffic called at 12 o'clock appearing at 2 or 10 o'clock to a pilot holding a wind correction angle."
+    },
+    {
+      "id": "PAR-39",
+      "answer": "C",
+      "status": "proven",
+      "sourceId": "phak",
+      "cite": "PHAK FAA-H-8083-25C, ch. 4, Bernoulli's Principle of Differential Pressure, p. 4-6",
+      "quote": "Bernoulli's Principle states that as the velocity of a moving fluid (liquid or gas) increases, the pressure within the fluid decreases. This principle explains what happens to air passing over the curved top of the airplane wing.",
+      "explanation": "Bernoulli's principle says faster-moving air has lower pressure. Air moving faster over the curved top of the wing lowers the pressure there. Choices A and B describe Newton's laws instead."
+    },
+    {
+      "id": "PAR-40",
+      "answer": "B",
+      "status": "proven",
+      "sourceId": "phak",
+      "cite": "PHAK FAA-H-8083-25C, ch. 16, Deviation, p. 16-8",
+      "quote": "Because of magnetic influences within an aircraft, such as electrical circuits, radio, lights, tools, engine, and magnetized metal parts, the compass needle is frequently deflected from its normal reading. This deflection is called deviation.",
+      "explanation": "Deviation is compass error caused by metal parts and electrical equipment inside the aircraft. The difference between true and magnetic north is variation, a separate error."
+    },
+    {
+      "id": "PAR-41",
+      "answer": "C",
+      "status": "proven",
+      "sourceId": "afh",
+      "cite": "Airplane Flying Handbook FAA-H-8083-3C, ch. 9, p. 9-28",
+      "quote": "A constant gliding speed is usually maintained because variations of gliding speed nullify all attempts at accuracy in judgment of gliding distance and the landing spot.",
+      "explanation": "Holding a constant glide speed lets you judge how far the airplane will glide and where it will touch down. Changing speeds ruins that judgment."
+    },
+    {
+      "id": "PAR-42",
+      "answer": "A",
+      "status": "proven",
+      "sourceId": "phak",
+      "cite": "PHAK FAA-H-8083-25C, ch. 16, Basic Calculations, p. 16-11",
+      "quote": "To convert minutes to hours, divide by 60 (60 minutes = 1 hour). … To find the distance flown in a given time, multiply GS by time.",
+      "explanation": "Convert 7.5 minutes to hours: 7.5 ÷ 60 = 0.125 hour. Then multiply by groundspeed: 114 knots × 0.125 hour = 14.25 nautical miles."
+    },
+    {
+      "id": "PAR-43",
+      "answer": "B",
+      "status": "proven",
+      "sourceId": "aim-3-2",
+      "cite": "AIM 3-2-4",
+      "quote": "Class C airspace areas have a procedural Outer Area. Normally this area is 20 NM from the primary Class C airspace airport.",
+      "explanation": "Class C airspace has an uncharted procedural outer area that normally extends 20 NM from the primary airport. Participation in services there is voluntary."
+    },
+    {
+      "id": "PAR-45",
+      "answer": "B",
+      "status": "proven",
+      "sourceId": "aim-4-3",
+      "cite": "AIM 4-3-24",
+      "quote": "Pilots are further encouraged to turn on their landing lights when operating below 10,000 feet, day or night, especially when operating within 10 miles of any airport, or in conditions of reduced visibility and in areas where flocks of birds may be expected,",
+      "explanation": "The AIM encourages landing lights below 10,000 feet, day or night, especially within 10 miles of any airport, in reduced visibility, and where birds are likely. This helps others see you."
+    },
+    {
+      "id": "PAR-46",
+      "answer": "C",
+      "status": "proven",
+      "sourceId": "aim-4-1",
+      "cite": "AIM 4-1-20",
+      "quote": "When making routine code changes, pilots should avoid inadvertent selection of Codes 7500, 7600 or 7700 thereby causing momentary false alarms at automated ground facilities.",
+      "explanation": "When changing codes, avoid passing through 7500, 7600, or 7700. These codes trigger alarms at ATC facilities, even briefly. Of the choices, only 7500 is one of them."
+    },
+    {
+      "id": "PAR-47",
+      "answer": "A",
+      "status": "proven",
+      "sourceId": "phak",
+      "cite": "PHAK FAA-H-8083-25C, ch. 17, Hyperventilation, p. 17-5",
+      "quote": "The treatment for hyperventilation involves restoring the proper carbon dioxide level in the body. Breathing normally is both the best prevention and the best cure for hyperventilation. In addition to slowing the breathing rate, breathing into a paper bag or talking aloud helps to overcome hyperventilation.",
+      "explanation": "Hyperventilation drives too much carbon dioxide out of the body. Slowing your breathing, breathing into a paper bag, or talking aloud helps restore the normal level."
+    },
+    {
+      "id": "PAR-51",
+      "answer": "B",
+      "status": "proven",
+      "sourceId": "aim-1-1",
+      "cite": "AIM 1-1-17",
+      "quote": "Without RAIM capability, the pilot has no assurance of the accuracy of the GPS position.",
+      "explanation": "RAIM is how a GPS receiver checks its own integrity. If RAIM is lost, you cannot be sure the GPS position is accurate. Cross-check with other navigation sources."
+    },
+    {
+      "id": "PAR-52",
+      "answer": null,
+      "status": "unproven",
+      "sourceId": null,
+      "cite": null,
+      "quote": null,
+      "explanation": "Current FAA briefing guidance lists the information to give a briefer, but none of it decides among these three choices, so no answer is given.",
+      "note": "Current AIM 7-1-5 (Chg 3, 7/9/2026), PHAK 25C ch. 13 and AWH 28B 3.3.1 do not mention identifying yourself as a pilot, giving occupant count, or opening with the route. Route of flight is a listed item, but no order is stated."
+    },
+    {
+      "id": "PAR-53",
+      "answer": "A",
+      "status": "proven",
+      "sourceId": "cfr-61.57",
+      "cite": "14 CFR 61.57(a)(1)",
+      "quote": "no person may act as a pilot in command of an aircraft carrying persons or of an aircraft certificated for more than one pilot flight crewmember unless that person has made at least three takeoffs and three landings within the preceding 90 days,",
+      "explanation": "To carry passengers as pilot in command, you need three takeoffs and three landings within the preceding 90 days in the same category and class (and type, if required).",
+      "note": "61.57(a)(1)(i)-(ii) add that they must be in an aircraft of the same category, class, and type (if a type rating is required)."
+    },
+    {
+      "id": "PAR-54",
+      "answer": "A",
+      "status": "proven",
+      "sourceId": "phak",
+      "cite": "PHAK FAA-H-8083-25C, ch. 5, Torque and P-Factor / Corkscrew Effect, p. 5-30 to 5-31",
+      "quote": "To the pilot, \"torque\" (the left turning tendency of the airplane) is made up of four elements … Corkscrewing effect of the slipstream … At high propeller speeds and low forward speed (as in the takeoffs and approaches to power-on stalls), this spiraling rotation is very compact and exerts a strong sideward force",
+      "explanation": "Torque effects are strongest at high power and low airspeed, such as takeoffs and power-on stall approaches, when the angle of attack is high. That matches choice A.",
+      "note": "The quote states high propeller speed (high power) and low forward speed; the high-AOA element follows from the same PHAK section on P-factor (p. 5-32: \"When an aircraft is flying with a high AOA, the “bite” of the downward moving blade is greater\"). Only choice A combines low airspeed and high power."
+    },
+    {
+      "id": "PAR-55",
+      "answer": "B",
+      "status": "proven",
+      "sourceId": "phak",
+      "cite": "PHAK FAA-H-8083-25C, ch. 12, Coriolis Force, p. 12-4",
+      "quote": "within 2,000 feet of the ground, the friction between the surface and the atmosphere slows the moving air. The wind is diverted from its path because of the frictional force. Thus, the wind direction at the surface varies somewhat from the wind direction just a few thousand feet above the Earth.",
+      "explanation": "Surface friction slows the wind near the ground and turns it from its path. That is why surface wind direction differs from the wind a few thousand feet up."
+    },
+    {
+      "id": "PAR-56",
+      "answer": "A",
+      "status": "proven",
+      "sourceId": "aim-8-1",
+      "cite": "AIM 8-1-6",
+      "quote": "Each movement should not exceed 10 degrees, and each area should be observed for at least 1 second to enable detection.",
+      "explanation": "Scan in short, evenly spaced steps of no more than 10 degrees, pausing at least 1 second on each area. This lets your sharp central vision detect other aircraft."
+    },
+    {
+      "id": "PAR-57",
+      "answer": "C",
+      "status": "proven",
+      "sourceId": "phak",
+      "cite": "PHAK FAA-H-8083-25C, ch. 12, Temperature Inversions, p. 12-13",
+      "quote": "When the temperature of the air rises with altitude, a temperature inversion exists.",
+      "explanation": "In a temperature inversion the air gets warmer as you climb, the opposite of the normal pattern. Visibility under an inversion is often poor because haze and pollutants are trapped below it."
+    },
+    {
+      "id": "PAR-58",
+      "answer": "A",
+      "status": "proven",
+      "sourceId": "awh",
+      "cite": "Aviation Weather Handbook FAA-H-8083-28B, 18.1.1.1.3 Upslope Fog, p. 18-6",
+      "quote": "Upslope fog forms as a result of moist, stable air being adiabatically cooled to or below its dewpoint as it moves up sloping terrain (see Figure 18-7). Winds speeds of 5–15 kt are most favorable since stronger winds tend to lift the fog into a layer of low stratus clouds.",
+      "explanation": "Moist, stable air cooled as it moves up sloping terrain forms upslope fog or low stratus clouds. Showers, thunderstorms, and convective turbulence come from unstable air.",
+      "note": "PHAK 25C ch. 12: \"Moist, unstable air causes cumulus clouds, showers, and turbulence to form.\" and \"A stable air mass can produce low stratus clouds and fog.\""
+    },
+    {
+      "id": "PAR-59",
+      "answer": null,
+      "status": "unproven",
+      "sourceId": null,
+      "cite": null,
+      "quote": null,
+      "explanation": "The current rule lists who may ask to inspect your certificate. More than one choice can be argued from that list, so no single answer is proven.",
+      "note": "14 CFR 61.3(l) (current) lists: \"(1) The Administrator; (2) An authorized representative of the National Transportation Safety Board; (3) Any Federal, State, or local law enforcement officer; or (4) An authorized representative of the Transportation Security Administration.\" Choice C (local law enforcement officer) appears verbatim; choice A (DOT representative) is not in the text but could be argued via the Administrator (FAA is part of DOT). Ambiguous, so unproven."
+    },
+    {
+      "id": "PAR-60",
+      "answer": "C",
+      "status": "proven",
+      "sourceId": "aim-4-2",
+      "cite": "AIM 4-2-9",
+      "quote": "Up to but not including 18,000 feet MSL, state the separate digits of the thousands plus the hundreds if appropriate.",
+      "explanation": "Below 18,000 feet, say the thousands and then the hundreds. So 5,500 feet is spoken as \"five thousand five hundred.\"",
+      "note": "AIM 4-2-9 example: \"12,500 one two thousand five hundred\"; AIM 4-2-8 example: \"4,500 four thousand five hundred\"."
+    },
+    {
+      "id": "PAR-61",
+      "answer": "B",
+      "status": "proven",
+      "sourceId": "cfr-91.225",
+      "cite": "14 CFR 91.225(d)(3)",
+      "quote": "no person may operate an aircraft in the following airspace unless the aircraft has equipment installed that meets the requirements in paragraph (b) of this section: … Above the ceiling and within the lateral boundaries of a Class B or Class C airspace area designated for an airport upward to 10,000 feet MSL;",
+      "explanation": "ADS-B Out is required inside Class B and C airspace and when flying over them up to 10,000 feet MSL. Flying beneath a Class C shelf or landing at a towered airport does not by itself require it."
+    }
+  ]
+}

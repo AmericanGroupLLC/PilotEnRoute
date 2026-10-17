@@ -35,8 +35,11 @@ class _GoHistoryScreenState extends State<GoHistoryScreen> {
   @override
   Widget build(BuildContext context) {
     final svc = context.watch<LogbookService>();
-    final list =
-        filterChecks(svc.checks, airport: _search.text, verdict: _verdict);
+    final list = filterChecks(
+      svc.checks,
+      airport: _search.text,
+      verdict: _verdict,
+    );
     final scheme = Theme.of(context).colorScheme;
     return Scaffold(
       appBar: AppBar(title: const Text('Check history')),
@@ -83,54 +86,104 @@ class _GoHistoryScreenState extends State<GoHistoryScreen> {
           ),
           Expanded(
             child: list.isEmpty
-                ? ListView(padding: const EdgeInsets.all(16), children: [
-                    NoticeLine(
-                      icon: Icons.history,
-                      text: svc.checks.isEmpty
-                          ? 'No checks yet. Each Go Card check is saved here.'
-                          : 'No checks match.',
-                    ),
-                  ])
+                ? ListView(
+                    padding: const EdgeInsets.all(16),
+                    children: [
+                      NoticeLine(
+                        icon: Icons.history,
+                        text: svc.checks.isEmpty
+                            ? 'No checks yet. Each Go Card check is saved here.'
+                            : 'No checks match.',
+                      ),
+                    ],
+                  )
                 : ListView.builder(
                     padding: const EdgeInsets.only(bottom: 24),
                     itemCount: list.length,
                     itemBuilder: (context, i) {
                       final r = list[i];
-                      return Dismissible(
-                        key: ValueKey('check-${r.id}'),
-                        direction: DismissDirection.endToStart,
-                        background: Container(color: scheme.error),
-                        onDismissed: (_) => svc.deleteCheck(r.id!),
-                        child: ExpansionTile(
-                          title: Text(
-                            '${r.departure}${r.destination.isEmpty || r.destination == r.departure ? '' : ' → ${r.destination}'}',
-                            style: const TextStyle(
-                                fontFamily: AppFonts.mono,
-                                fontWeight: FontWeight.w700),
+                      return Padding(
+                        padding: const EdgeInsets.fromLTRB(16, 5, 16, 5),
+                        child: Dismissible(
+                          key: ValueKey('check-${r.id}'),
+                          direction: DismissDirection.endToStart,
+                          background: Container(
+                            decoration: BoxDecoration(
+                              color: scheme.error,
+                              borderRadius: Sky.corners,
+                            ),
                           ),
-                          subtitle: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text('Checked ${_when(r.createdAt)} · for '
-                                  '${_when(r.plannedAt)}'),
-                              Text(r.headline,
-                                  maxLines: 2, overflow: TextOverflow.ellipsis),
-                            ],
+                          onDismissed: (_) => svc.deleteCheck(r.id!),
+                          child: SkyCard(
+                            padding: EdgeInsets.zero,
+                            child: Theme(
+                              data: Theme.of(context)
+                                  .copyWith(dividerColor: Colors.transparent),
+                              child: ExpansionTile(
+                                tilePadding: const EdgeInsets.symmetric(
+                                  horizontal: 14,
+                                  vertical: 4,
+                                ),
+                                leading: IconTile(
+                                  r.destination.isEmpty ||
+                                          r.destination == r.departure
+                                      ? Icons.flight_takeoff_rounded
+                                      : Icons.route_rounded,
+                                  size: 40,
+                                ),
+                                title: Text(
+                                  '${r.departure}${r.destination.isEmpty || r.destination == r.departure ? '' : ' → ${r.destination}'}',
+                                  style: const TextStyle(
+                                    fontFamily: AppFonts.mono,
+                                    fontWeight: FontWeight.w700,
+                                  ),
+                                ),
+                                subtitle: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      'Checked ${_when(r.createdAt)} · for '
+                                      '${_when(r.plannedAt)}',
+                                      style: TextStyle(
+                                        fontSize: 12,
+                                        color: scheme.onSurfaceVariant,
+                                      ),
+                                    ),
+                                    const SizedBox(height: 4),
+                                    StatusTag(
+                                      lookForVerdict(r.verdict),
+                                      dense: true,
+                                    ),
+                                    const SizedBox(height: 4),
+                                    Text(
+                                      r.headline,
+                                      maxLines: 2,
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
+                                  ],
+                                ),
+                                childrenPadding: const EdgeInsets.fromLTRB(
+                                  14,
+                                  0,
+                                  14,
+                                  14,
+                                ),
+                                children: [
+                                  if (r.metarRaw.isNotEmpty)
+                                    MonoBlock(r.metarRaw),
+                                  if (r.tafRaw.isNotEmpty) ...[
+                                    const SizedBox(height: 6),
+                                    MonoBlock(r.tafRaw),
+                                  ],
+                                  const SizedBox(height: 6),
+                                  Text(
+                                    r.detail,
+                                    style: const TextStyle(fontSize: 12.5),
+                                  ),
+                                ],
+                              ),
+                            ),
                           ),
-                          trailing: StatusTag(lookForVerdict(r.verdict),
-                              dense: true),
-                          childrenPadding:
-                              const EdgeInsets.fromLTRB(16, 0, 16, 12),
-                          children: [
-                            if (r.metarRaw.isNotEmpty) MonoBlock(r.metarRaw),
-                            if (r.tafRaw.isNotEmpty) ...[
-                              const SizedBox(height: 6),
-                              MonoBlock(r.tafRaw),
-                            ],
-                            const SizedBox(height: 6),
-                            Text(r.detail,
-                                style: const TextStyle(fontSize: 12.5)),
-                          ],
                         ),
                       );
                     },

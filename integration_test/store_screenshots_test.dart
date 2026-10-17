@@ -1,9 +1,10 @@
 // BESPOKE screenshots for PilotEnRoute - do not regenerate.
 //
 // Drives the real app from a fresh install, through the real UI: the
-// three-screen onboarding (no account), Today's Go Card on live
-// aviationweather.gov data, the logbook entry form, the logbook with a
-// search, Weather and Kit.
+// three-screen onboarding (no account), the Go Card on live
+// aviationweather.gov data, the logbook entry form, Home, the logbook with a
+// search, Weather, the Plan tab, the six-pack trainer and a knowledge-test
+// question.
 //
 // Everything shown is entered through the UI in this run: the home airport,
 // the medical and flight-review dates (today's date from the date picker),
@@ -11,7 +12,7 @@
 // is seeded. The METAR/TAF is whatever AWC reports at the time of the run,
 // so the Go Card result is real and not staged.
 //
-// No ad can appear: Today, the Go Card and the entry form carry none, and the
+// No ad can appear: Home, the Go Card and the entry form carry none, and the
 // Logbook's in-list slot only exists after its 5th row (this run logs one).
 // The Weather tab's slot is scrolled past in a debug build only if present;
 // a "Test Ad" must never reach a store screenshot, so build with
@@ -156,7 +157,10 @@ void main() {
     await shot(tester, '02_onboarding_minimums');
     await tapKey(tester, 'onboarding-finish');
 
-    // ── Today: the Go Card fetches KPAO from aviationweather.gov.
+    // ── Home, then the Go Card, which fetches KPAO from aviationweather.gov.
+    await waitFor(tester, find.byKey(const Key('home-go-card')), 'Home',
+        timeout: const Duration(seconds: 40));
+    await tapKey(tester, 'home-go-card');
     await waitFor(tester, find.byKey(const Key('go-verdict')), 'the Go Card',
         timeout: const Duration(seconds: 40));
     await pumpUntil(tester, find.text('Check again'));
@@ -178,22 +182,43 @@ void main() {
     await typeKey(tester, 'entry-remarks', 'Pattern work');
     await tapKey(tester, 'entry-save');
 
+    // ── Back to Home: legal today, and the flight just logged.
+    await tester.tap(find.byType(BackButton).first);
+    await settle(tester);
+    await waitFor(tester, find.byKey(const Key('home-go-card')), 'Home');
+    await shot(tester, '05_home');
+
     // ── Logbook with a search.
     await tester.tap(find.text('Logbook').last);
     await settle(tester);
     await typeKey(tester, 'logbook-search', 'KPAO');
-    await shot(tester, '05_logbook_search');
+    await shot(tester, '06_logbook_search');
 
-    // ── Weather.
-    await tester.tap(find.text('Weather').last);
+    // ── Weather, from the Plan tab.
+    await tester.tap(find.text('Plan').last);
     await settle(tester);
+    await tapKey(tester, 'plan-tile-/weather');
     await pumpUntil(tester, find.textContaining('METAR KPAO'),
         timeout: const Duration(seconds: 30));
-    await shot(tester, '06_weather');
-
-    // ── Kit.
-    await tester.tap(find.text('Kit').last);
+    await shot(tester, '07_weather');
+    await tester.tap(find.byType(BackButton).first);
     await settle(tester);
-    await shot(tester, '07_kit');
+    await shot(tester, '08_plan');
+
+    // ── Learn: the six-pack trainer.
+    await tester.tap(find.text('Learn').last);
+    await settle(tester);
+    await tapKey(tester, 'learn-sixpack');
+    await shot(tester, '09_sixpack');
+    await tester.tap(find.byType(BackButton).first);
+    await settle(tester);
+
+    // ── Practice: one FAA sample question, answered, with its FAA source.
+    await tester.tap(find.text('Practice').last);
+    await settle(tester);
+    await tapKey(tester, 'practice-start-all');
+    await tapKey(tester, 'quiz-choice-A');
+    await reveal(tester, find.byKey(const Key('quiz-explanation')));
+    await shot(tester, '10_practice_question');
   });
 }

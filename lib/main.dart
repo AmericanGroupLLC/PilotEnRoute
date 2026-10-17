@@ -20,6 +20,8 @@ import 'screens/minimums_screen.dart';
 import 'screens/onboarding_screen.dart';
 import 'screens/reminders_screen.dart';
 import 'screens/settings_screen.dart';
+import 'screens/today_screen.dart';
+import 'screens/weather_screen.dart';
 import 'screens/weight_balance_screen.dart';
 import 'services/ad_service.dart';
 import 'services/document_service.dart';
@@ -27,6 +29,7 @@ import 'services/error_reporter.dart';
 import 'services/flight_plan_service.dart';
 import 'services/logbook_service.dart';
 import 'services/notification_service.dart';
+import 'services/practice_store.dart';
 import 'services/reminder_service.dart';
 import 'services/settings_store.dart';
 import 'services/weather_service.dart';
@@ -57,6 +60,7 @@ void main() async {
   unawaited(AdService().initialize());
 
   final settings = await SettingsStore.load();
+  final practice = await PracticeStore.load();
   final locale = AglLocaleController();
   await locale.load();
 
@@ -64,7 +68,8 @@ void main() async {
     statusBarColor: Colors.transparent,
   ));
 
-  runApp(PilotEnRouteApp(settings: settings, locale: locale));
+  runApp(PilotEnRouteApp(
+      settings: settings, practice: practice, locale: locale));
 }
 
 class PilotEnRouteApp extends StatefulWidget {
@@ -73,6 +78,7 @@ class PilotEnRouteApp extends StatefulWidget {
     this.settings,
     this.logbook,
     this.weather,
+    this.practice,
     this.locale,
     this.clock,
   });
@@ -81,6 +87,7 @@ class PilotEnRouteApp extends StatefulWidget {
   final SettingsStore? settings;
   final LogbookService? logbook;
   final WeatherService? weather;
+  final PracticeStore? practice;
   final AglLocaleController? locale;
   final DateTime Function()? clock;
 
@@ -92,6 +99,7 @@ class _PilotEnRouteAppState extends State<PilotEnRouteApp> {
   late final SettingsStore _settings = widget.settings ?? SettingsStore();
   late final LogbookService _logbook = widget.logbook ?? LogbookService();
   late final WeatherService _weather = widget.weather ?? WeatherService();
+  late final PracticeStore _practice = widget.practice ?? PracticeStore();
   late final AglLocaleController _locale =
       widget.locale ?? AglLocaleController();
   late final ReminderService _reminders =
@@ -124,6 +132,7 @@ class _PilotEnRouteAppState extends State<PilotEnRouteApp> {
         ChangeNotifierProvider<SettingsStore>.value(value: _settings),
         ChangeNotifierProvider<LogbookService>.value(value: _logbook),
         ChangeNotifierProvider<WeatherService>.value(value: _weather),
+        ChangeNotifierProvider<PracticeStore>.value(value: _practice),
         ChangeNotifierProvider<ReminderService>.value(value: _reminders),
         ChangeNotifierProvider<AglLocaleController>.value(value: _locale),
         ChangeNotifierProvider(create: (_) => FlightPlanService()),
@@ -141,8 +150,8 @@ class _PilotEnRouteAppState extends State<PilotEnRouteApp> {
           locale: _locale.locale,
           title: 'PilotEnRoute',
           debugShowCheckedModeBanner: false,
-          theme: buildRbfTheme(Brightness.light),
-          darkTheme: buildRbfTheme(Brightness.dark),
+          theme: buildSkyTheme(Brightness.light),
+          darkTheme: buildSkyTheme(Brightness.dark),
           themeMode: ThemeMode.system,
           home: RootGate(clock: widget.clock),
           onGenerateRoute: (s) {
@@ -176,6 +185,13 @@ class _PilotEnRouteAppState extends State<PilotEnRouteApp> {
               case '/history':
                 return MaterialPageRoute(
                     settings: s, builder: (_) => const GoHistoryScreen());
+              case '/go':
+                return MaterialPageRoute(
+                    settings: s,
+                    builder: (_) => TodayScreen(clock: widget.clock));
+              case '/weather':
+                return MaterialPageRoute(
+                    settings: s, builder: (_) => const WeatherScreen());
             }
             return null;
           },
@@ -185,7 +201,7 @@ class _PilotEnRouteAppState extends State<PilotEnRouteApp> {
   }
 }
 
-/// Onboarding until it is finished once; then Today, on every launch.
+/// Onboarding until it is finished once; then Home, on every launch.
 class RootGate extends StatelessWidget {
   const RootGate({super.key, this.clock});
   final DateTime Function()? clock;
@@ -204,6 +220,8 @@ class RootGate extends StatelessWidget {
     '/minimums',
     '/reminders',
     '/history',
+    '/go',
+    '/weather',
   ];
 
   @override

@@ -19,7 +19,16 @@ for navigation and does not replace an official weather briefing, your
 POH/AFM or your instructor. Every go/no-go decision is yours.
 
 ## Features
-- **Today / Go Card** — legality per flight (passengers, night, IFR) under
+Five tabs: Home · Learn · Practice · Plan · Logbook.
+
+- **Home** — legal-today line, student progress, practice readiness, last
+  flight; settings behind the gear.
+- **Learn** — FAA library (PHAK, Airplane Flying Handbook, AIM, ACS, weather
+  and more, opened from faa.gov), six-pack trainer (PHAK chapter 8) and
+  airport operations (AIM), every line cited.
+- **Practice** — the FAA's Private Pilot sample questions, each answer shown in
+  the quoted FAA text; your score per topic and a review of missed questions.
+- **Go Card** (from Home or Plan) — legality per flight (passengers, night, IFR) under
   14 CFR 61.57, 61.56, 61.23 (incl. BasicMed) and 61.87/61.89 for students;
   live METAR/TAF vs. your minimums; best-runway crosswind from true runway
   alignment; stale/offline/no-station states; every check saved to history;
@@ -33,7 +42,7 @@ POH/AFM or your instructor. Every go/no-go decision is yours.
 - **Night window** — with Night on, the Go Card shows when the 61.57(b) night
   period starts and ends at the airport, worked out on the phone.
 - **Weather** — METAR, TAF, PIREPs, SIGMETs, G-AIRMETs, winds aloft.
-- **Kit** — E6B, weight & balance, fuel, flight planner, checklists
+- **Plan / flight bag** — E6B, weight & balance, fuel, flight planner, checklists
   (representative only), documents with expiry dates, airport details, FAA
   charts link; each with a short "About" explanation.
 - **Reminders** — 30 and 7 days before anything lapses.

@@ -4,7 +4,7 @@
 /// test while opening to a white screen, so these pump the *real* widget tree
 /// — the real providers, the real RootGate, the real route table — and
 /// assert that something a pilot would recognise is on screen. There is no
-/// login wall: a fresh install opens onboarding, then Today.
+/// login wall: a fresh install opens onboarding, then Home.
 library;
 
 import 'dart:convert';
@@ -20,11 +20,13 @@ import 'package:pilot_enroute/core/minimums/personal_minimums.dart';
 import 'package:pilot_enroute/data/logbook_store.dart';
 import 'package:pilot_enroute/main.dart';
 import 'package:pilot_enroute/screens/app_shell.dart';
-import 'package:pilot_enroute/screens/kit_screen.dart';
+import 'package:pilot_enroute/screens/home_screen.dart';
+import 'package:pilot_enroute/screens/learn_screen.dart';
+import 'package:pilot_enroute/screens/plan_screen.dart';
 import 'package:pilot_enroute/screens/logbook_screen.dart';
 import 'package:pilot_enroute/screens/onboarding_screen.dart';
+import 'package:pilot_enroute/screens/practice_screen.dart';
 import 'package:pilot_enroute/screens/today_screen.dart';
-import 'package:pilot_enroute/screens/weather_screen.dart';
 import 'package:pilot_enroute/services/logbook_service.dart';
 import 'package:pilot_enroute/services/notification_service.dart';
 import 'package:pilot_enroute/services/settings_store.dart';
@@ -73,8 +75,8 @@ void main() {
       expect(tester.takeException(), isNull);
     });
 
-    testWidgets('finishing onboarding lands on Today for that airport, and a '
-        'relaunch skips it', (tester) async {
+    testWidgets('finishing onboarding lands on Home for that airport, the Go '
+        'Card opens from it, and a relaunch skips onboarding', (tester) async {
       await http.runWithClient(() async {
         await pumpApp(tester, await SettingsStore.load());
         await tester.enterText(
@@ -92,6 +94,14 @@ void main() {
       }, awcClient);
 
       expect(find.byType(AppShell), findsOneWidget);
+      expect(find.byType(HomeScreen), findsOneWidget);
+      expect(find.text('Go Card · KPAO'), findsOneWidget);
+      await http.runWithClient(() async {
+        await tester.tap(find.byKey(const Key('home-go-card')));
+        await tester.pump();
+        await tester.pump(const Duration(milliseconds: 600));
+        await settle(tester);
+      }, awcClient);
       expect(find.byType(TodayScreen), findsOneWidget);
       final dep = tester.widget<TextField>(find.byKey(const Key('go-departure')));
       expect(dep.controller!.text, 'KPAO');
@@ -104,12 +114,15 @@ void main() {
       final reloaded = await SettingsStore.load();
       expect(reloaded.onboardingDone, isTrue);
       expect(reloaded.profile.homeCategoryClass, 'ASEL');
+      // A fresh tree, as after a real relaunch (the Go Card is still pushed
+      // on the old one).
+      await tester.pumpWidget(const SizedBox());
       await http.runWithClient(() async {
         await pumpApp(tester, reloaded);
         await settle(tester);
       }, awcClient);
       expect(find.byType(OnboardingScreen), findsNothing);
-      expect(find.byType(TodayScreen), findsOneWidget);
+      expect(find.byType(HomeScreen), findsOneWidget);
     });
 
     // Regression for the iOS 27 QA freeze (2026-10-14): onboarding done with
@@ -143,6 +156,15 @@ void main() {
       });
       await http.runWithClient(() async {
         await pumpApp(tester, await SettingsStore.load());
+        await settle(tester);
+      }, awcClient);
+      // Home already says why, from the same legality engine.
+      expect(find.byType(HomeScreen), findsOneWidget);
+      expect(find.text('Not legal: medical not on record'), findsOneWidget);
+      await http.runWithClient(() async {
+        await tester.tap(find.byKey(const Key('home-go-card')));
+        await tester.pump();
+        await tester.pump(const Duration(milliseconds: 600));
         await settle(tester);
       }, awcClient);
       expect(find.byType(TodayScreen), findsOneWidget);
@@ -187,17 +209,19 @@ void main() {
       }, awcClient);
     }
 
-    testWidgets('four tabs: Today, Logbook, Weather, Kit', (tester) async {
+    testWidgets('five tabs: Home, Learn, Practice, Plan, Logbook',
+        (tester) async {
       await openShell(tester);
       for (final label in AppShell.tabLabels) {
         expect(find.text(label), findsWidgets, reason: label);
       }
       final shell = tester.state<AppShellState>(find.byType(AppShell));
       for (final (i, type) in [
-        (1, LogbookScreen),
-        (2, WeatherScreen),
-        (3, KitScreen),
-        (0, TodayScreen),
+        (1, LearnScreen),
+        (2, PracticeScreen),
+        (3, PlanScreen),
+        (4, LogbookScreen),
+        (0, HomeScreen),
       ]) {
         await http.runWithClient(() async {
           await tester.tap(find.text(AppShell.tabLabels[i]).last);
@@ -217,8 +241,26 @@ void main() {
       expect(find.text('TRAINING MODULES'), findsNothing);
     });
 
-    testWidgets('Today carries no ad, not even off-screen', (tester) async {
+    testWidgets('Home carries no ad, not even off-screen', (tester) async {
       await openShell(tester);
+      expect(
+          find.descendant(
+              of: find.byType(HomeScreen),
+              matching: find.byType(AdBannerWidget)),
+          findsNothing);
+    });
+
+    testWidgets('the Go Card carries no ad, not even off-screen',
+        (tester) async {
+      await openShell(tester);
+      await http.runWithClient(() async {
+        tester.state<NavigatorState>(find.byType(Navigator).first)
+            .pushNamed('/go');
+        await tester.pump();
+        await tester.pump(const Duration(milliseconds: 600));
+        await settle(tester);
+      }, awcClient);
+      expect(find.byType(TodayScreen), findsOneWidget);
       expect(
           find.descendant(
               of: find.byType(TodayScreen),

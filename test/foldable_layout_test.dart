@@ -19,6 +19,8 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'package:pilot_enroute/data/logbook_store.dart';
+import 'package:pilot_enroute/content/faa_questions.g.dart';
+import 'package:pilot_enroute/screens/airport_ops_screen.dart';
 import 'package:pilot_enroute/screens/airport_screen.dart';
 import 'package:pilot_enroute/screens/app_shell.dart';
 import 'package:pilot_enroute/screens/checklist_screen.dart';
@@ -27,13 +29,19 @@ import 'package:pilot_enroute/screens/e6b_screen.dart';
 import 'package:pilot_enroute/screens/flight_plan_screen.dart';
 import 'package:pilot_enroute/screens/fuel_screen.dart';
 import 'package:pilot_enroute/screens/go_history_screen.dart';
-import 'package:pilot_enroute/screens/kit_screen.dart';
+import 'package:pilot_enroute/screens/home_screen.dart';
+import 'package:pilot_enroute/screens/learn_screen.dart';
+import 'package:pilot_enroute/screens/library_screen.dart';
+import 'package:pilot_enroute/screens/plan_screen.dart';
 import 'package:pilot_enroute/screens/logbook_entry_screen.dart';
 import 'package:pilot_enroute/screens/logbook_screen.dart';
 import 'package:pilot_enroute/screens/minimums_screen.dart';
 import 'package:pilot_enroute/screens/onboarding_screen.dart';
+import 'package:pilot_enroute/screens/practice_screen.dart';
+import 'package:pilot_enroute/screens/quiz_screen.dart';
 import 'package:pilot_enroute/screens/reminders_screen.dart';
 import 'package:pilot_enroute/screens/settings_screen.dart';
+import 'package:pilot_enroute/screens/six_pack_screen.dart';
 import 'package:pilot_enroute/screens/today_screen.dart';
 import 'package:pilot_enroute/screens/weather_screen.dart';
 import 'package:pilot_enroute/screens/weight_balance_screen.dart';
@@ -153,7 +161,7 @@ void main() {
     _foldSweep('LogbookScreen', () => const LogbookScreen());
     _foldSweep('LogbookEntryScreen', () => const LogbookEntryScreen());
     _foldSweep('WeatherScreen', () => const WeatherScreen());
-    _foldSweep('KitScreen', () => const KitScreen());
+    _foldSweep('PlanScreen', () => const PlanScreen());
     _foldSweep('AirportScreen', () => const AirportScreen());
     _foldSweep('SettingsScreen', () => SettingsScreen(
         isPrivacyOptionsRequired: () async => true,
@@ -168,6 +176,14 @@ void main() {
     _foldSweep('E6BScreen', () => const E6BScreen());
     _foldSweep('FuelScreen', () => const FuelScreen());
     _foldSweep('WeightBalanceScreen', () => const WeightBalanceScreen());
+    _foldSweep('HomeScreen', () => const HomeScreen());
+    _foldSweep('LearnScreen', () => const LearnScreen());
+    _foldSweep('PracticeScreen', () => const PracticeScreen());
+    _foldSweep('LibraryScreen', () => const LibraryScreen());
+    _foldSweep('SixPackScreen', () => const SixPackScreen());
+    _foldSweep('AirportOpsScreen', () => const AirportOpsScreen());
+    _foldSweep('QuizScreen', () => QuizScreen(
+        title: 'All questions', questions: faaSampleQuestions.take(3).toList()));
   });
 
   // A fold plus large type is where text layouts actually break: the window
@@ -181,6 +197,12 @@ void main() {
       'MinimumsScreen': () => const MinimumsScreen(),
       'E6BScreen': () => const E6BScreen(),
       'WeightBalanceScreen': () => const WeightBalanceScreen(),
+      'HomeScreen': () => const HomeScreen(),
+      'PracticeScreen': () => const PracticeScreen(),
+      'SixPackScreen': () => const SixPackScreen(),
+      'QuizScreen': () => QuizScreen(
+          title: 'All questions',
+          questions: faaSampleQuestions.take(3).toList()),
     };
 
     busiest.forEach((name, build) {

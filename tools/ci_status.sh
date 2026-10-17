@@ -28,6 +28,15 @@ gh run view -R "$REPO" "$run" --json status,conclusion,headSha,event,url,jobs -q
 failed="$(gh run view -R "$REPO" "$run" --json jobs -q '.jobs[] | select(.conclusion=="failure") | .databaseId')"
 for j in $failed; do
   echo "── failed job $j (last $TAIL_LINES lines) ──"
-  gh run view -R "$REPO" --job "$j" --log-failed 2>/dev/null \
-    | sed -E 's/^[^\t]*\t[^\t]*\t[0-9TZ:.-]+ //' | tail -n "$TAIL_LINES"
+  # Keep only the message: drop the job/step columns, timestamp, colours and
+  # the step's echoed script, so the tail is the actual output.
+  gh run view -R "$REPO" --job "$j" --log-failed 2>/dev/null | python3 -I -c '
+import re, sys
+for line in sys.stdin:
+    t = line.rstrip("\n").split("\t", 2)[-1].lstrip("\ufeff")
+    t = re.sub(r"^\d{4}-\d\d-\d\dT[\d:.]+Z ?", "", t)
+    t = re.sub(r"\x1b\[[0-9;]*m", "", t)
+    if t.startswith(("##[group]", "##[endgroup]")) or not t.strip():
+        continue
+    print(t)' | tail -n "$TAIL_LINES"
 done

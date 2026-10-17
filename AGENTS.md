@@ -13,10 +13,14 @@ Android). No account; everything is stored on the device.
   profile; *Minimums* compares live aviationweather.gov METAR/TAF (with
   best-runway crosswind) to the pilot's day/night limits. Every check is saved.
 - **Logbook**: full entry form, search, filters, month groups, 30/90/365/all
-  totals, PDF / Share PDF / Copy as CSV.
+  totals, PDF / Share PDF / Copy as CSV / Paste CSV (own format only).
+  Students get **Private pilot progress** (61.109(a)) from the Totals tab.
 - **Weather**: METAR/TAF, PIREPs, SIGMETs, G-AIRMETs, winds aloft (AWC only).
 - **Kit**: E6B, weight & balance, fuel, flight planner, checklists
-  (representative only), documents, airport, FAA charts link.
+  (representative only), documents, airport, FAA charts link. Each tool has
+  an (i) "About" sheet (`KitScreen.explanations`).
+- **Night window**: with Night on, the Go Card shows the 61.57(b) window from
+  on-device sunrise/sunset (`lib/core/minimums/solar.dart`).
 - **Settings** (gear on Today): home airport, pilot profile, minimums,
   reminders, Privacy choices (UMP), language, About.
 
@@ -42,6 +46,8 @@ Kit tools are named routes (`onGenerateRoute`) wrapped in `PanelTheme` (dark).
 | `lib/core/weather/awc_models.dart` | AWC METAR/TAF/airport decoding (true wind, `"10+"`, clouds, runway alignment) |
 | `lib/core/minimums/` | Personal minimums, best-runway crosswind, per-line check, Go verdict + wording, saved check record |
 | `lib/core/logbook/` | `LogbookEntry`, search/filter/group/totals, RFC-4180 CSV, form validation |
+| `lib/core/legality/private_pilot_progress.dart` | 61.109(a) student progress (pure Dart, eCFR text quoted) |
+| `lib/core/minimums/solar.dart` | NOAA sunrise/sunset, 61.57(b) night window |
 | `lib/core/reminders/` | Which lapse reminders exist (30 and 7 days before each date) |
 | `lib/data/logbook_store.dart` | SQLite schema v2 + v1→v2 migration, memory store for web/tests |
 | `lib/services/` | `logbook_service`, `weather_service` (AWC client), `settings_store`, `reminder_service`, `notification_service`, `ad_service`, kit services |
@@ -62,6 +68,9 @@ windtemp) — keyless; a 5xx is retried once. No Supabase, no account, no other 
 | Go Card wording | `lib/core/minimums/go_check.dart`, `minimums_check.dart` |
 | Logbook columns | `LogbookEntry` + `v2Columns`/a new migration in `logbook_store.dart` (bump `logbookSchemaVersion`) |
 | Theme | `lib/ui/theme.dart` |
+| 61.109(a) progress rules | `private_pilot_progress.dart` + `test/core/private_pilot_progress_test.dart` |
+| CSV import | `logbookFromCsv` in `logbook_csv.dart` + `test/core/logbook_csv_import_test.dart` |
+| Kit "About" text | `KitScreen.explanations` |
 | A Kit route | `KitScreen.tools` + `onGenerateRoute`/`RootGate.routes` in `main.dart` |
 | AdMob units | `--dart-define=ADMOB_<FORMAT>_<PLATFORM>` (`ad_service.dart`) |
 
@@ -77,3 +86,11 @@ windtemp) — keyless; a 5xx is retried once. No Supabase, no account, no other 
   `com.americangroupllc.pilotenroute` — never change.
 - `ios/Runner.xcodeproj/project.pbxproj` carries someone else's uncommitted
   reorder; do not commit it.
+
+## Verify and CI
+`tools/verify.sh [quick|ios|android|<steps>]` runs analyze, tests, the iOS
+simulator build + launch + on-device test, and the Android build + emulator
+launch + on-device test, printing one line per step (logs and screenshots in
+`build/verify/`). `.github/workflows/ci.yml` runs the same script on GitHub
+(needs the `AGL_PACKAGES_TOKEN` secret). `tools/ci_status.sh` prints the latest
+CI result in a few lines. Delivery stays in agl-manifest `ship.yml`.

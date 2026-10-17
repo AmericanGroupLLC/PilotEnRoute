@@ -4,12 +4,15 @@ import 'package:printing/printing.dart';
 import 'package:provider/provider.dart';
 
 import '../core/legality/date_text.dart';
+import '../core/logbook/logbook_csv.dart';
 import '../core/logbook/logbook_query.dart';
 import '../services/logbook_service.dart';
+import '../services/settings_store.dart';
 import '../ui/theme.dart';
 import '../ui/widgets.dart';
 import '../widgets/ad_banner_widget.dart';
 import 'logbook_entry_screen.dart';
+import 'student_progress_screen.dart';
 
 /// The logbook: a ruled ledger grouped by month, with search, filters,
 /// window totals and export (PDF, Share PDF, Copy as CSV).
@@ -61,7 +64,14 @@ class _LogbookScreenState extends State<LogbookScreen>
   }
 
   Future<void> _export(String action, LogbookService svc) async {
+    // One export or import at a time: a second paste during an import would
+    // check duplicates against the list as it was before the first.
+    if (_busy) return;
     final messenger = ScaffoldMessenger.of(context);
+    if (action == 'paste') {
+      await _pasteCsv(svc);
+      return;
+    }
     if (action == 'csv') {
       await Clipboard.setData(ClipboardData(text: svc.toCsv()));
       messenger.showSnackBar(SnackBar(
@@ -81,6 +91,68 @@ class _LogbookScreenState extends State<LogbookScreen>
     } catch (e) {
       messenger.showSnackBar(
           SnackBar(content: Text('Could not export the logbook PDF: $e')));
+    } finally {
+      if (mounted) setState(() => _busy = false);
+    }
+  }
+
+  /// "Paste CSV": reads text made by "Copy as CSV" (on this or another
+  /// device) and adds the flights that are not already in the logbook.
+  Future<void> _pasteCsv(LogbookService svc) async {
+    final messenger = ScaffoldMessenger.of(context);
+    final data = await Clipboard.getData(Clipboard.kTextPlain);
+    final result =
+        logbookFromCsv(data?.text ?? '', existing: svc.entries);
+    if (!mounted) return;
+    if (result.fatal != null) {
+      messenger.showSnackBar(SnackBar(content: Text(result.fatal!)));
+      return;
+    }
+    final n = result.entries.length;
+    final ok = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        key: const Key('paste-csv-dialog'),
+        title: const Text('Paste CSV'),
+        content: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text('$n flight${n == 1 ? '' : 's'} to add.'),
+              if (result.duplicates > 0)
+                Text('${result.duplicates} already in your logbook '
+                    '(skipped).'),
+              if (result.errors.isNotEmpty) ...[
+                const SizedBox(height: 8),
+                Text('${result.errors.length} row'
+                    '${result.errors.length == 1 ? '' : 's'} not read:'),
+                for (final e in result.errors.take(5))
+                  Text('• $e', style: const TextStyle(fontSize: 13)),
+                if (result.errors.length > 5)
+                  Text('…and ${result.errors.length - 5} more.'),
+              ],
+            ],
+          ),
+        ),
+        actions: [
+          TextButton(
+              onPressed: () => Navigator.pop(ctx, false),
+              child: const Text('Cancel')),
+          FilledButton(
+              onPressed: n == 0 ? null : () => Navigator.pop(ctx, true),
+              child: Text(n == 0 ? 'Nothing to add' : 'Add $n')),
+        ],
+      ),
+    );
+    if (ok != true || !mounted) return;
+    setState(() => _busy = true);
+    try {
+      await svc.importEntries(result.entries);
+      messenger.showSnackBar(SnackBar(
+          content: Text('Added $n flight${n == 1 ? '' : 's'} from CSV')));
+    } catch (e) {
+      messenger.showSnackBar(SnackBar(content: Text('Paste CSV: $e')));
     } finally {
       if (mounted) setState(() => _busy = false);
     }
@@ -128,6 +200,7 @@ class _LogbookScreenState extends State<LogbookScreen>
             ),
           PopupMenuButton<String>(
             tooltip: 'Export',
+            enabled: !_busy,
             icon: const Icon(Icons.ios_share),
             onSelected: (a) => _export(a, svc),
             itemBuilder: (_) => const [
@@ -146,6 +219,11 @@ class _LogbookScreenState extends State<LogbookScreen>
                   child: ListTile(
                       leading: Icon(Icons.table_chart_outlined),
                       title: Text('Copy as CSV'))),
+              PopupMenuItem(
+                  value: 'paste',
+                  child: ListTile(
+                      leading: Icon(Icons.content_paste_outlined),
+                      title: Text('Paste CSV'))),
             ],
           ),
         ],
@@ -445,6 +523,25 @@ class _LogbookScreenState extends State<LogbookScreen>
     return ListView(
       padding: const EdgeInsets.all(16),
       children: [
+        if (context.watch<SettingsStore>().profile.studentPilot) ...[
+          PlacardCard(
+            key: const Key('student-progress-card'),
+            child: ListTile(
+              contentPadding: EdgeInsets.zero,
+              leading: Icon(Icons.school_outlined, color: scheme.primary),
+              title: const Text('Private pilot progress',
+                  style: TextStyle(
+                      fontFamily: AppFonts.heading,
+                      fontWeight: FontWeight.w700,
+                      fontSize: 17)),
+              subtitle: const Text('Your hours against 61.109(a)'),
+              trailing: const Icon(Icons.chevron_right),
+              onTap: () => Navigator.of(context).push(MaterialPageRoute(
+                  builder: (_) => StudentProgressScreen(clock: widget.clock))),
+            ),
+          ),
+          const SizedBox(height: 16),
+        ],
         const SectionHeader('Totals', subtitle: 'Hours and counts by window'),
         Table(
           columnWidths: const {0: FlexColumnWidth(1.5)},

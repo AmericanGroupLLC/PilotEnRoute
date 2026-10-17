@@ -34,6 +34,28 @@ state, `validThrough` / `lapsedOn`, summary, shortfall, notes and cite.
 Not checked (stated on the card): type ratings, other endorsements, simulator
 credit rules, 61.57(e), BasicMed operating limits.
 
+## Student progress (`lib/core/legality/private_pilot_progress.dart`)
+61.109(a) (private pilot, airplane single-engine), regulation text quoted from
+eCFR in the file. 40 h of flight time from every entry; the 20 h of
+instruction, 10 h of solo and every sub-item count ASEL and ASES only (the
+61.107(b)(1) areas of operation). XC, night and instrument time is credited
+as training up to the dual time of a dual-only entry, and as solo up to the
+solo time of a solo-only entry; an entry logging both is not split and is
+counted on screen. (4) is dual since the 1st of the second calendar month
+before this one. (2)(i), (5)(ii), (5)(iii) need distances or tower status the
+logbook does not store: shown "not tracked", never met. Shown to students only,
+from the Logbook Totals tab.
+
+## Night window (`lib/core/minimums/solar.dart`)
+NOAA General Solar Position equations on the device (zenith 90.833°), within
+2 min of US Naval Observatory times at the mid-latitude airports tested. The
+series drifts at high latitude, so above 66° no window is shown. With *Night*
+on, the Go Card's Legal section shows the 61.57(b) window (1 h after sunset to
+1 h before the next sunrise) at the checked airport's AWC lat/lon, in Zulu and
+device time; an early-morning departure gets the previous evening's window.
+Under 2 h of darkness, or no sunset/sunrise, it says so instead of showing
+times.
+
 ## Minimums (`lib/core/minimums/`)
 Ceiling = lowest BKN/OVC/OVX base (none reported ≠ 0). Visibility handles
 `"10+"`/`"6+"`/fractions. Crosswind: every runway end from AWC true
@@ -49,6 +71,13 @@ flight."
   tailwheel, route, solo_time, day_full_stop_landings, holding, tracking,
   flight_review, ipc, practical_test, night_flight) and `go_checks`.
   v1 rows are kept with honest defaults (no category/class).
+- "Paste CSV" (`logbookFromCsv`) reads back the app's own "Copy as CSV" text:
+  every export column must be present (any order), rows are validated like the
+  entry form (category/class may be empty for v1 rows), a row with the wrong
+  field count is refused, and a row identical to a flight already logged is
+  skipped once per existing copy. Hours are exported in tenths, finer values
+  exactly, so the round trip is lossless. Other logbooks' layouts are refused, not
+  guessed.
 - SharedPreferences: profile, minimums, home airport, reminder switches,
   onboarding flag, documents metadata, scheduled reminder ids.
 
@@ -82,7 +111,8 @@ AdMob banner only, behind UMP consent: one in-list slot in Logbook (after the
 5th row) and one in Weather. Never on Today, the Go result or the entry form.
 
 ## Testing
-`test/core` (engine, decoding, minimums, logbook depth), `test/data` (real
+`test/core` (engine, decoding, minimums, logbook depth, 61.109(a) progress,
+solar vs USNO, CSV import), `test/data` (real
 SQLite migration), `test/services`, `test/screens` (Go Card with recorded AWC
 fixtures and a fake HTTP client, entry form, logbook, onboarding, settings),
 `test/foldable_layout_test.dart` (every screen at fold geometries and 1.6×

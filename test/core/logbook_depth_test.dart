@@ -197,9 +197,11 @@ void main() {
       ]);
       expect(csv, contains('"Gusty, ""fun""\nwent around"'));
     });
-    test('hours are written with one decimal and flags as Y', () {
+    test('hours are written in tenths, finer values exactly (so Paste CSV '
+        'gets them back), and flags as Y', () {
+      expect(csvRow(f(DateTime(2026, 1, 1), total: 1.3))[8], '1.3');
       final row = csvRow(f(DateTime(2026, 1, 1), total: 1.25, ipc: true));
-      expect(row[8], '1.3');
+      expect(row[8], '1.25');
       expect(row[csvHeader.indexOf('IPC')], 'Y');
       expect(row[csvHeader.indexOf('Flight review')], '');
     });

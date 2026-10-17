@@ -6,6 +6,7 @@ import '../core/legality/legality_engine.dart';
 import '../core/minimums/go_check.dart';
 import '../core/minimums/go_record.dart';
 import '../core/minimums/minimums_check.dart';
+import '../core/minimums/solar.dart';
 import '../services/error_reporter.dart';
 import '../services/logbook_service.dart';
 import '../services/settings_store.dart';
@@ -427,6 +428,26 @@ class _TodayScreenState extends State<TodayScreen> {
     );
   }
 
+  /// The 61.57(b) night window at the departure airport, worked out on the
+  /// device from the airport position in the last check. Null until a check
+  /// has returned a position.
+  String? _nightLine() {
+    final w = _weather;
+    final lat = w?.airport?.lat ?? w?.metar?.lat;
+    final lon = w?.airport?.lon ?? w?.metar?.lon;
+    if (w == null || lat == null || lon == null) return null;
+    String two(int v) => v.toString().padLeft(2, '0');
+    return nightWindowLine(
+      station: w.station,
+      window:
+          nightWindowForDeparture(departure: _departure, lat: lat, lon: lon),
+      local: (u) {
+        final l = u.toLocal();
+        return '${two(l.hour)}:${two(l.minute)}';
+      },
+    );
+  }
+
   Widget _legal(BuildContext context, LegalityReport report, SettingsStore s) {
     final scheme = Theme.of(context).colorScheme;
     return Column(
@@ -443,6 +464,15 @@ class _TodayScreenState extends State<TodayScreen> {
                 "shows what you're current for.",
           ),
         for (final r in report.rules) _ruleRow(context, r),
+        if (_night && _nightLine() != null)
+          Padding(
+            padding: const EdgeInsets.only(top: 8),
+            child: NoticeLine(
+              key: const Key('go-night-window'),
+              icon: Icons.nightlight_outlined,
+              text: _nightLine()!,
+            ),
+          ),
         Padding(
           padding: const EdgeInsets.only(top: 6),
           child: Text(

@@ -26,11 +26,16 @@ POH/AFM or your instructor. Every go/no-go decision is yours.
   "Log this flight".
 - **Logbook** — full entry form, edit, swipe-delete with undo, "Log again",
   search, filters, month groups, 30/90/365-day and all-time totals, PDF,
-  Share PDF, Copy as CSV.
+  Share PDF, Copy as CSV, and Paste CSV to bring an exported logbook back
+  (from this app's own export only).
+- **Student progress** — for student pilots, hours against 14 CFR 61.109(a)
+  from the logbook; items the logbook cannot show are marked "not tracked".
+- **Night window** — with Night on, the Go Card shows when the 61.57(b) night
+  period starts and ends at the airport, worked out on the phone.
 - **Weather** — METAR, TAF, PIREPs, SIGMETs, G-AIRMETs, winds aloft.
 - **Kit** — E6B, weight & balance, fuel, flight planner, checklists
   (representative only), documents with expiry dates, airport details, FAA
-  charts link.
+  charts link; each with a short "About" explanation.
 - **Reminders** — 30 and 7 days before anything lapses.
 
 ## Data

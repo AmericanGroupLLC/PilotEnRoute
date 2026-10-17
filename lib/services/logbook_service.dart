@@ -101,6 +101,25 @@ class LogbookService extends ChangeNotifier {
     await loadEntries();
   }
 
+  /// Adds the flights read by "Paste CSV", then reloads once. If an insert
+  /// fails, the list is still reloaded (so it shows what was added) and the
+  /// error is rethrown with the count added so far.
+  Future<int> importEntries(List<LogbookEntry> entries) async {
+    final store = await _ensure();
+    var added = 0;
+    try {
+      for (final e in entries) {
+        await store.insertEntry(e.copyWith(clearId: true));
+        added++;
+      }
+    } catch (e) {
+      await loadEntries();
+      throw StateError('Stopped after $added of ${entries.length} flights: $e');
+    }
+    await loadEntries();
+    return added;
+  }
+
   /// Puts back an entry removed by a swipe (the Undo in the snackbar).
   Future<void> restoreEntry(LogbookEntry entry) => addEntry(entry);
 
